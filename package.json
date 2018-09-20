@@ -1,0 +1,33 @@
+{
+  "name": "stitch",
+  "version": "0.0.5",
+  "description": "An illegally-made, genetically-engineered, extraterrestrial lifeform which trades between triangular opportunities",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SignedBlock/stitch.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SignedBlock/stitch/issues"
+  },
+  "homepage": "https://github.com/SignedBlock/stitch#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "ccxt": "^1.17.324",
+    "graphlib": "^2.1.5",
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "@types/graphlib": "^2.1.4",
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^10.10.1"
+  }
+}
