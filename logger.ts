@@ -1,7 +1,7 @@
 import { Opportunity } from './types'
 import axios from 'axios'
 
-const WEBHOOK_URL = 'https://hooks.slack.com/services/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'
+const WEBHOOK_URL = 'https://hooks.slack.com/services/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'
 
 export function log (opportunities: Opportunity[], extended = false): void {
   for (const p of opportunities) {
