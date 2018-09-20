@@ -4,18 +4,12 @@ const ccxt = require('ccxt')
 import { Opportunity } from './types'
 import { sendToSlack, log } from './logger'
 import { calculateArbitrage } from './helpers'
-
-const FEE: number = 0.002
-const THRESHOLD = 1
-const EXCHANGE = 'bitfinex'
-
-//Zero if should not repeat, otherwise interval in ms
-const INTERVAL = 0
+import config from  './config'
 
 async function main (): Promise<void> {
-  sendToSlack(`Analyzing triangular arbitrage for exchange: *${EXCHANGE}*, with threshold: *${THRESHOLD}*`)
+  sendToSlack(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
-  const api = new (ccxt as any)[EXCHANGE]()
+  const api = new (ccxt as any)[config.exchange]()
 
   recursiveMain(api)
 }
@@ -29,18 +23,18 @@ async function recursiveMain (api: any): Promise<void> {
     console.log(`Could not fetch tickers. Problem: ${e.message}`)
   }
 
-  const graph = Graph.constructGraphFromTickers(tickers, FEE)
-  const opportunities = getOpportunities(EXCHANGE, graph)
+  const graph = Graph.constructGraphFromTickers(tickers, config.fee)
+  const opportunities = getOpportunities(graph)
   log(opportunities)
 
-  if (INTERVAL > 0) {
+  if (config.repeat.should) {
     setTimeout(() => {
       recursiveMain(api)
-    }, INTERVAL)
+    }, config.repeat.interval)
   }
 }
 
-function getOpportunities (exchange: string, graph: Graph): Opportunity[] {
+function getOpportunities (graph: Graph): Opportunity[] {
   let opportunities: Opportunity[] = []
 
   const triangles = graph.getTriangles()
@@ -48,9 +42,8 @@ function getOpportunities (exchange: string, graph: Graph): Opportunity[] {
   for (const triangle of triangles) {
     const arbitrage = calculateArbitrage(triangle)
 
-    if (arbitrage >= THRESHOLD) {
+    if (arbitrage >= config.threshold) {
       opportunities.push({
-        exchange: exchange,
         arbitrage: arbitrage,
         triangle: triangle
       })
@@ -60,4 +53,4 @@ function getOpportunities (exchange: string, graph: Graph): Opportunity[] {
   return opportunities
 }
 
-main()
+main().catch((e) => console.log(`[TOP_LEVEL_ERROR]: ${e.message}`))

@@ -9,7 +9,6 @@ export type Edge = { v: Node, w: Node }
 export type Triangle = EdgeDriver[]
 
 export type Opportunity = {
-  exchange: string,
   arbitrage: number
   triangle: Triangle
 }
