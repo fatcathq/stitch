@@ -40,7 +40,7 @@ function getOpportunities (graph: Graph): Opportunity[] {
   const triangles = graph.getTriangles()
 
   for (const triangle of triangles) {
-    const arbitrage = calculateArbitrage(triangle)
+    const arbitrage = calculateArbitrage(triangle, config.fee)
 
     if (arbitrage >= config.threshold) {
       opportunities.push({

@@ -22,9 +22,9 @@ export default class {
 
   public getWeight (): number {
     if (this.isVirtual) {
-      return (1 - this.fee) / this.price
+      return 1 / this.price
     } else {
-      return (1 - this.fee) * this.price
+      return this.price
     }
   }
 

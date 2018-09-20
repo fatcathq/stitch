@@ -5,7 +5,7 @@ import EdgeDriver from './edge'
 import { marketIsValid, triangleExists } from './helpers'
 
 export default class extends Graph {
-  static constructGraphFromTickers (tickers: Market[], FEE: number): any {
+  static constructGraphFromTickers (tickers: Market[], fee: number): any {
     let graph = new this({ directed: true })
 
     _.mapValues(tickers, (market: Market): void => {
@@ -17,8 +17,8 @@ export default class extends Graph {
         return
       }
 
-      graph.setEdge(asset, currency, new EdgeDriver(asset, currency, market.bid, FEE, false))
-      graph.setEdge(currency, asset, new EdgeDriver(currency, currency, market.ask, FEE, true))
+      graph.setEdge(asset, currency, new EdgeDriver(asset, currency, market.bid, fee, false))
+      graph.setEdge(currency, asset, new EdgeDriver(currency, asset, market.ask, fee, true))
     })
 
     return graph

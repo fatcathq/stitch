@@ -5,6 +5,7 @@ export type Market = {
 }
 
 export type Node = string
+export type Currency = string
 export type Edge = { v: Node, w: Node }
 export type Triangle = EdgeDriver[]
 
