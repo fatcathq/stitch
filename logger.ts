@@ -33,9 +33,7 @@ export async function sendToSlack (message: string, mock: boolean = true): Promi
 
   const opts: any = {
     text: message,
-    username: 'Triangular Arbitrage Finder',
-    icon_emoji: ':dark_sunglasses:',
-    channel: 'trading-report-test'
+    channel: 'cycles-monitor'
   }
 
   await axios.post(WEBHOOK_URL, opts)
