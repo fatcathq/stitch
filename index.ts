@@ -1,6 +1,7 @@
+const ccxt = require('ccxt')
+
 import * as _ from 'lodash'
 import Graph from './graph'
-const ccxt = require('ccxt')
 import { Opportunity } from './types'
 import { sendToSlack, log } from './logger'
 import { calculateArbitrage } from './helpers'
