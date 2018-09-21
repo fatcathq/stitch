@@ -1,7 +1,7 @@
 import { Market, Triangle, Edge } from './types'
 import { Graph } from 'graphlib'
 import * as _ from 'lodash'
-import EdgeDriver from './edge'
+import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
 import { marketIsValid, triangleExists } from './helpers'
 
 export default class extends Graph {
@@ -17,8 +17,8 @@ export default class extends Graph {
         return
       }
 
-      graph.setEdge(asset, currency, new EdgeDriver(asset, currency, market.bid, fee, false))
-      graph.setEdge(currency, asset, new EdgeDriver(currency, asset, market.ask, fee, true))
+      graph.setEdge(asset, currency, new EdgeDriver(asset, currency, fee, market.bid))
+      graph.setEdge(currency, asset, new VirtualEdgeDriver(currency, asset, fee, market.ask))
     })
 
     return graph
