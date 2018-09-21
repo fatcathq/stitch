@@ -1,5 +1,9 @@
 type Config = {
   exchange: string,
+  api: {
+    key: string,
+    secret: string
+  },
   threshold: number,
   // TODO: Get fee from API
   fee: number,

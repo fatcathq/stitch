@@ -1,5 +1,9 @@
 {
   "exchange": "bitfinex",
+  "api": {
+    "key": "test_key",
+    "secret": "test_secret"
+  }
   "threshold": 0.9,
   "fee": 0.002,
   "log": {
