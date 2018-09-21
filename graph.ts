@@ -1,5 +1,6 @@
 import { Market, Triangle, Edge } from './types'
 import { Graph } from 'graphlib'
+import log from './loggers/winston'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
 import { marketIsValid, triangleExists } from './helpers'
@@ -9,13 +10,14 @@ export default class extends Graph {
     let graph = new this({ directed: true })
 
     _.mapValues(tickers, (market: Market): void => {
+      if (!marketIsValid(market)) {
+        log.warn(`Invalid market: ${market.symbol}`)
+        return
+      }
+
       let asset: string
       let currency: string
       [asset, currency] = market.symbol.split('/')
-
-      if (!marketIsValid(market)) {
-        return
-      }
 
       graph.setEdge(asset, currency, new EdgeDriver(asset, currency, fee, market.bid))
       graph.setEdge(currency, asset, new VirtualEdgeDriver(currency, asset, fee, market.ask))

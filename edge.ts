@@ -1,4 +1,5 @@
 import { Currency } from './types'
+import log from './loggers/winston'
 
 export class Edge {
   public source: Currency
@@ -20,6 +21,7 @@ export class Edge {
 
   public async traverse (api: any, volume: number = this.volume, price: number = this.price, mock = true): Promise<any> {
     if (mock) {
+      log.info(`I would proceed to an ask limit order on volume: ${volume} ${this.target} on price ${price} ${this.source}`)
       return
     }
 
@@ -50,7 +52,6 @@ export class VirtualEdge extends Edge {
   }
 
   public async updateFromAPI (api: any): Promise<void> {
-    console.log(this.getMarket())
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
     const [price, volume] = ob.asks[0]
 
@@ -68,7 +69,7 @@ export class VirtualEdge extends Edge {
 
   public async traverse (api: any, volume: number = this.volume * this.price, price: number = 1 / this.price, mock = true): Promise<any> {
     if (mock) {
-      console.log(`I would do a bid limit order on volume: ${volume} ${this.target} on price ${price} ${this.source}`)
+      log.info(`I would proceed to a bid limit order on volume: ${volume} ${this.target} on price ${price} ${this.source}`)
       return
     }
 

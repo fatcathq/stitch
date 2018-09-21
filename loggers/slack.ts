@@ -1,8 +1,9 @@
-import { Opportunity } from './types'
+import { Opportunity } from '../types'
+import log from './winston'
 import axios from 'axios'
-import config from './config'
+import config from '../config'
 
-export function log (opportunities: Opportunity[]): void {
+export function slackLogOpportunities (opportunities: Opportunity[]): void {
   for (const p of opportunities) {
     const { arbitrage } = p
     const triangle = p.triangle
@@ -24,9 +25,9 @@ export function log (opportunities: Opportunity[]): void {
   }
 }
 
-export async function sendToSlack (message: string): Promise<void> {
+async function sendToSlack (message: string): Promise<void> {
   if (!config.log.slack.should) {
-    console.log(message)
+    log.info(message)
     return
   }
 
