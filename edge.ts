@@ -1,8 +1,8 @@
-import { Node } from './types'
+import { Currency } from './types'
 
 export default class {
-  public source: Node = 'BTC'
-  public target: Node = 'ETH'
+  public source: Currency
+  public target: Currency
   public price: number
   public volume: number = 0 // Volume of OrderBook Top
   public isVirtual: boolean = false
@@ -18,6 +18,15 @@ export default class {
 
   public getMarket (): string {
     return this.isVirtual ? `${this.target}/${this.source}` : `${this.source}/${this.target}`
+  }
+
+  public  getVolumeCurrency (): Currency {
+    if (this.isVirtual) {
+      return this.target
+    }
+    else {
+      return this.source
+    }
   }
 
   public getWeight (): number {
