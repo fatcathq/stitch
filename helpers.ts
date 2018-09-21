@@ -86,6 +86,10 @@ export function getMinVolume (triangle: Triangle): number {
   return Math.min(...volumes)
 }
 
+export function numberIsDeformed(balance: number): boolean {
+  return /e/.test(String(balance))
+}
+
 export function sortByProfitability(opportunities: Opportunity[]): Opportunity[] {
   return opportunities.sort((a, b) => b.arbitrage - a.arbitrage)
 }
