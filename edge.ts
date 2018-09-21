@@ -20,7 +20,17 @@ export default class {
     return this.isVirtual ? `${this.target}/${this.source}` : `${this.source}/${this.target}`
   }
 
-  public  getVolumeCurrency (): Currency {
+  public async traverse (api: any, volume: number = this.volume, price: number = this.price): Promise<any> {
+    console.log('Starting taversal')
+    if (this.isVirtual) {
+      console.log(await api.createLimitBidOrder(this.getMarket(), volume, price))
+      return
+    }
+
+    console.log(await api.createLimitSellOrder(this.getMarket(), volume, price))
+  }
+
+  public getVolumeCurrency (): Currency {
     if (this.isVirtual) {
       return this.target
     }
