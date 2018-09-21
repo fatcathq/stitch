@@ -23,7 +23,8 @@
     "axios": "^0.18.0",
     "ccxt": "^1.17.324",
     "graphlib": "^2.1.5",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "@types/graphlib": "^2.1.4",
