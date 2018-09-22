@@ -23,11 +23,14 @@
     "axios": "^0.18.0",
     "ccxt": "^1.17.324",
     "graphlib": "^2.1.5",
+    "knex": "^0.15.2",
     "lodash": "^4.17.11",
+    "pg": "^7.4.3",
     "winston": "^3.1.0"
   },
   "devDependencies": {
     "@types/graphlib": "^2.1.4",
+    "@types/knex": "^0.14.24",
     "@types/lodash": "^4.14.116",
     "@types/node": "^10.10.1"
   }
