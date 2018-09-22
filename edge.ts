@@ -2,12 +2,12 @@ import { Currency } from './types'
 import log from './loggers/winston'
 
 export class Edge {
-  protected price: number = 0
   public source: Currency
   public target: Currency
   public minVolume: number // Volume of OrderBook Top
-  public volume?: number // Volume of OrderBook Top
+  public volume: number = Infinity // Volume of OrderBook Top
   public fee: number = 0
+  protected price: number = 0
 
   constructor (source: string, target: string, fee: number, minVolume: number) {
     this.source = source

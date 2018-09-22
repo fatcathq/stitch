@@ -13,3 +13,5 @@ export type Opportunity = {
   arbitrage: number
   triangle: Triangle
 }
+
+export type Balance = Map<string, number>
