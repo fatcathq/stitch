@@ -2,7 +2,7 @@ import { Opportunity } from '../types'
 import config from '../config'
 import { send as sendToSlack } from '../connectors/slack'
 
-export function slackLogOpportunities (opportunities: Opportunity[]): void {
+export function logOpportunities (opportunities: Opportunity[]): void {
   for (const p of opportunities) {
     const { arbitrage } = p
     const triangle = p.triangle

@@ -3,7 +3,7 @@ const ccxt = require('ccxt')
 import * as _ from 'lodash'
 import Graph from './graph'
 import { Opportunity } from './types'
-import { slackLogOpportunities } from './loggers/slack'
+import { logOpportunities as slackLog } from './loggers/slack'
 import log from './loggers/winston'
 import { calculateArbitrage } from './helpers'
 import config from  './config'
@@ -28,7 +28,7 @@ async function recursiveMain (api: any, graph: Graph): Promise<void> {
 
   graph.update(tickers)
   const opportunities = getOpportunities(graph)
-  slackLogOpportunities(opportunities)
+  slackLog(opportunities)
 
   if (config.repeat.should) {
     setTimeout(() => {
