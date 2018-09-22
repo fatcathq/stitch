@@ -12,6 +12,12 @@ type Config = {
       webhook: string,
       should: true,
       extended: true
+    },
+    db: {
+      host: string,
+      user: string,
+      dassword: string,
+      database: string
     }
   },
   repeat: {

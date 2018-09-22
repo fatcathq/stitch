@@ -11,6 +11,12 @@
       "webhook": "https://hooks.slack.com/services/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",
       "should": false,
       "extended": false
+    },
+    "db": {
+      "host": "127.0.0.1",
+      "user": "root",
+      "dassword": "123",
+      "database": "stitch"
     }
   },
   "repeat": {
