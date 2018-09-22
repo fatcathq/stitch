@@ -1,4 +1,4 @@
-import { Triangle, Market, Opportunity } from './types'
+import { Triangle, Opportunity } from './types'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver } from './edge'
 
@@ -18,13 +18,8 @@ export function triangleExists (candidate: Triangle, triangles: Triangle[]): boo
   return false
 }
 
-export function marketIsValid (market: Market): boolean {
-  // Filter for inconsistent results. Happens mainly in binance
-  return !/e/.test(String(market.bid))
-    && !/e/.test(String(market.ask))
-    && /([A-Z]{2,5}\/[A-Z]{2,5})/.test(market.symbol)
-    && market.bid !== 0
-    && market.ask !== 0
+export function marketIsValid (marketName: string): boolean {
+  return /([A-Z]{2,5}\/[A-Z]{2,5})/.test(marketName)
 }
 
 //Calculate arbitrage by getting the product of the (after fee) edge weights  
@@ -32,20 +27,6 @@ export function calculateArbitrage (triangle: Triangle, fee: number): number {
   return triangle.map((e: EdgeDriver) => e.getWeight()).reduce((acc, v) => acc * (1 - fee) * v, 1)
 }
 
-// TODO: Change that to Bellman Ford (?)
-export function getMinVolume (triangle: Triangle): number {
-  let volumeIt = triangle[0].volume
-
-  for (const edge of triangle) {
-    if (volumeIt > edge.volume) {
-      volumeIt = edge.volume
-    }
-
-    volumeIt *= edge.price
-  }
-
-  return volumeIt
-}
 
 export function numberIsDeformed(balance: number): boolean {
   return /e/.test(String(balance))

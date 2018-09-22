@@ -12,11 +12,12 @@ async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
   const api = new (ccxt as any)[config.exchange]()
+  const graph = new Graph(await api.loadMarkets())
 
-  recursiveMain(api)
+  recursiveMain(api, graph)
 }
 
-async function recursiveMain (api: any): Promise<void> {
+async function recursiveMain (api: any, graph: Graph): Promise<void> {
   let tickers: any
 
   try {
@@ -25,13 +26,13 @@ async function recursiveMain (api: any): Promise<void> {
     log.error(`Could not fetch tickers. Problem: ${e.message}`)
   }
 
-  const graph = Graph.constructGraphFromTickers(tickers, config.fee)
+  graph.update(tickers)
   const opportunities = getOpportunities(graph)
   slackLogOpportunities(opportunities)
 
   if (config.repeat.should) {
     setTimeout(() => {
-      recursiveMain(api)
+      recursiveMain(api, graph)
     }, config.repeat.interval)
   }
 }

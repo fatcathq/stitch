@@ -1,16 +1,30 @@
 import { Market, Triangle, Edge } from './types'
-import { Graph } from 'graphlib'
+const Graph = require('graphlib').Graph
 import log from './loggers/winston'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
 import { marketIsValid, triangleExists } from './helpers'
 
 export default class extends Graph {
-  static constructGraphFromTickers (tickers: Market[], fee: number): any {
-    let graph = new this({ directed: true })
+  constructor (markets: any) {
+    super({ directed: true })
 
+    _.forEach(markets, (market: any): void => {
+      if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {
+        log.warn(`Invalid market: ${market.symbol}`)
+        return
+      }
+
+      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, market.limits.amount.min))
+
+      // TODO: Fix min volume
+      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, 0))
+    })
+  }
+
+  public update (tickers: []): void {
     _.mapValues(tickers, (market: Market): void => {
-      if (!marketIsValid(market)) {
+      if (!marketIsValid(market.symbol) || market.bid === 0 || market.ask === 0) {
         log.warn(`Invalid market: ${market.symbol}`)
         return
       }
@@ -19,11 +33,14 @@ export default class extends Graph {
       let currency: string
       [asset, currency] = market.symbol.split('/')
 
-      graph.setEdge(asset, currency, new EdgeDriver(asset, currency, fee, market.bid))
-      graph.setEdge(currency, asset, new VirtualEdgeDriver(currency, asset, fee, market.ask))
+      try {
+        this.edge(asset, currency).setPrice(market.bid)
+        this.edge(currency, asset).setPrice(market.ask)
+      }
+      catch (e) {
+        log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol)
+      }
     })
-
-    return graph
   }
 
   /*
