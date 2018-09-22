@@ -1,7 +1,6 @@
 import { Opportunity } from '../types'
-import log from './winston'
-import axios from 'axios'
 import config from '../config'
+import { send as sendToSlack } from '../connectors/slack'
 
 export function slackLogOpportunities (opportunities: Opportunity[]): void {
   for (const p of opportunities) {
@@ -23,18 +22,4 @@ export function slackLogOpportunities (opportunities: Opportunity[]): void {
 
     sendToSlack(message)
   }
-}
-
-async function sendToSlack (message: string): Promise<void> {
-  if (!config.log.slack.should) {
-    log.info(message)
-    return
-  }
-
-  const opts: any = {
-    text: message,
-    channel: 'cycles-monitor'
-  }
-
-  await axios.post(config.log.slack.webhook, opts)
 }
