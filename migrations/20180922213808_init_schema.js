@@ -2,6 +2,7 @@
 exports.up = async function(knex) {
   await knex.schema.createTable('opportunities', function (table) {
     table.increments('id').primary();
+    table.text('exchange').notNull();
     table.float('arbitrage').notNull();
     table.specificType('cycle', 'text[]').notNull();
     table.float('min_trade_volume').nullable();
@@ -24,7 +25,7 @@ exports.up = async function(knex) {
   })
 };
 
-exports.down = function(knex, Promise) {
-  knex.schema.dropTable('opportunities')
-  knex.schema.dropTable('edges')
+exports.down = async function(knex) {
+  await knex.schema.dropTable('edges')
+  await knex.schema.dropTable('opportunities')
 };
