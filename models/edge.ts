@@ -53,7 +53,7 @@ export class Edge {
 
   public async save(cycleId: number) {
     return db('edges').insert({
-      cycleId: cycleId,
+      cycle_id: cycleId,
       virtual: this.virtual,
       source: this.source,
       target: this.target,

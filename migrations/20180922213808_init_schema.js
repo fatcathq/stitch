@@ -12,7 +12,6 @@ exports.up = async function(knex) {
   })
 
   await knex.schema.createTable('edges', function (table) {
-    table.increments();
     table.integer('cycle_id').unsigned().notNull()
     table.boolean('virtual').notNull()
     table.text('source', 8).notNull()

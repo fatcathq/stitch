@@ -3,10 +3,13 @@ const ccxt = require('ccxt')
 import * as _ from 'lodash'
 import Graph from './graph'
 import Opportunity from './models/opportunity'
-import { logOpportunities as slackLog } from './loggers/slack'
-import log from './loggers/winston'
 import { calculateArbitrage } from './helpers'
 import config from  './config'
+
+// TODO: Merge this loggers
+import { logOpportunities as slackLog } from './loggers/slack'
+import { logOpportunities as dbLog } from './loggers/db'
+import log from './loggers/winston'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
@@ -28,7 +31,8 @@ async function recursiveMain (api: any, graph: Graph): Promise<void> {
 
   graph.update(tickers)
   const opportunities = getOpportunities(graph)
-  slackLog(opportunities)
+  await dbLog(opportunities)
+  await slackLog(opportunities)
 
   if (config.repeat.should) {
     setTimeout(() => {

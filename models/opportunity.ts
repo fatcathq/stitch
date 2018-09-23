@@ -15,12 +15,12 @@ export default class Opportunity {
   }
 
   public async save() {
-    const id = await db('opportunities').insert({
+    const res = await db('opportunities').insert({
       exchange: this.exchange,
       cycle: this.triangle.map((edge: EdgeDriver) => edge.source),
       arbitrage: this.arbitrage
     }).returning('id')
 
-    return Promise.all(this.triangle.map((edge: EdgeDriver) => edge.save(id)))
+    return Promise.all(this.triangle.map((edge: EdgeDriver) => edge.save(res[0])))
   }
 }
