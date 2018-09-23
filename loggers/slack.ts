@@ -1,5 +1,5 @@
 import { Opportunity } from '../types'
-import config from '../config'
+import config from '../utils/config'
 import { send as sendToSlack } from '../connectors/slack'
 
 export function logOpportunities (opportunities: Opportunity[]): void {

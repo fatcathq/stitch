@@ -3,8 +3,8 @@ const ccxt = require('ccxt')
 import * as _ from 'lodash'
 import Graph from './models/graph'
 import Opportunity from './models/opportunity'
-import { calculateArbitrage } from './helpers'
-import config from  './config'
+import { calculateArbitrage } from './utils/helpers'
+import config from  './utils/config'
 
 // TODO: Merge this loggers
 import { logOpportunities as slackLog } from './loggers/slack'

@@ -26,7 +26,7 @@ type Config = {
   }
 }
 
-const CONFIG_FILE = './config.json'
+const CONFIG_FILE = '../config/config.json'
 const config: Config =  require(CONFIG_FILE)
 
 export default config

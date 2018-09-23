@@ -3,7 +3,7 @@ const Graph = require('graphlib').Graph
 import log from '../loggers/winston'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
-import { marketIsValid, triangleExists } from '../helpers'
+import { marketIsValid, triangleExists } from '../utils/helpers'
 
 export default class extends Graph {
   public exchange: string

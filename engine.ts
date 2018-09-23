@@ -1,6 +1,6 @@
 import { Balance, Triangle } from './types'
 import { Edge as EdgeDriver } from './models/edge'
-import { numberIsDeformed } from './helpers'
+import { numberIsDeformed } from './utils/helpers'
 
 export default class Engine {
   public balance: Balance
