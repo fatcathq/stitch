@@ -2,7 +2,7 @@ const ccxt = require('ccxt')
 
 import * as _ from 'lodash'
 import Graph from './graph'
-import { Opportunity } from './types'
+import Opportunity from './models/opportunity'
 import { logOpportunities as slackLog } from './loggers/slack'
 import log from './loggers/winston'
 import { calculateArbitrage } from './helpers'
@@ -12,7 +12,7 @@ async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
   const api = new (ccxt as any)[config.exchange]()
-  const graph = new Graph(await api.loadMarkets())
+  const graph = new Graph(config.exchange, await api.loadMarkets())
 
   recursiveMain(api, graph)
 }
@@ -46,10 +46,7 @@ function getOpportunities (graph: Graph): Opportunity[] {
     const arbitrage = calculateArbitrage(triangle, config.fee)
 
     if (arbitrage >= config.threshold) {
-      opportunities.push({
-        arbitrage: arbitrage,
-        triangle: triangle
-      })
+      opportunities.push(new Opportunity(graph.exchange, triangle, arbitrage))
     }
   }
 

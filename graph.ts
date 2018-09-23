@@ -6,8 +6,11 @@ import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './models/e
 import { marketIsValid, triangleExists } from './helpers'
 
 export default class extends Graph {
-  constructor (markets: any) {
+  public exchange: string
+
+  constructor (exchange: string, markets: any) {
     super({ directed: true })
+    this.exchange = exchange
 
     _.forEach(markets, (market: any): void => {
       if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {

@@ -14,11 +14,12 @@ exports.up = async function(knex) {
   await knex.schema.createTable('edges', function (table) {
     table.increments();
     table.integer('cycle_id').unsigned().notNull()
+    table.boolean('virtual').notNull()
     table.text('source', 8).notNull()
     table.text('target', 8).notNull()
     table.float('price').notNull()
+    table.float('taker_fee').notNull()
     table.float('volume').nullable()
-    table.float('taker_fee').nullable()
 
     table.foreign('cycle_id').references('opportunities.id')
     table.index('cycle_id')

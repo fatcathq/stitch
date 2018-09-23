@@ -1,7 +1,9 @@
 import { Currency } from '../types'
 import log from '../loggers/winston'
+import db from '../connectors/db'
 
 export class Edge {
+  public virtual: boolean = false
   public source: Currency
   public target: Currency
   public minVolume: number // Volume of OrderBook Top
@@ -48,11 +50,24 @@ export class Edge {
 
     return api.createLimitSellOrder(this.getMarket(), volume, price)
   }
+
+  public async save(cycleId: number) {
+    return db('edges').insert({
+      cycleId: cycleId,
+      virtual: this.virtual,
+      source: this.source,
+      target: this.target,
+      price: this.price,
+      taker_fee: this.fee,
+      volume: this.volume !== Infinity ? this.volume : null
+    })
+  }
 }
 
 export class VirtualEdge extends Edge {
   constructor (source: string, target: string, fee: number, minVolume: number) {
     super(source, target, fee, minVolume)
+    this.virtual = true
   }
 
   public setPrice(price: number) {
