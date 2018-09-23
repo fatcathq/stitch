@@ -1,5 +1,5 @@
-import { Currency } from './types'
-import log from './loggers/winston'
+import { Currency } from '../types'
+import log from '../loggers/winston'
 
 export class Edge {
   public source: Currency

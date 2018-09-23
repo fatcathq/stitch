@@ -1,6 +1,6 @@
 import { Triangle, Opportunity } from './types'
 import * as _ from 'lodash'
-import { Edge as EdgeDriver } from './edge'
+import { Edge as EdgeDriver } from './models/edge'
 
 function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)

@@ -1,4 +1,4 @@
-import { Edge as EdgeDriver } from './edge'
+import { Edge as EdgeDriver } from './models/edge'
 
 export type Market = {
   [key: string]: any

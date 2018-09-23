@@ -2,7 +2,7 @@ import { Market, Triangle, Edge } from './types'
 const Graph = require('graphlib').Graph
 import log from './loggers/winston'
 import * as _ from 'lodash'
-import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
+import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './models/edge'
 import { marketIsValid, triangleExists } from './helpers'
 
 export default class extends Graph {
