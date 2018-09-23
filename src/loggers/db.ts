@@ -1,7 +1,7 @@
 import Opportunity from '../models/opportunity'
 
-export function logOpportunities (opportunities: Opportunity[]): void {
+export async function logOpportunities (opportunities: Opportunity[]): Promise<void> {
   for (const opportunity of opportunities) {
-    opportunity.save()
+    await opportunity.save()
   }
 }
