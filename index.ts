@@ -1,7 +1,7 @@
 const ccxt = require('ccxt')
 
 import * as _ from 'lodash'
-import Graph from './graph'
+import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import { calculateArbitrage } from './helpers'
 import config from  './config'
