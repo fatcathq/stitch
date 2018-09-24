@@ -1,7 +1,8 @@
 import Opportunity from '../models/opportunity'
+import { LoggerInterface } from './'
 
-export async function logOpportunities (opportunities: Opportunity[]): Promise<void> {
-  for (const opportunity of opportunities) {
-    await opportunity.save()
+export class DatabaseLogger implements LoggerInterface {
+  public createOpportunity(opportunity: Opportunity): void {
+    opportunity.save()
   }
 }

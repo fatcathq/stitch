@@ -2,8 +2,8 @@ const ccxt = require('ccxt')
 
 import ArbitrageFinder from './arbitrage-finder'
 import config from  './utils/config'
+import Logger from './loggers'
 import log from './loggers/winston'
-import Opportunity from './models/opportunity'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
@@ -14,16 +14,9 @@ async function main (): Promise<void> {
 
   await finder.init()
 
-  finder.on('OpportunityFound', (p: Opportunity) => {
-    log.info(`New cycle ${p.id}`)
-  })
-
-  finder.on('OpportunityUpdated', (p: Opportunity) => {
-    log.info(`Updated cycle ${p.id}`)
-  })
-
+  new Logger(finder)
+  
   await finder.run()
-
 }
 
 main().catch(

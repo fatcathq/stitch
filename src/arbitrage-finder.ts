@@ -1,13 +1,10 @@
 import * as _ from 'lodash'
 import Graph from './models/graph'
 import Opportunity from './models/opportunity'
-import { calculateArbitrage } from './utils/helpers'
 import config from  './utils/config'
 import EventEmitter from 'events'
-import { opportunityExists } from './utils/helpers'
-
-import logOpportunities from './loggers'
 import log from './loggers/winston'
+import { calculateArbitrage, opportunityExists } from './utils/helpers'
 
 export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
@@ -45,8 +42,9 @@ export default class ArbitrageFinder extends EventEmitter {
       }
 
       if (this.currentOpportunities.get(opportunity.id)!.arbitrage !== opportunity.arbitrage) {
-        log.info(`Opportunity: ${opportunity.id} changed arbitrage from ${this.currentOpportunities.get(opportunity.id)!.arbitrage} to ${opportunity.arbitrage}`)
-        this.emit('OpportunityUpdated', opportunity)
+        const prevArbitrage = this.currentOpportunities.get(opportunity.id)!.arbitrage
+
+        this.emit('OpportunityUpdated', opportunity, prevArbitrage)
       }
     })
 
@@ -56,16 +54,6 @@ export default class ArbitrageFinder extends EventEmitter {
         map.delete(id)
       }
     })
-  }
-
-  async logOpportunities(): Promise<void> {
-    let opportunityArr: Opportunity[] = []
-
-    this.currentOpportunities.forEach((p: Opportunity) => {
-      opportunityArr.push(p)
-    })
-
-    await logOpportunities(opportunityArr)
   }
 
   private async updatePrices() {

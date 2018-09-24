@@ -1,19 +1,67 @@
 import Opportunity from '../models/opportunity'
 import config from '../utils/config'
+import ArbitrageFinder from '../arbitrage-finder'
 
-//TODO: ;Rewrite logging architecture
-import { logOpportunities as slackLog } from './slack'
-import { logOpportunities as dbLog } from './db'
-import { logOpportunities as consoleLog } from './winston'
+import { SlackLogger } from './slack'
+import { DatabaseLogger } from './db'
+import log, { WinstonLogger } from './winston'
 
-export default async function logOpportunities(opportunities: Opportunity[]) {
-  if (config.log.db.enabled) {
-    dbLog(opportunities) 
+export default class {
+  private dbLogging: boolean = config.log.db.enabled
+  private slackLogging: boolean = config.log.slack.enabled
+  private loggers: Map<string, any> = new Map()
+
+  constructor (finder: ArbitrageFinder) {
+    this.registerLoggers()
+
+    this.registerListeners(finder)
   }
 
-  if (config.log.slack.enabled) {
-    await slackLog(opportunities) 
+  private createOpportunity(opportunity: Opportunity) {
+    this.loggers.forEach((logger, source: string) => {
+      if (typeof logger.createOpportunity === undefined) {
+        log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
+      }
+
+      logger.createOpportunity(opportunity) 
+    })
   }
 
-  consoleLog(opportunities) 
+  private updateOpportunity(opportunity: Opportunity, prevArb: number) {
+    this.loggers.forEach((logger, source: string) => {
+      if (typeof logger.updateOpportunity === undefined) {
+        log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
+      }
+
+      logger.createOpportunity(opportunity, prevArb) 
+    })
+  }
+
+  private registerListeners (finder: ArbitrageFinder): void {
+    finder.on('OpportunityFound', (opportunity: Opportunity) => {
+      this.createOpportunity(opportunity)
+    })
+
+    finder.on('OpportunityUpdated', (opportunity: Opportunity, prevArb: number) => {
+      this.updateOpportunity(opportunity, prevArb)
+    })
+  }
+
+  private registerLoggers() {
+    if (this.dbLogging) {
+      this.loggers.set('db', new DatabaseLogger())
+    }
+
+    if (this.slackLogging) {
+      this.loggers.set('slack', new SlackLogger())
+    }
+
+    this.loggers.set('winston', new WinstonLogger())
+  }
+}
+
+export interface LoggerInterface {
+  createOpportunity:  (opportunity: Opportunity) => void
+  updateOpportunity?: (opportunity: Opportunity, prevArb: number) => void
+  deleteOpportunity?: (opportunity: Opportunity) => void
 }

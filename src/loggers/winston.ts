@@ -1,45 +1,19 @@
-import { createLogger, format, transports } from 'winston'
-import * as fs from 'fs'
-import * as path from 'path'
+import client from '../connectors/winston'
 import Opportunity from '../models/opportunity'
-  
-const { combine, timestamp, prettyPrint, simple, colorize } = format
+import { LoggerInterface } from './'
 
-const logDir = 'logs'
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir)
-}
+export class WinstonLogger implements LoggerInterface {
+  public createOpportunity(opportunity: Opportunity) {
+    const [n1, n2, n3] = opportunity.triangle.map(e => e.source)
 
-const fileLogFormat = combine(
-  timestamp(),
-  prettyPrint()
-)
+    client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}]: *${n1}, ${n2}, ${n3}*. Profit: *${(opportunity.arbitrage - 1) * 100} %*`)
+  }
 
-const logger = createLogger({
-  transports: [
-    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/error.log'), level: 'error' }), 
-    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/warn.log'), level: 'warn' }), 
-    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/combined.log') })
-  ]
-})
+  public updateOpportunity(opportunity: Opportunity, prevArb: number): void {
+    const [n1, n2, n3] = opportunity.triangle.map(e => e.source)
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new transports.Console({
-    format: combine(
-      colorize(),
-      simple()
-    )   
-  })) 
-}
-
-export function logOpportunities (opportunities: Opportunity[]): void {
-  console.log(typeof opportunities)
-  for (const p of opportunities) {
-    const triangle = p.triangle
-    const [n1, n2, n3] = triangle.map(e => e.source)
-
-    logger.info(`Arbitrage on *${p.exchange}*. Triangle: *${n1}, ${n2}, ${n3}*. Profit: *${(p.arbitrage - 1) * 100} %*`)
+    client.info(`[OPPORTUNITY_UPDATE ${opportunity.exchange}]: *${n1}, ${n2}, ${n3}*. Changed arbitrage from ${prevArb} to ${opportunity.arbitrage}`)
   }
 }
 
-export default logger
+export default client
