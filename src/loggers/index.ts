@@ -19,21 +19,22 @@ export default class {
 
   private createOpportunity(opportunity: Opportunity) {
     this.loggers.forEach((logger, source: string) => {
-      if (typeof logger.createOpportunity === undefined) {
+      try {
+        logger.createOpportunity(opportunity)
+      } catch (e) {
         log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
       }
 
-      logger.createOpportunity(opportunity)
     })
   }
 
   private updateOpportunity(opportunity: Opportunity, prevArb: number) {
     this.loggers.forEach((logger, source: string) => {
-      if (typeof logger.updateOpportunity === undefined) {
-        log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
+      try {
+        logger.updateOpportunity(opportunity, prevArb)
+      } catch (e) {
+        log.warn(`Can't log updateOpportunity for logger ${source}. Function doesn't exist.`)
       }
-
-      logger.updateOpportunity(opportunity, prevArb)
     })
   }
 
