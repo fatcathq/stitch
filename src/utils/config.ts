@@ -6,7 +6,6 @@ type Config = {
   },
   threshold: number,
   // TODO: Get fee from API
-  fee: number,
   log: {
     slack: {
       webhook: string,
