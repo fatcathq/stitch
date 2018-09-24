@@ -42,9 +42,10 @@ export default class ArbitrageFinder extends EventEmitter {
         return
       }
 
-      if (this.currentOpportunities.get(opportunity.id)!.arbitrage !== opportunity.arbitrage) {
-        const prevArbitrage = this.currentOpportunities.get(opportunity.id)!.arbitrage
+      const prevArbitrage = this.currentOpportunities.get(opportunity.id)!.arbitrage
 
+      if (prevArbitrage !== opportunity.arbitrage) {
+        this.currentOpportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
         this.emit('OpportunityUpdated', opportunity, prevArbitrage)
       }
     })

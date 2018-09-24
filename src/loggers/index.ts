@@ -23,7 +23,7 @@ export default class {
         log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
       }
 
-      logger.createOpportunity(opportunity) 
+      logger.createOpportunity(opportunity)
     })
   }
 
@@ -33,7 +33,7 @@ export default class {
         log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
       }
 
-      logger.createOpportunity(opportunity, prevArb) 
+      logger.updateOpportunity(opportunity, prevArb)
     })
   }
 
