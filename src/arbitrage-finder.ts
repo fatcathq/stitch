@@ -63,6 +63,7 @@ export default class ArbitrageFinder extends EventEmitter {
       tickers = await this.api.fetchTickers()
     } catch (e) {
       log.error(`Could not fetch tickers. Problem: ${e.message}`)
+      return
     }
 
     this.graph.update(tickers)
