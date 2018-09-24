@@ -9,7 +9,7 @@ import config from  './utils/config'
 // TODO: Merge this loggers
 import { logOpportunities as slackLog } from './loggers/slack'
 import { logOpportunities as dbLog } from './loggers/db'
-import log from './loggers/winston'
+import log, { logOpportunities as consoleLog } from './loggers/winston'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
@@ -34,6 +34,7 @@ async function recursiveMain (api: any, graph: Graph): Promise<void> {
 
   await dbLog(opportunities)
   await slackLog(opportunities)
+  consoleLog(opportunities)
 
   if (config.repeat.enabled) {
     setTimeout(() => {

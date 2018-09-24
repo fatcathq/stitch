@@ -1,6 +1,5 @@
 import { Triangle } from '../types'
 import * as _ from 'lodash'
-import { Edge as EdgeDriver } from '../models/edge'
 import Opportunity from '../models/opportunity'
 
 function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
