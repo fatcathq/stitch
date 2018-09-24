@@ -24,7 +24,7 @@ export default class Opportunity {
       arbitrage: this.arbitrage
     }).returning('id')
 
-    return Promise.all(this.triangle.map((edge: EdgeDriver) => edge.save(res[0])))
+    return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
   }
 
   private generateIndex() {
