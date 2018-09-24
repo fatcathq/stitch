@@ -10,23 +10,24 @@ type Config = {
   log: {
     slack: {
       webhook: string,
-      should: true,
-      extended: true
+      extended: boolean,
+      enabled: boolean
     },
     db: {
       host: string,
       user: string,
       dassword: string,
-      database: string
+      database: string,
+      enabled: boolean
     }
   },
   repeat: {
-    should: boolean,
+    enabled: boolean,
     interval: number
   }
 }
 
 const CONFIG_FILE = '../../config/config.json'
-const config: Config =  require(CONFIG_FILE)
+const config: Config = require(CONFIG_FILE)
 
 export default config

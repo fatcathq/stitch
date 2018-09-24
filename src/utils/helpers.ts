@@ -24,8 +24,8 @@ export function marketIsValid (marketName: string): boolean {
 }
 
 //Calculate arbitrage by getting the product of the (after fee) edge weights  
-export function calculateArbitrage (triangle: Triangle, fee: number): number {
-  return triangle.map((e: EdgeDriver) => e.getWeight()).reduce((acc, v) => acc * (1 - fee) * v, 1)
+export function calculateArbitrage (triangle: Triangle): number {
+  return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
 }
 
 

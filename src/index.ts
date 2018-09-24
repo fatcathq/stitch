@@ -31,10 +31,11 @@ async function recursiveMain (api: any, graph: Graph): Promise<void> {
 
   graph.update(tickers)
   const opportunities = getOpportunities(graph)
+
   await dbLog(opportunities)
   await slackLog(opportunities)
 
-  if (config.repeat.should) {
+  if (config.repeat.enabled) {
     setTimeout(() => {
       recursiveMain(api, graph)
     }, config.repeat.interval)
@@ -47,7 +48,7 @@ function getOpportunities (graph: Graph): Opportunity[] {
   const triangles = graph.getTriangles()
 
   for (const triangle of triangles) {
-    const arbitrage = calculateArbitrage(triangle, config.fee)
+    const arbitrage = calculateArbitrage(triangle)
 
     if (arbitrage >= config.threshold) {
       opportunities.push(new Opportunity(graph.exchange, triangle, arbitrage))
