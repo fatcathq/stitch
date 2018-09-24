@@ -8,7 +8,7 @@ import { marketIsValid, triangleExists } from '../utils/helpers'
 export default class extends Graph {
   public exchange: string
 
-  constructor (exchange: string, markets: any) {
+  constructor (exchange: string = '', markets: any = []) {
     super({ directed: true })
     this.exchange = exchange
 

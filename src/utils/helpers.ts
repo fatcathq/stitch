@@ -2,7 +2,7 @@ import { Triangle } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
 
-function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
+export function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)
   const nodesB = triangleB.map(a => a.source)
 
@@ -18,11 +18,21 @@ export function triangleExists (candidate: Triangle, triangles: Triangle[]): boo
   return false
 }
 
+export function opportunityExists (candidate: Opportunity, opportunities: Opportunity[]): boolean {
+  for (const p of opportunities) {
+    if (triangleEquals(p.triangle, candidate.triangle)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function marketIsValid (marketName: string): boolean {
   return /([A-Z]{2,5}\/[A-Z]{2,5})/.test(marketName)
 }
 
-//Calculate arbitrage by getting the product of the (after fee) edge weights  
+//Calculate arbitrage by getting the product of the (after fee) edge weights
 export function calculateArbitrage (triangle: Triangle): number {
   return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
 }

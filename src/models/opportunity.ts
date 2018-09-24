@@ -2,6 +2,7 @@ import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 
 export default class Opportunity {
+  public id: string
   public exchange: string
   public arbitrage: number
   public triangle: EdgeDriver[]
@@ -12,6 +13,8 @@ export default class Opportunity {
     this.exchange = exchange  
     this.triangle = triangle
     this.arbitrage = arbitrage
+
+    this.id = this.generateIndex()
   }
 
   public async save() {
@@ -22,5 +25,11 @@ export default class Opportunity {
     }).returning('id')
 
     return Promise.all(this.triangle.map((edge: EdgeDriver) => edge.save(res[0])))
+  }
+
+  private generateIndex() {
+    const nodes = this.triangle.map(a => a.source)
+
+    return nodes.sort().join('')
   }
 }

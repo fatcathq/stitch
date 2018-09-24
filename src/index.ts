@@ -1,62 +1,31 @@
 const ccxt = require('ccxt')
 
-import * as _ from 'lodash'
-import Graph from './models/graph'
-import Opportunity from './models/opportunity'
-import { calculateArbitrage } from './utils/helpers'
+import ArbitrageFinder from './arbitrage-finder'
 import config from  './utils/config'
-
-// TODO: Merge this loggers
-import { logOpportunities as slackLog } from './loggers/slack'
-import { logOpportunities as dbLog } from './loggers/db'
-import log, { logOpportunities as consoleLog } from './loggers/winston'
+import log from './loggers/winston'
+import Opportunity from './models/opportunity'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
   const api = new (ccxt as any)[config.exchange]()
-  const graph = new Graph(config.exchange, await api.loadMarkets())
 
-  recursiveMain(api, graph)
+  const finder = new ArbitrageFinder(api)
+
+  await finder.init()
+
+  finder.on('OpportunityFound', (p: Opportunity) => {
+    log.info(`New cycle ${p.id}`)
+  })
+
+  finder.on('OpportunityUpdated', (p: Opportunity) => {
+    log.info(`Updated cycle ${p.id}`)
+  })
+
+  await finder.run()
+
 }
 
-async function recursiveMain (api: any, graph: Graph): Promise<void> {
-  let tickers: any
-
-  try {
-    tickers = await api.fetchTickers()
-  } catch (e) {
-    log.error(`Could not fetch tickers. Problem: ${e.message}`)
-  }
-
-  graph.update(tickers)
-  const opportunities = getOpportunities(graph)
-
-  await dbLog(opportunities)
-  await slackLog(opportunities)
-  consoleLog(opportunities)
-
-  if (config.repeat.enabled) {
-    setTimeout(() => {
-      recursiveMain(api, graph)
-    }, config.repeat.interval)
-  }
-}
-
-function getOpportunities (graph: Graph): Opportunity[] {
-  let opportunities: Opportunity[] = []
-
-  const triangles = graph.getTriangles()
-
-  for (const triangle of triangles) {
-    const arbitrage = calculateArbitrage(triangle)
-
-    if (arbitrage >= config.threshold) {
-      opportunities.push(new Opportunity(graph.exchange, triangle, arbitrage))
-    }
-  }
-
-  return opportunities
-}
-
-main().catch((e) => log.error(`[TOP_LEVEL_ERROR]: ${e.message}`))
+main().catch(
+  (e) => log.error(`[TOP_LEVEL_ERROR]: ${e.message}`)
+)

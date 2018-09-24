@@ -1,12 +1,16 @@
 import { Balance, Triangle } from './types'
 import { Edge as EdgeDriver } from './models/edge'
 import { numberIsDeformed } from './utils/helpers'
+import ArbitrageFinder from './arbitrage-finder'
 
 export default class Engine {
   public balance: Balance
+  public finder: ArbitrageFinder
   public api: any
+  public isWorking: boolean = false
 
-  constructor(api: any) {
+  constructor(api: any, finder: ArbitrageFinder) {
+    this.finder = finder
     this.balance = new Map<string, number>()
     this.api = api
   }

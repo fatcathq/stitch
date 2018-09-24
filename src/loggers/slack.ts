@@ -2,11 +2,7 @@ import Opportunity from '../models/opportunity'
 import config from '../utils/config'
 import { send as sendToSlack } from '../connectors/slack'
 
-export function logOpportunities (opportunities: Opportunity[], mock = !config.log.slack.enabled): void {
-  if (mock) {
-    return
-  }
-
+export function logOpportunities (opportunities: Opportunity[]): void {
   for (const p of opportunities) {
     const triangle = p.triangle
     const [n1, n2, n3] = triangle.map(e => e.source)
