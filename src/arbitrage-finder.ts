@@ -4,7 +4,8 @@ import Opportunity from './models/opportunity'
 import config from  './utils/config'
 import EventEmitter from 'events'
 import log from './loggers/winston'
-import { calculateArbitrage, opportunityExists } from './utils/helpers'
+import { Triangle } from './types'
+import { opportunityExists } from './utils/helpers'
 
 export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
@@ -75,7 +76,7 @@ export default class ArbitrageFinder extends EventEmitter {
     const triangles = this.graph.getTriangles()
 
     for (const triangle of triangles) {
-      const arbitrage = calculateArbitrage(triangle)
+      const arbitrage = this.calculateArbitrage(triangle)
 
       if (arbitrage >= config.threshold) {
         opportunities.push(new Opportunity(this.exchange, triangle, arbitrage))
@@ -83,5 +84,9 @@ export default class ArbitrageFinder extends EventEmitter {
     }
 
     return opportunities
+  }
+
+  private calculateArbitrage (triangle: Triangle): number {
+    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
   }
 }
