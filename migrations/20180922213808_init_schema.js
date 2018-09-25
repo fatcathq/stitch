@@ -7,7 +7,7 @@ exports.up = async function(knex) {
     table.specificType('cycle', 'text[]').notNull();
     table.float('min_trade_volume').nullable();
     table.float('max_trade_volume').nullable();
-
+    table.timestamp('closed_at').defaultTo(knex.fn.now());
     table.timestamp('created_at').defaultTo(knex.fn.now());
   })
 

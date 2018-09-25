@@ -2,7 +2,7 @@ import Opportunity from '../models/opportunity'
 import { LoggerInterface } from './'
 
 export class DatabaseLogger implements LoggerInterface {
-  public createOpportunity(opportunity: Opportunity): void {
+  public closeOpportunity(opportunity: Opportunity): void {
     opportunity.save()
   }
 }

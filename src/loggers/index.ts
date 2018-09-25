@@ -4,7 +4,7 @@ import ArbitrageFinder from '../arbitrage-finder'
 
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
-import log, { WinstonLogger } from './winston'
+import { WinstonLogger } from './winston'
 
 export default class {
   private dbLogging: boolean = config.log.db.enabled
@@ -18,22 +18,25 @@ export default class {
   }
 
   private createOpportunity(opportunity: Opportunity) {
-    this.loggers.forEach((logger, source: string) => {
-      try {
+    this.loggers.forEach((logger) => {
+      if (typeof logger.createOpportunity == 'function') {
         logger.createOpportunity(opportunity)
-      } catch (e) {
-        log.warn(`Can't log createOpportunity for logger ${source}. Function doesn't exist.`)
       }
-
     })
   }
 
   private updateOpportunity(opportunity: Opportunity, prevArb: number) {
-    this.loggers.forEach((logger, source: string) => {
-      try {
+    this.loggers.forEach((logger) => {
+      if (typeof logger.updateOpportunity == 'function') {
         logger.updateOpportunity(opportunity, prevArb)
-      } catch (e) {
-        log.warn(`Can't log updateOpportunity for logger ${source}. Function doesn't exist.`)
+      }
+    })
+  }
+
+  private closeOpportunity(opportunity: Opportunity, duration: number) {
+    this.loggers.forEach((logger) => {
+      if (typeof logger.closeOpportunity == 'function') {
+        logger.closeOpportunity(opportunity, duration)
       }
     })
   }
@@ -45,6 +48,10 @@ export default class {
 
     finder.on('OpportunityUpdated', (opportunity: Opportunity, prevArb: number) => {
       this.updateOpportunity(opportunity, prevArb)
+    })
+
+    finder.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {
+      this.closeOpportunity(opportunity, duration)
     })
   }
 
@@ -62,7 +69,7 @@ export default class {
 }
 
 export interface LoggerInterface {
-  createOpportunity:  (opportunity: Opportunity) => void
+  createOpportunity?:  (opportunity: Opportunity) => void
   updateOpportunity?: (opportunity: Opportunity, prevArb: number) => void
-  deleteOpportunity?: (opportunity: Opportunity) => void
+  closeOpportunity?: (opportunity: Opportunity, duration: number) => void
 }

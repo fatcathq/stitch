@@ -11,6 +11,7 @@ export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
   private currentOpportunities: Map<string, Opportunity>
+  private running = true
   private api: any
 
   constructor (api: any) {
@@ -25,7 +26,7 @@ export default class ArbitrageFinder extends EventEmitter {
   }
 
   async run(): Promise<void> {
-    while (true) {
+    while (this.running) {
       await this.updatePrices()
 
       const opportunities = this.extractOpportunitiesFromGraph()
@@ -44,15 +45,17 @@ export default class ArbitrageFinder extends EventEmitter {
 
       const prevArbitrage = this.currentOpportunities.get(opportunity.id)!.arbitrage
 
+      // Find opportunities which already exist but arbitrage percentage changed and update them
       if (prevArbitrage !== opportunity.arbitrage) {
         this.currentOpportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
         this.emit('OpportunityUpdated', opportunity, prevArbitrage)
       }
     })
 
+    // Delete non existing opportunities
     this.currentOpportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
       if (!opportunityExists(opportunity, opportunities)) {
-        this.emit('OpportunityDeleted', opportunity)
+        this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
         map.delete(id)
       }
     })

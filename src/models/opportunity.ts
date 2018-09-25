@@ -3,11 +3,12 @@ import db from '../connectors/db'
 
 export default class Opportunity {
   public id: string
-  public exchange: string
   public arbitrage: number
-  public triangle: EdgeDriver[]
+  public exchange: string
   public minVolume?: number
   public maxVolume?: number
+  public triangle: EdgeDriver[]
+  private created: Date = new Date()
 
   constructor(exchange: string, triangle: EdgeDriver[], arbitrage: number) {
     this.exchange = exchange  
@@ -19,12 +20,18 @@ export default class Opportunity {
 
   public async save() {
     const res = await db('opportunities').insert({
+      created_at: this.created,
+      closed_at: new Date(),
       exchange: this.exchange,
       cycle: this.triangle.map((edge: EdgeDriver) => edge.source),
-      arbitrage: this.arbitrage
+      arbitrage: this.arbitrage,
     }).returning('id')
 
     return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
+  }
+
+  public getDuration() {
+    return (new Date()).getTime() - this.created.getTime()
   }
 
   private generateIndex() {
