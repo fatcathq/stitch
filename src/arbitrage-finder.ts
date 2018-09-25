@@ -54,6 +54,7 @@ export default class ArbitrageFinder extends EventEmitter {
 
     // Delete non existing opportunities
     this.currentOpportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
+
       if (!opportunityExists(opportunity, opportunities)) {
         this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
         map.delete(id)

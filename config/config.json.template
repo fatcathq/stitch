@@ -19,9 +19,6 @@
       "database": "stitch",
       "enabled": false
     }
-  },
-  "repeat": {
-    "enabled": false,
-    "interval": 0
   }
+  "fetchVolumes": true
 }

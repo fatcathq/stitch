@@ -20,10 +20,7 @@ type Config = {
       enabled: boolean
     }
   },
-  repeat: {
-    enabled: boolean,
-    interval: number
-  }
+  fetchVolumes: boolean
 }
 
 const CONFIG_FILE = '../../config/config.json'
