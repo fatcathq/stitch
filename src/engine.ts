@@ -36,19 +36,6 @@ export default class Engine {
     }
   }
 
-  async getMinVolume (triangle: Triangle): Promise<number> {
-    let volumeIt = triangle[0].volume
-
-    await Promise.all(triangle.map((edge: EdgeDriver) => edge.updateFromAPI(this.api)))
-
-    for (const edge of triangle) {
-      if (volumeIt > edge.volume) {
-        volumeIt = edge.volume
-      }
-
-      volumeIt *= edge.getPrice()
-    }
-
-    return volumeIt
-  }
 }
+
+await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(this.api)))
