@@ -8,7 +8,7 @@ import log from './loggers/winston'
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
-  const api = new (ccxt as any)[config.exchange]()
+  const api = new (ccxt as any)[config.exchange]({enableRateLimiting: true})
 
   const finder = new ArbitrageFinder(api)
 
