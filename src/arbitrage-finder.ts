@@ -41,7 +41,7 @@ export default class ArbitrageFinder extends EventEmitter {
         this.emit('OpportunityFound', opportunity)
 
         if (config.fetchVolumes) {
-          opportunity.updateVolumes(this.api)
+          opportunity.updateFromAPI(this.api)
         }
 
         this.currentOpportunities.set(opportunity.id, opportunity) 

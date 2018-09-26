@@ -34,7 +34,7 @@ export default class Opportunity {
     return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
   }
 
-  async updateVolumes(api: any) {
+  async updateFromAPI(api: any) {
     try {
       await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
     } catch (e) {
