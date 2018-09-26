@@ -36,13 +36,9 @@ export default class ArbitrageFinder extends EventEmitter {
   }
 
   async updateOpportunities(opportunities: Opportunity[]) {
-    opportunities.forEach((opportunity: Opportunity) => {
+    opportunities.forEach(async (opportunity: Opportunity) => {
       if (!this.currentOpportunities.has(opportunity.id)) {
         this.emit('OpportunityFound', opportunity)
-
-        if (config.fetchVolumes) {
-          opportunity.updateFromAPI(this.api)
-        }
 
         this.currentOpportunities.set(opportunity.id, opportunity) 
         return
@@ -53,6 +49,10 @@ export default class ArbitrageFinder extends EventEmitter {
       // Find opportunities which already exist but arbitrage percentage changed and update them
       if (prevArbitrage !== opportunity.arbitrage) {
         this.currentOpportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
+
+        if (config.fetchVolumes) {
+          await opportunity.updateFromAPI(this.api)
+        }
 
         this.emit('OpportunityUpdated', opportunity, prevArbitrage)
       }

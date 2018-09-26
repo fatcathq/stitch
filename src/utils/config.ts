@@ -20,7 +20,8 @@ type Config = {
       enabled: boolean
     }
   },
-  fetchVolumes: boolean
+  fetchVolumes: boolean,
+  cacheTime: number
 }
 
 const CONFIG_FILE = '../../config/config.json'

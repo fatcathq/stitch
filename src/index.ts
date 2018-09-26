@@ -1,14 +1,13 @@
-const ccxt = require('ccxt')
-
 import ArbitrageFinder from './arbitrage-finder'
 import config from  './utils/config'
 import Logger from './loggers'
 import log from './loggers/winston'
+import Api from './connectors/api'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
-  const api = new (ccxt as any)[config.exchange]({enableRateLimit: true })
+  const api = new Api()
 
   const finder = new ArbitrageFinder(api)
 
