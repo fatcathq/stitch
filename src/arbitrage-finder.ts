@@ -36,6 +36,14 @@ export default class ArbitrageFinder extends EventEmitter {
   }
 
   async updateOpportunities(opportunities: Opportunity[]) {
+    // Delete non existing opportunities
+    this.currentOpportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
+      if (!opportunityExists(opportunity, opportunities)) {
+        this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
+        map.delete(id)
+      }
+    })
+
     opportunities.forEach(async (opportunity: Opportunity) => {
       if (!this.currentOpportunities.has(opportunity.id)) {
         this.emit('OpportunityFound', opportunity)
@@ -55,14 +63,6 @@ export default class ArbitrageFinder extends EventEmitter {
         }
 
         this.emit('OpportunityUpdated', opportunity, prevArbitrage)
-      }
-    })
-
-    // Delete non existing opportunities
-    this.currentOpportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
-      if (!opportunityExists(opportunity, opportunities)) {
-        this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
-        map.delete(id)
       }
     })
   }
