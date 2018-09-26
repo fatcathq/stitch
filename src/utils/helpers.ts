@@ -1,6 +1,6 @@
 import { Triangle } from '../types'
 import * as _ from 'lodash'
-import Opportunity from '../models/opportunity'
+import AbstractOpportunity from '../models/opportunity'
 
 export function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)
@@ -18,9 +18,9 @@ export function triangleExists (candidate: Triangle, triangles: Triangle[]): boo
   return false
 }
 
-export function opportunityExists (candidate: Opportunity, opportunities: Opportunity[]): boolean {
+export function opportunityExists (candidate: AbstractOpportunity, opportunities: AbstractOpportunity[]): boolean {
   for (const p of opportunities) {
-    if (triangleEquals(p.triangle, candidate.triangle)) {
+    if (_.isEqual(p.nodes, candidate.nodes)) {
       return true
     }
   }
@@ -36,7 +36,7 @@ export function numberIsDeformed(balance: number): boolean {
   return /e/.test(String(balance))
 }
 
-export function sortByProfitability(opportunities: Opportunity[]): Opportunity[] {
+export function sortByProfitability(opportunities: AbstractOpportunity[]): AbstractOpportunity[] {
   return opportunities.sort((a, b) => b.arbitrage - a.arbitrage)
 }
 

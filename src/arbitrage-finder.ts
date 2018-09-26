@@ -1,10 +1,10 @@
 import * as _ from 'lodash'
 import Graph from './models/graph'
-import Opportunity from './models/opportunity'
+import AbstractOpportunity from './models/opportunity'
 import config from  './utils/config'
 import EventEmitter from 'events'
 import log from './loggers/winston'
-import { Triangle, Opportunities } from './types'
+import { Opportunities } from './types'
 import { opportunityExists } from './utils/helpers'
 
 export default class ArbitrageFinder extends EventEmitter {
@@ -38,7 +38,7 @@ export default class ArbitrageFinder extends EventEmitter {
     }
   }
 
-  async updateOpportunities(newOpportunities: Opportunity[]) {
+  async updateOpportunities(newOpportunities: AbstractOpportunity[]) {
     // Delete non existing opportunities
     for (const id in this.opportunities) {
       const existingOpportunity = this.opportunities[id]
@@ -86,23 +86,19 @@ export default class ArbitrageFinder extends EventEmitter {
     this.graph.update(tickers)
   }
 
-  private extractOpportunitiesFromGraph (): Opportunity[] {
-    let opportunities: Opportunity[] = []
+  private extractOpportunitiesFromGraph (): AbstractOpportunity[] {
+    let opportunities: AbstractOpportunity[] = []
 
     const triangles = this.graph.getTriangles()
 
     for (const triangle of triangles) {
-      const arbitrage = this.calculateArbitrage(triangle)
+      const opportunity = new AbstractOpportunity(this.exchange, triangle)
 
-      if (arbitrage >= config.threshold) {
-        opportunities.push(new Opportunity(this.exchange, triangle, arbitrage))
+      if (opportunity.arbitrage > config.threshold) {
+        opportunities.push(opportunity)
       }
     }
 
     return opportunities
-  }
-
-  private calculateArbitrage (triangle: Triangle): number {
-    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
   }
 }
