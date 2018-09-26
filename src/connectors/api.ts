@@ -10,7 +10,7 @@ export default class instance extends ccxt[config.exchange] {
   public toBeUpdated: Set<string> = new Set()
 
   constructor() {
-    super({ enableRateLimit: true })
+    super({ apiKey: config.api.key, secret: config.api.secret, enableRateLimit: true })
   }
 
   public async fetchOrderBook (market: string, limit: number) {
