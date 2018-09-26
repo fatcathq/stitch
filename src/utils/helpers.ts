@@ -43,3 +43,7 @@ export function sortByProfitability(opportunities: Opportunity[]): Opportunity[]
 export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve,ms))
 }
+
+export function getRotated(array: any[], times: number = 1) {
+  return array.slice(array.length - times).concat(array.slice(0, array.length - times))
+}
