@@ -1,12 +1,11 @@
-import { Balance } from './types'
-import Opportunity from './models/opportunity'
+import { Balance, Opportunities } from './types'
 import { numberIsDeformed } from './utils/helpers'
 import ArbitrageFinder from './arbitrage-finder'
 
 export default class Engine {
   public balance: Balance
   public finder: ArbitrageFinder
-  public opportunities: Map<string, Opportunity> = new Map()
+  public opportunities: Opportunities = {}
   public api: any
   public isWorking: boolean = false
   public locked = false
@@ -19,7 +18,7 @@ export default class Engine {
     this.mock = mock
   }
 
-  public linkOpportunities (opportunities: Map<string, Opportunity>) {
+  public linkOpportunities (opportunities: Opportunities) {
     this.opportunities = opportunities
   }
 

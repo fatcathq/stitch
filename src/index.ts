@@ -9,7 +9,7 @@ async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
   const api = new Api()
-  const opportunities = new Map()
+  const opportunities = {}
 
   const finder = new ArbitrageFinder(api)
   finder.linkOpportunities(opportunities)
@@ -19,7 +19,8 @@ async function main (): Promise<void> {
   engine.linkOpportunities(opportunities)
   await engine.init()
 
-  new Logger(finder)
+  const logger = new Logger(finder)
+  logger.linkOpportunities(opportunities)
 
   await finder.run()
 }

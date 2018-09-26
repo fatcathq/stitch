@@ -1,12 +1,14 @@
 import Opportunity from '../models/opportunity'
 import config from '../utils/config'
 import ArbitrageFinder from '../arbitrage-finder'
+import { Opportunities } from '../types'
 
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
 import { WinstonLogger } from './winston'
 
 export default class {
+  private opportunities: Opportunities = {}
   private dbLogging: boolean = config.log.db.enabled
   private slackLogging: boolean = config.log.slack.enabled
   private loggers: Map<string, any> = new Map()
@@ -23,6 +25,10 @@ export default class {
         logger.createOpportunity(opportunity)
       }
     })
+  }
+
+  public linkOpportunities (opportunities: Opportunities) {
+    this.opportunities = opportunities
   }
 
   private updateOpportunity(opportunity: Opportunity, prevArb: number) {
@@ -42,12 +48,12 @@ export default class {
   }
 
   private registerListeners (finder: ArbitrageFinder): void {
-    finder.on('OpportunityFound', (opportunity: Opportunity) => {
-      this.createOpportunity(opportunity)
+    finder.on('OpportunityAdded', (id: string) => {
+      this.createOpportunity(this.opportunities[id])
     })
 
-    finder.on('OpportunityUpdated', (opportunity: Opportunity, prevArb: number) => {
-      this.updateOpportunity(opportunity, prevArb)
+    finder.on('OpportunityUpdated', (id: string, prevArb: number) => {
+      this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
     finder.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {

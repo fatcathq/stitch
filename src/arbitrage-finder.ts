@@ -4,13 +4,13 @@ import Opportunity from './models/opportunity'
 import config from  './utils/config'
 import EventEmitter from 'events'
 import log from './loggers/winston'
-import { Triangle } from './types'
+import { Triangle, Opportunities } from './types'
 import { opportunityExists } from './utils/helpers'
 
 export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
-  private opportunities: Map<string, Opportunity> = new Map()
+  private opportunities: Opportunities = {}
   private running = true
   private api: any
 
@@ -20,7 +20,7 @@ export default class ArbitrageFinder extends EventEmitter {
     this.api = api
   }
 
-  public linkOpportunities(opportunities: Map<string, Opportunity>) {
+  public linkOpportunities(opportunities: Opportunities) {
     this.opportunities = opportunities
   }
 
@@ -38,36 +38,39 @@ export default class ArbitrageFinder extends EventEmitter {
     }
   }
 
-  async updateOpportunities(opportunities: Opportunity[]) {
+  async updateOpportunities(newOpportunities: Opportunity[]) {
     // Delete non existing opportunities
-    this.opportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
-      if (!opportunityExists(opportunity, opportunities)) {
-        this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
-        map.delete(id)
+    for (const id in this.opportunities) {
+      const existingOpportunity = this.opportunities[id]
+
+      if (!opportunityExists(existingOpportunity, newOpportunities)) {
+        this.emit('OpportunityClosed', existingOpportunity, existingOpportunity.getDuration())
+
+        delete this.opportunities[id]
       }
-    })
+    }
 
-    opportunities.forEach(async (opportunity: Opportunity) => {
-      if (!this.opportunities.has(opportunity.id)) {
-        this.emit('OpportunityFound', opportunity)
+    for (const newOpportunity of newOpportunities) {
+      if (this.opportunities[newOpportunity.id] === undefined) {
+        this.opportunities[newOpportunity.id] = newOpportunity
 
-        this.opportunities.set(opportunity.id, opportunity)
+        this.emit('OpportunityAdded', newOpportunity.id)
         return
       }
 
-      const prevArbitrage = this.opportunities.get(opportunity.id)!.arbitrage
+      const prevArbitrage = this.opportunities[newOpportunity.id].arbitrage
 
       // Find opportunities which already exist but arbitrage percentage changed and update them
-      if (prevArbitrage !== opportunity.arbitrage) {
-        this.opportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
+      if (prevArbitrage !== newOpportunity.arbitrage) {
+        this.opportunities[newOpportunity.id].arbitrage = newOpportunity.arbitrage
 
         if (config.fetchVolumes) {
-          await opportunity.updateFromAPI(this.api)
+          await newOpportunity.updateFromAPI(this.api)
         }
 
-        this.emit('OpportunityUpdated', opportunity, prevArbitrage)
+        this.emit('OpportunityUpdated', newOpportunity.id, prevArbitrage)
       }
-    })
+    }
   }
 
   private async updatePrices() {
