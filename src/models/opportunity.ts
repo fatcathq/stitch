@@ -1,6 +1,8 @@
 import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
+import { getRotated } from '../utils/helpers'
+import { Node } from '../types'
 
 export default class Opportunity {
   public id: string
@@ -11,10 +13,13 @@ export default class Opportunity {
   public triangle: EdgeDriver[]
   private created: Date = new Date()
 
-  constructor(exchange: string, triangle: EdgeDriver[], arbitrage: number) {
+  constructor(exchange: string, triangle: EdgeDriver[], arbitrage: number = 0) {
     this.exchange = exchange  
     this.triangle = triangle
     this.arbitrage = arbitrage
+    if (arbitrage == 0) {
+      this.updateArbitrage()
+    }
 
     this.id = this.generateIndex()
     this.minVolume = this.getMinVolume()
@@ -44,11 +49,15 @@ export default class Opportunity {
     this.maxVolume = this.getMaxVolume()
   }
 
+  public getNodes() {
+    return this.triangle.map(a => a.source)
+  }
+
   public getDuration() {
     return (new Date()).getTime() - this.created.getTime()
   }
 
-  public getMaxVolume (): number {
+  private getMaxVolume (): number {
     let volumeIt = this.triangle[0].volume
 
     for (const edge of this.triangle) {
@@ -60,6 +69,10 @@ export default class Opportunity {
     }
 
     return volumeIt
+  }
+
+  private updateMaxVolume (): void {
+    this.maxVolume = this.getMaxVolume()
   }
 
   private getMinVolume(): number {
@@ -77,8 +90,24 @@ export default class Opportunity {
   }
 
   private generateIndex() {
-    const nodes = this.triangle.map(a => a.source)
+    return this.getNodes().sort().join('')
+  }
 
-    return nodes.sort().join('')
+  private updateArbitrage (): void {
+    this.arbitrage = this.triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
+  }
+
+  public getByStartingCurrency(currency: Node) : Opportunity {
+    const nodes = this.getNodes()
+
+    console.log(currency, nodes)
+    if (!nodes.includes(currency)) {
+      throw new Error(`Opportunity doesn't include currency: ${currency}`)
+    }
+
+    const opportunity: Opportunity = new Opportunity(this.exchange, getRotated(this.triangle, nodes.indexOf(currency)))
+    opportunity.updateMaxVolume()
+
+    return opportunity
   }
 }
