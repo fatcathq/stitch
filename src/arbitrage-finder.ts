@@ -10,15 +10,18 @@ import { opportunityExists } from './utils/helpers'
 export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
-  private currentOpportunities: Map<string, Opportunity>
+  private opportunities: Map<string, Opportunity> = new Map()
   private running = true
   private api: any
 
   constructor (api: any) {
     super()
-    
-    this.currentOpportunities = new Map()
+
     this.api = api
+  }
+
+  public linkOpportunities(opportunities: Map<string, Opportunity>) {
+    this.opportunities = opportunities
   }
 
   async init (): Promise<void> {
@@ -37,7 +40,7 @@ export default class ArbitrageFinder extends EventEmitter {
 
   async updateOpportunities(opportunities: Opportunity[]) {
     // Delete non existing opportunities
-    this.currentOpportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
+    this.opportunities.forEach((opportunity: Opportunity, id: string, map: Map<string, Opportunity>) => {
       if (!opportunityExists(opportunity, opportunities)) {
         this.emit('OpportunityClosed', opportunity, opportunity.getDuration())
         map.delete(id)
@@ -45,18 +48,18 @@ export default class ArbitrageFinder extends EventEmitter {
     })
 
     opportunities.forEach(async (opportunity: Opportunity) => {
-      if (!this.currentOpportunities.has(opportunity.id)) {
+      if (!this.opportunities.has(opportunity.id)) {
         this.emit('OpportunityFound', opportunity)
 
-        this.currentOpportunities.set(opportunity.id, opportunity) 
+        this.opportunities.set(opportunity.id, opportunity)
         return
       }
 
-      const prevArbitrage = this.currentOpportunities.get(opportunity.id)!.arbitrage
+      const prevArbitrage = this.opportunities.get(opportunity.id)!.arbitrage
 
       // Find opportunities which already exist but arbitrage percentage changed and update them
       if (prevArbitrage !== opportunity.arbitrage) {
-        this.currentOpportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
+        this.opportunities.get(opportunity.id)!.arbitrage = opportunity.arbitrage
 
         if (config.fetchVolumes) {
           await opportunity.updateFromAPI(this.api)

@@ -1,19 +1,46 @@
-import { Balance, Triangle } from './types'
-import { Edge as EdgeDriver } from './models/edge'
+import { Balance } from './types'
+import Opportunity from './models/opportunity'
 import { numberIsDeformed } from './utils/helpers'
 import ArbitrageFinder from './arbitrage-finder'
 
 export default class Engine {
   public balance: Balance
   public finder: ArbitrageFinder
+  public opportunities: Map<string, Opportunity> = new Map()
   public api: any
   public isWorking: boolean = false
+  public locked = false
+  public mock: boolean
 
-  constructor(api: any, finder: ArbitrageFinder) {
+  constructor(api: any, finder: ArbitrageFinder, mock = true) {
     this.finder = finder
     this.balance = new Map<string, number>()
     this.api = api
+    this.mock = mock
   }
+
+  public linkOpportunities (opportunities: Map<string, Opportunity>) {
+    this.opportunities = opportunities
+  }
+
+  public async init() {
+    await this.updateBalance()
+    //this.registerListeners()
+  }
+
+  /*
+  public async registerListeners() {
+    this.finder.on('OpportunityVolumesUpdated', (opportunity) => {
+      opportunity.getByStartingCurrency(opportunity.getNodes()[1]).log()
+    })
+  }
+
+  async tradeOnTriangle(triangle: Triangle) {
+    for (const edge of triangle) {
+      edge.traverse(triangle, startVolume)
+    }
+  }
+  */
 
   // TODO: Change typescript to es2016 to support entries()
   async updateBalance () {
@@ -28,14 +55,11 @@ export default class Engine {
     }
   }
 
-  async tradeOnTriangle(triangle: Triangle) {
-    const startVolume = await this.getMinVolume(triangle)
-
-    for (const edge of triangle) {
-      edge.traverse(triangle, startVolume)
-    }
+  public lock () {
+    this.locked = true
   }
 
+  public unlock () {
+    this.locked = false
+  }
 }
-
-await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(this.api)))
