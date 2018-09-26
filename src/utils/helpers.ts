@@ -39,3 +39,7 @@ export function numberIsDeformed(balance: number): boolean {
 export function sortByProfitability(opportunities: Opportunity[]): Opportunity[] {
   return opportunities.sort((a, b) => b.arbitrage - a.arbitrage)
 }
+
+export async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve,ms))
+}
