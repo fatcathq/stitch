@@ -4,13 +4,13 @@ import OpportunitySet from './models/opportunity'
 import config from  './utils/config'
 import EventEmitter from 'events'
 import log from './loggers/winston'
-import { Opportunities } from './types'
+import { OpportunitySets } from './types'
 import { opportunityExists } from './utils/helpers'
 
 export default class ArbitrageFinder extends EventEmitter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
-  private opportunities: Opportunities = {}
+  private opportunitySets: OpportunitySets = {}
   private running = true
   private api: any
 
@@ -20,8 +20,8 @@ export default class ArbitrageFinder extends EventEmitter {
     this.api = api
   }
 
-  public linkOpportunities(opportunities: Opportunities) {
-    this.opportunities = opportunities
+  public linkOpportunities(opportunities: OpportunitySets) {
+    this.opportunitySets = opportunities
   }
 
   async init (): Promise<void> {
@@ -40,33 +40,33 @@ export default class ArbitrageFinder extends EventEmitter {
 
   async updateOpportunities(newOpportunities: OpportunitySet[]) {
     // Delete non existing opportunities
-    for (const id in this.opportunities) {
-      const existingOpportunity = this.opportunities[id]
+    for (const id in this.opportunitySets) {
+      const existingOpportunity = this.opportunitySets[id]
 
       if (!opportunityExists(existingOpportunity, newOpportunities)) {
         this.emit('OpportunityClosed', existingOpportunity, existingOpportunity.getDuration())
 
-        delete this.opportunities[id]
+        delete this.opportunitySets[id]
       }
     }
 
     for (const newOpportunity of newOpportunities) {
-      if (this.opportunities[newOpportunity.id] === undefined) {
-        this.opportunities[newOpportunity.id] = newOpportunity
+      if (this.opportunitySets[newOpportunity.id] === undefined) {
+        this.opportunitySets[newOpportunity.id] = newOpportunity
 
         if (config.fetchVolumes) {
-          await this.opportunities[newOpportunity.id].updateFromAPI(this.api)
+          await this.opportunitySets[newOpportunity.id].updateFromAPI(this.api)
         }
 
         this.emit('OpportunityAdded', newOpportunity.id)
         return
       }
 
-      const prevArbitrage = this.opportunities[newOpportunity.id].arbitrage
+      const prevArbitrage = this.opportunitySets[newOpportunity.id].arbitrage
 
       // Find opportunities which already exist but arbitrage percentage changed and update them
       if (prevArbitrage !== newOpportunity.arbitrage) {
-        this.opportunities[newOpportunity.id].arbitrage = newOpportunity.arbitrage
+        this.opportunitySets[newOpportunity.id].arbitrage = newOpportunity.arbitrage
 
         this.emit('OpportunityUpdated', newOpportunity.id, prevArbitrage)
       }

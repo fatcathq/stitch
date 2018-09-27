@@ -52,6 +52,14 @@ export default class OpportunitySet {
       this.mutatedOpportunities.push(new Opportunity(this.exchange, getRotated(triangle, i)))
     }
   }
+
+  public getOpportunityByStartingCurrency (currency: Node): Opportunity | undefined {
+    for (const opportunity of this.mutatedOpportunities) {
+      if (opportunity.getInitialCurrency() == currency) {
+        return opportunity
+      }
+    }
+  }
 }
 
 export class Opportunity {
@@ -59,7 +67,7 @@ export class Opportunity {
   public arbitrage: number
   public created: Date
   public minVolume: number = 0
-  public maxVolume?: number = Infinity
+  public maxVolume: number = Infinity
   public triangle: EdgeDriver[] = []
 
   constructor(exchange: string, triangle: EdgeDriver[], created = new Date()) {
@@ -70,7 +78,7 @@ export class Opportunity {
     this.minVolume = this.getMinVolume()
   }
 
-  public getNodes(triangle: Triangle) {
+  public getNodes(triangle: Triangle = this.triangle) {
     return triangle.map(a => a.source)
   }
 
@@ -128,5 +136,9 @@ export class Opportunity {
     }
 
     return volumeIt
+  }
+
+  public getInitialCurrency (): Node {
+    return this.triangle[0].source
   }
 }

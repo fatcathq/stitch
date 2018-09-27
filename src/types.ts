@@ -11,6 +11,6 @@ export type Edge = { v: Node, w: Node }
 export type Triangle = EdgeDriver[]
 export type Balance = Map<string, number>
 
-export type Opportunities = {
+export type OpportunitySets = {
   [key: string]: OpportunitySet
 }

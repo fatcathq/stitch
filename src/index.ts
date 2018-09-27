@@ -1,6 +1,7 @@
 import ArbitrageFinder from './arbitrage-finder'
 import config from  './utils/config'
 import Logger from './loggers'
+import { OpportunitySets } from './types'
 import log from './loggers/winston'
 import Api from './connectors/api'
 import Engine from './engine'
@@ -11,7 +12,7 @@ async function main (): Promise<void> {
   const api = new Api()
  
   //Find a proper name
-  const opportunities = {}
+  const opportunities = {} as OpportunitySets
 
   const finder = new ArbitrageFinder(api)
   finder.linkOpportunities(opportunities)
