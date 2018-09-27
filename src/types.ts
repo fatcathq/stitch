@@ -1,5 +1,5 @@
 import { Edge as EdgeDriver } from './models/edge'
-import AbstractOpportunity from './models/opportunity'
+import OpportunitySet from './models/opportunity'
 
 export type Market = {
   [key: string]: any
@@ -12,5 +12,5 @@ export type Triangle = EdgeDriver[]
 export type Balance = Map<string, number>
 
 export type Opportunities = {
-  [key: string]: AbstractOpportunity
+  [key: string]: OpportunitySet
 }

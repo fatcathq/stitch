@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import Graph from './models/graph'
-import AbstractOpportunity from './models/opportunity'
+import OpportunitySet from './models/opportunity'
 import config from  './utils/config'
 import EventEmitter from 'events'
 import log from './loggers/winston'
@@ -38,7 +38,7 @@ export default class ArbitrageFinder extends EventEmitter {
     }
   }
 
-  async updateOpportunities(newOpportunities: AbstractOpportunity[]) {
+  async updateOpportunities(newOpportunities: OpportunitySet[]) {
     // Delete non existing opportunities
     for (const id in this.opportunities) {
       const existingOpportunity = this.opportunities[id]
@@ -86,13 +86,13 @@ export default class ArbitrageFinder extends EventEmitter {
     this.graph.update(tickers)
   }
 
-  private extractOpportunitiesFromGraph (): AbstractOpportunity[] {
-    let opportunities: AbstractOpportunity[] = []
+  private extractOpportunitiesFromGraph (): OpportunitySet[] {
+    let opportunities: OpportunitySet[] = []
 
     const triangles = this.graph.getTriangles()
 
     for (const triangle of triangles) {
-      const opportunity = new AbstractOpportunity(this.exchange, triangle)
+      const opportunity = new OpportunitySet(this.exchange, triangle)
 
       if (opportunity.arbitrage > config.threshold) {
         opportunities.push(opportunity)

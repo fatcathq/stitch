@@ -1,4 +1,4 @@
-import AbstractOpportunity from '../models/opportunity'
+import OpportunitySet from '../models/opportunity'
 import config from '../utils/config'
 import ArbitrageFinder from '../arbitrage-finder'
 import { Opportunities } from '../types'
@@ -19,7 +19,7 @@ export default class {
     this.registerListeners(finder)
   }
 
-  private createOpportunity(opportunity: AbstractOpportunity) {
+  private createOpportunity(opportunity: OpportunitySet) {
     this.loggers.forEach((logger) => {
       if (typeof logger.createOpportunity == 'function') {
         logger.createOpportunity(opportunity)
@@ -31,7 +31,7 @@ export default class {
     this.opportunities = opportunities
   }
 
-  private updateOpportunity(opportunity: AbstractOpportunity, prevArb: number) {
+  private updateOpportunity(opportunity: OpportunitySet, prevArb: number) {
     this.loggers.forEach((logger) => {
       if (typeof logger.updateOpportunity == 'function') {
         logger.updateOpportunity(opportunity, prevArb)
@@ -39,7 +39,7 @@ export default class {
     })
   }
 
-  private closeOpportunity(opportunity: AbstractOpportunity, duration: number) {
+  private closeOpportunity(opportunity: OpportunitySet, duration: number) {
     this.loggers.forEach((logger) => {
       if (typeof logger.closeOpportunity == 'function') {
         logger.closeOpportunity(opportunity, duration)
@@ -56,7 +56,7 @@ export default class {
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
-    finder.on('OpportunityClosed', (opportunity: AbstractOpportunity, duration: number) => {
+    finder.on('OpportunityClosed', (opportunity: OpportunitySet, duration: number) => {
       this.closeOpportunity(opportunity, duration)
     })
   }
@@ -75,7 +75,7 @@ export default class {
 }
 
 export interface LoggerInterface {
-  createOpportunity?:  (opportunity: AbstractOpportunity) => void
-  updateOpportunity?: (opportunity: AbstractOpportunity, prevArb: number) => void
-  closeOpportunity?: (opportunity: AbstractOpportunity, duration: number) => void
+  createOpportunity?:  (opportunity: OpportunitySet) => void
+  updateOpportunity?: (opportunity: OpportunitySet, prevArb: number) => void
+  closeOpportunity?: (opportunity: OpportunitySet, duration: number) => void
 }

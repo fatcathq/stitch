@@ -1,5 +1,5 @@
 import client from '../connectors/slack'
-import AbstractOpportunity from '../models/opportunity'
+import OpportunitySet from '../models/opportunity'
 import { LoggerInterface } from './'
 
 export class SlackLogger implements LoggerInterface {
@@ -17,7 +17,7 @@ export class SlackLogger implements LoggerInterface {
   }
   */
 
-  public closeOpportunity(opportunity: AbstractOpportunity, duration: number): void {
+  public closeOpportunity(opportunity: OpportunitySet, duration: number): void {
     const [n1, n2, n3] = opportunity.getOne().triangle.map(e => e.source)
 
     client(`Opportunity closed on *${opportunity.exchange}*: Triangle *${n1}, ${n2}, ${n3}*. Duration of existence: ${duration} ms. Profit: ${(opportunity.arbitrage - 1) * 100} %`)

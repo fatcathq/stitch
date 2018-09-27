@@ -5,7 +5,7 @@ import { getRotated } from '../utils/helpers'
 import { Node, Triangle } from '../types'
 
 // TODO: Rename it to OpportunityWrapper or OpportunityContainer?
-export default class AbstractOpportunity {
+export default class OpportunitySet {
   public id: string
   public arbitrage: number
   public exchange: string

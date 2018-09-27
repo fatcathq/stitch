@@ -1,8 +1,8 @@
-import AbstractOpportunity from '../models/opportunity'
+import OpportunitySet from '../models/opportunity'
 import { LoggerInterface } from './'
 
 export class DatabaseLogger implements LoggerInterface {
-  public closeOpportunity(opportunity: AbstractOpportunity): void {
+  public closeOpportunity(opportunity: OpportunitySet): void {
     try {
       opportunity.getOne().save()
     } catch (e) {
