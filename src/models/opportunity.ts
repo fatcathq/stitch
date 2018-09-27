@@ -22,7 +22,7 @@ export default class AbstractOpportunity {
     this.id = this.generateIndex(triangle)
   }
 
-  public getOne() {
+  public getOne(): Opportunity {
     return this.mutatedOpportunities[0]
   }
 
@@ -41,7 +41,7 @@ export default class AbstractOpportunity {
   async updateFromAPI(api: any) {
     try {
       // No worries, caching will do it's job
-      this.mutatedOpportunities.forEach((opportunity: Opportunity) => opportunity.updateFromAPI(api))
+      await Promise.all(this.mutatedOpportunities.map((opportunity: Opportunity) => opportunity.updateFromAPI(api)))
     } catch (e) {
       log.warn(`Could not update volumes. ${e.message}`)
     }
@@ -92,14 +92,14 @@ export class Opportunity {
     return this.triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
   }
 
-  async updateFromAPI(api: any) {
+  async updateFromAPI(api: any): Promise<void> {
     try {
       await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
+
+      this.maxVolume = this.getMaxVolume()
     } catch (e) {
       log.warn(`Could not update volumes. ${e.message}`)
     }
-
-    this.maxVolume = this.getMaxVolume()
   }
 
   public getMaxVolume (): number {
