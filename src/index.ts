@@ -9,6 +9,8 @@ async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
 
   const api = new Api()
+ 
+  //Find a proper name
   const opportunities = {}
 
   const finder = new ArbitrageFinder(api)
