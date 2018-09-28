@@ -1,20 +1,18 @@
 import { Balance, OpportunitySets } from './types'
 import OpportunitySet, { Opportunity } from './models/opportunity'
 import { numberIsDeformed } from './utils/helpers'
-import ArbitrageFinder from './arbitrage-finder'
 import log from './loggers/winston'
+import Notifier from './utils/notifier'
 
 export default class Engine {
   public balance: Balance
-  public finder: ArbitrageFinder
   public opportunitySets: OpportunitySets = {}
   public api: any
   public isWorking: boolean = false
   public locked = false
   public mock: boolean
 
-  constructor(api: any, finder: ArbitrageFinder, mock = true) {
-    this.finder = finder
+  constructor(api: any, mock = true) {
     this.balance = new Map<string, number>()
     this.api = api
     this.mock = mock
@@ -30,7 +28,7 @@ export default class Engine {
   }
 
   public async registerListeners() {
-    this.finder.on('OpportunityAdded', (id: number) => {
+    Notifier.on('OpportunityAdded', (id: number) => {
       this.handleOpportunityOpened(id)
     })
   }

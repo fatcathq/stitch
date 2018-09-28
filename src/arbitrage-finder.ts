@@ -2,12 +2,12 @@ import * as _ from 'lodash'
 import Graph from './models/graph'
 import OpportunitySet from './models/opportunity'
 import config from  './utils/config'
-import EventEmitter from 'events'
+import Notifier from './utils/notifier'
 import log from './loggers/winston'
 import { OpportunitySets } from './types'
 import { opportunityExists } from './utils/helpers'
 
-export default class ArbitrageFinder extends EventEmitter {
+export default class ArbitrageFinder {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
   private opportunitySets: OpportunitySets = {}
@@ -15,8 +15,6 @@ export default class ArbitrageFinder extends EventEmitter {
   private api: any
 
   constructor (api: any) {
-    super()
-
     this.api = api
   }
 
@@ -44,7 +42,7 @@ export default class ArbitrageFinder extends EventEmitter {
       const existingOpportunity = this.opportunitySets[id]
 
       if (!opportunityExists(existingOpportunity, newOpportunities)) {
-        this.emit('OpportunityClosed', existingOpportunity, existingOpportunity.getDuration())
+        Notifier.emit('OpportunityClosed', existingOpportunity, existingOpportunity.getDuration())
 
         delete this.opportunitySets[id]
       }
@@ -58,7 +56,7 @@ export default class ArbitrageFinder extends EventEmitter {
           await this.opportunitySets[newOpportunity.id].updateFromAPI(this.api)
         }
 
-        this.emit('OpportunityAdded', newOpportunity.id)
+        Notifier.emit('OpportunityAdded', newOpportunity.id)
         return
       }
 
@@ -68,7 +66,7 @@ export default class ArbitrageFinder extends EventEmitter {
       if (prevArbitrage !== newOpportunity.arbitrage) {
         this.opportunitySets[newOpportunity.id].arbitrage = newOpportunity.arbitrage
 
-        this.emit('OpportunityUpdated', newOpportunity.id, prevArbitrage)
+        Notifier.emit('OpportunityUpdated', newOpportunity.id, prevArbitrage)
       }
     }
   }

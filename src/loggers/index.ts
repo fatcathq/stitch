@@ -1,22 +1,21 @@
 import OpportunitySet from '../models/opportunity'
 import config from '../utils/config'
-import ArbitrageFinder from '../arbitrage-finder'
-import { Opportunities } from '../types'
+import { OpportunitySets } from '../types'
+import Notifier from '../utils/notifier'
 
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
 import { WinstonLogger } from './winston'
 
 export default class {
-  private opportunities: Opportunities = {}
+  private opportunities: OpportunitySets = {}
   private dbLogging: boolean = config.log.db.enabled
   private slackLogging: boolean = config.log.slack.enabled
   private loggers: Map<string, any> = new Map()
 
-  constructor (finder: ArbitrageFinder) {
+  constructor () {
     this.registerLoggers()
-
-    this.registerListeners(finder)
+    this.registerListeners()
   }
 
   private createOpportunity(opportunity: OpportunitySet) {
@@ -27,7 +26,7 @@ export default class {
     })
   }
 
-  public linkOpportunities (opportunities: Opportunities) {
+  public linkOpportunities (opportunities: OpportunitySets) {
     this.opportunities = opportunities
   }
 
@@ -47,16 +46,16 @@ export default class {
     })
   }
 
-  private registerListeners (finder: ArbitrageFinder): void {
-    finder.on('OpportunityAdded', (id: string) => {
+  private registerListeners (): void {
+    Notifier.on('OpportunityAdded', (id: string) => {
       this.createOpportunity(this.opportunities[id])
     })
 
-    finder.on('OpportunityUpdated', (id: string, prevArb: number) => {
+    Notifier.on('OpportunityUpdated', (id: string, prevArb: number) => {
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
-    finder.on('OpportunityClosed', (opportunity: OpportunitySet, duration: number) => {
+    Notifier.on('OpportunityClosed', (opportunity: OpportunitySet, duration: number) => {
       this.closeOpportunity(opportunity, duration)
     })
   }

@@ -18,11 +18,11 @@ async function main (): Promise<void> {
   finder.linkOpportunities(opportunities)
   await finder.init()
 
-  const engine = new Engine(api, finder)
+  const engine = new Engine(api)
   engine.linkOpportunities(opportunities)
   await engine.init()
 
-  const logger = new Logger(finder)
+  const logger = new Logger()
   logger.linkOpportunities(opportunities)
 
   await finder.run()
