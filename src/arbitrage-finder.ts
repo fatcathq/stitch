@@ -52,12 +52,12 @@ export default class ArbitrageFinder {
       if (this.opportunitySets[newOpportunity.id] === undefined) {
         this.opportunitySets[newOpportunity.id] = newOpportunity
 
-        if (config.fetchVolumes) {
-          await this.opportunitySets[newOpportunity.id].updateFromAPI(this.api)
-        }
-
         Notifier.emit('OpportunityAdded', newOpportunity.id)
         return
+      }
+
+      if (config.fetchVolumes) {
+        await this.opportunitySets[newOpportunity.id].updateFromAPI(this.api)
       }
 
       const prevArbitrage = this.opportunitySets[newOpportunity.id].arbitrage
