@@ -41,7 +41,7 @@ export default class extends Graph {
         this.edge(currency, asset).setPrice(market.ask)
       }
       catch (e) {
-        log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol)
+        log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol, e.message)
       }
     })
   }
