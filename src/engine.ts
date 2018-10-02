@@ -38,17 +38,16 @@ export default class Engine {
 
   // If engine is locked do not exploit the opportunity.
   private handleOpportunityOpened(id: number) {
-      if (this.opportunitySets[id] === undefined || this.locked) {
-        return
-      }
+    if (this.opportunitySets[id] === undefined || this.locked) {
+      return
+    }
 
-      const opportunity = this.getExploitable(this.opportunitySets[id])
+    const opportunity = this.getExploitable(this.opportunitySets[id])
 
-      if (opportunity !== undefined) {
-        //this.exploit(opportunity)
-        log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
-      }
-
+    if (opportunity !== undefined) {
+      //this.exploit(opportunity)
+      log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
+    }
   }
 
   // Find the first opportunity in which we have sufficient balance ready for trading
