@@ -39,6 +39,8 @@ export default class OpportunitySet {
   }
 
   async updateFromAPI(api: any) {
+    log.info(`Updating from API opportunity: ${[...this.nodes.values()]}`)
+
     try {
       // No worries, caching will do it's job
       await Promise.all(this.mutatedOpportunities.map((opportunity: Opportunity) => opportunity.updateFromAPI(api)))
