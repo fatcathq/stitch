@@ -49,6 +49,10 @@ export default class ArbitrageFinder {
     }
 
     for (const newOpportunity of newOpportunities) {
+      if (config.fetchVolumes) {
+        await newOpportunity.updateFromAPI(this.api)
+      }
+
       if (this.opportunitySets[newOpportunity.id] === undefined) {
         this.opportunitySets[newOpportunity.id] = newOpportunity
 
@@ -56,15 +60,11 @@ export default class ArbitrageFinder {
         return
       }
 
-      if (config.fetchVolumes) {
-        await this.opportunitySets[newOpportunity.id].updateFromAPI(this.api)
-      }
-
       const prevArbitrage = this.opportunitySets[newOpportunity.id].arbitrage
 
       // Find opportunities which already exist but arbitrage percentage changed and update them
       if (prevArbitrage !== newOpportunity.arbitrage) {
-        this.opportunitySets[newOpportunity.id].arbitrage = newOpportunity.arbitrage
+        this.opportunitySets[newOpportunity.id] = newOpportunity
 
         Notifier.emit('OpportunityUpdated', newOpportunity.id, prevArbitrage)
       }
