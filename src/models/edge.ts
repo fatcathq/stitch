@@ -1,4 +1,4 @@
-import { Currency, Volume, Price } from '../types'
+import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 
@@ -44,13 +44,51 @@ export class Edge {
     this.volume = volume
   }
 
-  public async traverse (api: any, volume: number, price: number = this.price, mock = true): Promise<any> {
-    if (mock) {
-      log.info(`I would proceed to an ask limit order on volume: ${volume} ${this.target} on price ${price} ${this.source}`)
+  /*
+   * Volume and Price for this function call are given in the same units as this.volume and this.price
+   */
+  public async traverse (args: OrderDetails): Promise<any> {
+    await this.placeOrder({
+      type: 'limit',
+      side: 'sell',
+      ...args
+    })
+  }
+
+  /*
+   * Volume and Price for this function call are given for the real market, not the virtual market
+   * (both for Edge and VirtualEdge)
+   */
+  public async placeAndFillOrder(args: OrderDetails): Promise<void> {
+    let status
+    log.info(`Placing order from ${this.source} to ${this.target}`)
+
+    if (args.mock) {
+      log.info(`Mocking the trade`)
+    }
+
+    let method = args.side === 'sell' ?
+      (args.type === 'limit' ? 'createLimitSellOrder' : 'createMarketSellOrder') :
+      (args.type === 'limit' ? 'createLimitBuyOrder' : 'createMarketBuyOrder')
+
+    log.debug('Method', method)
+
+    log.info(`Placing an ${args.side} ${args.type} order on volume: ${args.volume} ${this.target} on price ${args.price} ${this.source}`)
+
+    if (args.mock) {
       return
     }
 
-    return api.createLimitSellOrder(this.getMarket(), volume, price)
+    const { uuid } = await args.api[method](this.getMarket(), args.volume, args.price)
+    log.info(`Placed order with id: ${uuid}`)
+
+    log.info(`Waiting for order to be filled`)
+    do {
+      ({ status } = await args.api.fetchOrder(uuid))
+      log.debug(`Status ${status}`)
+    } while (status !== 'closed')
+
+    log.info(`Order was filled`)
   }
 
   public async save(cycleId: number) {
@@ -89,15 +127,17 @@ export class VirtualEdge extends Edge {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
-    this.volume =  volume * price
+    this.volume = volume * price
   }
 
-  public async traverse (api: any, volume: number, price: number = this.price, mock = true): Promise<any> {
-    if (mock) {
-      log.info(`I would proceed to a bid limit order on volume: ${volume} ${this.target} on price ${1 / price} ${this.source}`)
-      return
-    }
+  public async traverse (args: OrderDetails): Promise<void> {
+    args.price = 1 / args.price
+    args.volume = args.volume / args.price
 
-    await api.createLimitBidOrder(this.getMarket(), volume * price, 1 / price)
+    const uuid = this.placeOrder({
+      type: 'limit',
+      side: 'buy',
+      ...args
+    })
   }
 }
