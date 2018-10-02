@@ -98,6 +98,6 @@ export class VirtualEdge extends Edge {
       return
     }
 
-    await api.createLimitBidOrder(this.getMarket(), volume, 1 / price)
+    await api.createLimitBidOrder(this.getMarket(), volume * price, 1 / price)
   }
 }
