@@ -1,4 +1,4 @@
-import { Currency } from '../types'
+import { Currency, Volume, Price } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 
@@ -6,23 +6,25 @@ export class Edge {
   public virtual: boolean = false
   public source: Currency
   public target: Currency
-  public minVolume: number // Volume of OrderBook Top
-  public volume: number = Infinity // Volume of OrderBook Top
+  public minVolume: Volume // Volume of OrderBook Top
+  // Volume is source units (in both Edge and VirtualEdge)
+  public volume: Volume = Infinity // Volume of OrderBook Top
   public fee: number = 0
-  protected price: number = 0
+  // Price is target unit (in both Edge and VirtualEdge)
+  protected price: Price = 0
 
-  constructor (source: string, target: string, fee: number, minVolume: number) {
+  constructor (source: string, target: string, fee: number, minVolume: Volume) {
     this.source = source
     this.target = target
     this.fee = fee
     this.minVolume = minVolume
   }
 
-  public setPrice (price: number): void {
+  public setPrice (price: Price): void {
     this.price = price
   }
 
-  public getPrice(): number {
+  public getPrice(): Price {
     return this.price
   }
 

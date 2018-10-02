@@ -10,6 +10,8 @@ export type Currency = string
 export type Edge = { v: Node, w: Node }
 export type Triangle = EdgeDriver[]
 export type Balance = Map<string, number>
+export type Volume = number
+export type Price = number
 
 export type OpportunitySets = {
   [key: string]: OpportunitySet
