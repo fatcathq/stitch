@@ -48,7 +48,7 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<any> {
-    await this.placeOrder({
+    return await this.placeAndFillOrder({
       type: 'limit',
       side: 'sell',
       ...args
@@ -134,7 +134,7 @@ export class VirtualEdge extends Edge {
     args.price = 1 / args.price
     args.volume = args.volume / args.price
 
-    const uuid = this.placeOrder({
+    return await this.placeAndFillOrder({
       type: 'limit',
       side: 'buy',
       ...args
