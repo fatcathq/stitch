@@ -26,17 +26,17 @@ export default class Engine {
 
   public async init() {
     await this.updateBalance()
-    this.registerListeners()
+    await this.registerListeners()
   }
 
   public async registerListeners() {
-    Notifier.on('OpportunityAdded', (id: number) => {
-      this.handleOpportunityOpened(id)
+    Notifier.on('OpportunityAdded', async (id: number) => {
+      await this.handleOpportunityOpened(id)
     })
   }
 
   // If engine is locked do not exploit the opportunity.
-  private handleOpportunityOpened(id: number) {
+  private async handleOpportunityOpened(id: number) {
     if (this.opportunitySets[id] === undefined || this.locked) {
       return
     }
