@@ -10,6 +10,7 @@ export class Edge {
   // Volume is source units (in both Edge and VirtualEdge)
   public volume: Volume = Infinity // Volume of OrderBook Top
   public fee: number = 0
+  public stringified: string
   // Price is target unit (in both Edge and VirtualEdge)
   protected price: Price = 0
 
@@ -18,10 +19,12 @@ export class Edge {
     this.target = target
     this.fee = fee
     this.minVolume = minVolume
+    this.stringified = `${this.source} -> ${this.target}`
   }
 
   public setPrice (price: Price): void {
     this.price = price
+    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
   public getPrice(): Price {
@@ -51,6 +54,7 @@ export class Edge {
     return await this.placeAndFillOrder({
       type: 'limit',
       side: 'sell',
+      price: this.price,
       ...args
     })
   }
@@ -61,10 +65,10 @@ export class Edge {
    */
   public async placeAndFillOrder(args: OrderDetails): Promise<void> {
     let status
-    log.info(`Placing order from ${this.source} to ${this.target}`)
+    log.info(`[TRADING] Placing order ${this.source} -> ${this.target}`)
 
     if (args.mock) {
-      log.info(`Mocking the trade`)
+      log.info(`[TRADING] Mocking the trade`)
     }
 
     let method = args.side === 'sell' ?
@@ -73,22 +77,23 @@ export class Edge {
 
     log.debug('Method', method)
 
-    log.info(`Placing an ${args.side} ${args.type} order on volume: ${args.volume} ${this.target} on price ${args.price} ${this.source}`)
+    log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order with volume: ${args.volume} ${this.source} on price ${args.price} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${this.volume * this.price} ${this.target}`)
 
     if (args.mock) {
       return
     }
 
     const { uuid } = await args.api[method](this.getMarket(), args.volume, args.price)
-    log.info(`Placed order with id: ${uuid}`)
+    log.info(`[ACTIVE_TRADING] Placed order with id: ${uuid}`)
 
-    log.info(`Waiting for order to be filled`)
+    log.info(`[ACTIVE_TRADING] Waiting for order to be filled`)
     do {
       ({ status } = await args.api.fetchOrder(uuid))
       log.debug(`Status ${status}`)
     } while (status !== 'closed')
 
-    log.info(`Order was filled`)
+    log.info(`[ACTIVE_TRADING] Order was filled`)
   }
 
   public async save(cycleId: number) {
@@ -108,10 +113,12 @@ export class VirtualEdge extends Edge {
   constructor (source: string, target: string, fee: number, minVolume: number) {
     super(source, target, fee, minVolume)
     this.virtual = true
+    this.stringified = `${this.source} -> ${this.target}`
   }
 
   public setPrice(price: number) {
     this.price = 1 / price
+    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
   public getMarket(): string {
@@ -131,7 +138,7 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<void> {
-    args.price = 1 / args.price
+    args.price = 1 / this.price
     args.volume = args.volume / args.price
 
     return await this.placeAndFillOrder({

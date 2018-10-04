@@ -2,7 +2,7 @@ import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
-import { Node, Triangle } from '../types'
+import { Node, Triangle, OrderDetails } from '../types'
 
 // TODO: Rename it to OpportunityWrapper or OpportunityContainer?
 export default class OpportunitySet {
@@ -80,6 +80,36 @@ export class Opportunity {
     this.minVolume = this.getMinVolume()
   }
 
+  public async exploit(api: any, startingBalance: number) {
+    if (this.maxVolume === Infinity) {
+      log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
+    }
+
+    let volumeIt = startingBalance
+
+    log.info(`Arbitrage: ${this.arbitrage}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${(this.arbitrage - 1) * this.triangle[0].volume} ${this.getReferenceUnit()}`)
+
+    for (const edge of this.triangle) {
+      log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
+      const details = {
+        volume: volumeIt,
+        api: api,
+        mock: true
+      } as OrderDetails
+
+      await edge.traverse(details)
+
+      log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
+
+      volumeIt *= edge.getPrice()
+    }
+  }
+
+  public getReferenceUnit() {
+    return this.triangle[0].source
+  }
+
   public getNodes(triangle: Triangle = this.triangle) {
     return triangle.map(a => a.source)
   }
@@ -107,6 +137,7 @@ export class Opportunity {
       await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
 
       this.maxVolume = this.getMaxVolume()
+      this.generateArbitrage()
     } catch (e) {
       log.warn(`Could not update volumes. ${e.message}`)
     }

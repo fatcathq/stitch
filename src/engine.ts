@@ -44,8 +44,11 @@ export default class Engine {
     const opportunity = this.getExploitable(this.opportunitySets[id])
 
     if (opportunity !== undefined) {
-      //this.exploit(opportunity)
       log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
+
+      await opportunity.exploit(this.api, this.balance[opportunity.getReferenceUnit()])
+
+      log.info(`[EXPLOIT] Finished`)
     }
   }
 
@@ -67,7 +70,8 @@ export default class Engine {
   private sufficientBalance(opportunity: Opportunity, balance: number): boolean {
     log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance}`)
 
-    return opportunity.minVolume * MIN_VOLUME_SAFETY_THRESHOLD < balance
+    return opportunity.minVolume < opportunity.maxVolume
+        && opportunity.minVolume * MIN_VOLUME_SAFETY_THRESHOLD < balance
         && opportunity.maxVolume * MAX_VOLUME_SAFETY_THRESHOLD > balance
   }
 

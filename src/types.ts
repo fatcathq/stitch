@@ -10,15 +10,18 @@ export type Node = string
 export type Currency = string
 export type Edge = { v: Node, w: Node }
 export type Triangle = EdgeDriver[]
-export type Balance = Map<string, number>
+export type Balance = {
+  [key: string]: Volume
+}
+
 export type Volume = number
 export type Price = number
 export type OrderDetails = {
   side?: 'buy' | 'sell'
   type?: 'market' | 'limit'
-  volume: Volume,
-  price: Price
+  price?: Price
   mock?: boolean
+  volume: Volume,
   api: Api,
 }
 
