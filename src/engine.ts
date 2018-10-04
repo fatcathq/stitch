@@ -8,7 +8,7 @@ const MAX_VOLUME_SAFETY_THRESHOLD = 0.9
 const MIN_VOLUME_SAFETY_THRESHOLD = 1 / 0.9
 
 export default class Engine {
-  public balance: Balance
+  public balance: Balance = {}
   public opportunitySets: OpportunitySets = {}
   public api: any
   public isWorking: boolean = false
@@ -16,7 +16,6 @@ export default class Engine {
   public mock: boolean
 
   constructor(api: any, mock = true) {
-    this.balance = new Map<string, number>()
     this.api = api
     this.mock = mock
   }
@@ -52,10 +51,10 @@ export default class Engine {
 
   // Find the first opportunity in which we have sufficient balance ready for trading
   private getExploitable(abstractOp: OpportunitySet) : Opportunity | undefined {
-      for (const [currency, balance] of this.balance.entries()) {
+      for (const currency in this.balance) {
         const opportunity = abstractOp.getOpportunityByStartingCurrency(currency)
 
-        if (opportunity !== undefined && this.sufficientBalance(opportunity, balance)) {
+        if (opportunity !== undefined && this.sufficientBalance(opportunity, this.balance[currency])) {
             return opportunity
           }
       }
@@ -91,14 +90,14 @@ export default class Engine {
       return
     }
 
-    this.balance.clear()
+    this.balance = {}
 
     for (const currency of Object.keys(balance)) {
       if (numberIsDeformed(balance[currency]) || balance[currency] === 0) {
         continue
       }
 
-      this.balance.set(currency, balance[currency])
+      this.balance[currency] =  balance[currency]
     }
 
     log.info(`Updating balance. Balance now is:`)
