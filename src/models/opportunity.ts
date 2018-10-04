@@ -87,8 +87,8 @@ export class Opportunity {
 
     let volumeIt = startingBalance
 
-    log.info(`Arbitrage: ${this.arbitrage}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${(this.arbitrage - 1) * this.triangle[0].volume} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${(this.arbitrage - 1) * startingBalance} ${this.getReferenceUnit()}`)
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
@@ -102,7 +102,7 @@ export class Opportunity {
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
-      volumeIt *= edge.getPrice()
+      volumeIt *= (1 - edge.fee) * edge.getPrice()
     }
   }
 

@@ -78,7 +78,7 @@ export class Edge {
     log.debug('Method', method)
 
     log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order with volume: ${args.volume} ${this.source} on price ${args.price} ${this.target}`)
-    log.info(`[ACTIVE_TRADING] Expecting to get ${this.volume * this.price} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
 
     if (args.mock) {
       return
