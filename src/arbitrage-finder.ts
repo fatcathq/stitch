@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import Graph from './models/graph'
-import OpportunitySet from './models/opportunity'
+import OpportunitySet, { Opportunity as ExploitableOpportunity } from './models/opportunity'
 import config from  './utils/config'
 import Notifier from './utils/notifier'
 import log from './loggers/winston'
@@ -12,6 +12,12 @@ export default class ArbitrageFinder {
   private graph: Graph = new Graph()
   private opportunitySets: OpportunitySets = {}
   private running = true
+  /*
+   * Peace mode: Finder updates from tickers, creates, updates and emits opportunities
+   * War mode: Finder updates from orderBooks only the given opportunities
+   */
+  private mode: 'peace' | 'war' = 'peace'
+  private watchOpportunity: ExploitableOpportunity | null = null
   private api: any
 
   constructor (api: any) {
@@ -24,15 +30,38 @@ export default class ArbitrageFinder {
 
   async init (): Promise<void> {
     this.graph = new Graph(this.exchange, await this.api.loadMarkets())
+
+    await this.registerListeners()
+  }
+
+  private async registerListeners () {
+    Notifier.on('War', async (opportunity) => {
+      log.info(`[ARBITRAGE_FINDER] War mode. Finding prices and volumes only for opportunity: ${opportunity.getNodes()}`)
+      this.mode = 'war'
+      this.watchOpportunity = opportunity
+    })
+
+    Notifier.on('Peace', async () => {
+      log.info('[ARBITRAGE_FINDER] Peace mode again. Finding opportunities from tickers.')
+      this.mode = 'peace'
+      this.watchOpportunity = null
+    })
   }
 
   async run(): Promise<void> {
     while (this.running) {
-      await this.updatePrices()
+      if (this.mode === 'peace') {
+        await this.updatePrices()
 
-      const opportunities = this.extractOpportunitiesFromGraph()
+        const opportunities = this.extractOpportunitiesFromGraph()
 
-      this.updateOpportunities(opportunities)
+        this.updateOpportunities(opportunities)
+      }
+      else if (this.mode === 'war') {
+        this.watchOpportunity
+        // Null check is not required here
+        // this.watchOpportunity!.updateFromAPI(this.api)
+      }
     }
   }
 

@@ -44,11 +44,14 @@ export default class Engine {
     const opportunity = this.getExploitable(this.opportunitySets[id])
 
     if (opportunity !== undefined) {
+      Notifier.emit('War', opportunity)
+
       log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
 
       await opportunity.exploit(this.api, this.balance[opportunity.getReferenceUnit()])
 
       log.info(`[EXPLOIT] Finished`)
+      Notifier.emit('Peace')
     }
   }
 
