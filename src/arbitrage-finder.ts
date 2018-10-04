@@ -47,7 +47,6 @@ export default class ArbitrageFinder {
         delete this.opportunitySets[id]
       }
     }
-
     for (const newOpportunity of newOpportunities) {
       if (config.fetchVolumes) {
         await newOpportunity.updateFromAPI(this.api)
