@@ -75,7 +75,7 @@ export class Edge {
       (args.type === 'limit' ? 'createLimitSellOrder' : 'createMarketSellOrder') :
       (args.type === 'limit' ? 'createLimitBuyOrder' : 'createMarketBuyOrder')
 
-    log.debug('Method', method)
+    log.info(`Method: ${method}`)
 
     log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order with volume: ${args.volume} ${this.source} on price ${args.price} ${this.target}`)
     log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
@@ -84,12 +84,34 @@ export class Edge {
       return
     }
 
-    const { uuid } = await args.api[method](this.getMarket(), args.volume, args.price)
-    log.info(`[ACTIVE_TRADING] Placed order with id: ${uuid}`)
+    let id: null | number = null
+
+    try {
+      log.info(`Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
+
+      const res = await args.api[method](this.getMarket(), args.volume, args.price)
+
+      console.log(res)
+
+      id = res.id
+    }
+    catch (e) {
+      console.log(e)
+      return
+    }
+
+    if (id === null) {
+      log.info(`Invalid id: ${id}`)
+      return
+    }
+
+    log.info(`[ACTIVE_TRADING] Placed order with id: ${id}`)
 
     log.info(`[ACTIVE_TRADING] Waiting for order to be filled`)
     do {
-      ({ status } = await args.api.fetchOrder(uuid))
+      const res = await args.api.fetchOrder(id)
+      console.log('FetchOrder res', res)
+      const status = res.status
       log.debug(`Status ${status}`)
     } while (status !== 'closed')
 
