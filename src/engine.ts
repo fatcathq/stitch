@@ -61,8 +61,8 @@ export default class Engine {
         const opportunity = abstractOp.getOpportunityByStartingCurrency(currency)
 
         if (opportunity !== undefined && this.sufficientBalance(opportunity, this.balance[currency]) && !opportunity.getNodes().includes('ADA')) {
-            return opportunity
-          }
+          return opportunity
+        }
       }
 
       return undefined
