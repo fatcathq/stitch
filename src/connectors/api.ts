@@ -5,7 +5,7 @@ import config from  '../utils/config'
 
 export default class instance extends ccxt[config.exchange] {
   constructor() {
-    super({ apiKey: config.api.key, secret: config.api.secret, enableRateLimit: true })
+    super({ apiKey: config.api.key, secret: config.api.secret })
   }
 
   private _fetchOrderBook = mem(super.fetchOrderBook, { maxAge: config.cacheTime})
