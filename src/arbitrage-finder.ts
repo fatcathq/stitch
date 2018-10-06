@@ -80,14 +80,15 @@ export default class ArbitrageFinder {
     }
     for (const newOpportunity of newOpportunities) {
       if (config.fetchVolumes) {
-        await newOpportunity.updateFromAPI(this.api)
+        if (this.mode !== 'war') {
+          await newOpportunity.updateFromAPI(this.api)
+        }
       }
 
       if (this.opportunitySets[newOpportunity.id] === undefined) {
         this.opportunitySets[newOpportunity.id] = newOpportunity
 
         Notifier.emit('OpportunityAdded', newOpportunity.id)
-        return
       }
 
       const prevArbitrage = this.opportunitySets[newOpportunity.id].arbitrage
