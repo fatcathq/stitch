@@ -5,7 +5,7 @@ import config from  './utils/config'
 import Notifier from './utils/notifier'
 import log from './loggers/winston'
 import { OpportunitySets } from './types'
-import { opportunityExists } from './utils/helpers'
+import { opportunityExists, sortByProfitability } from './utils/helpers'
 
 export default class ArbitrageFinder {
   public readonly exchange = config.exchange
@@ -66,6 +66,8 @@ export default class ArbitrageFinder {
   }
 
   async updateOpportunities(newOpportunities: OpportunitySet[]) {
+    sortByProfitability(newOpportunities)
+
     // Delete non existing opportunities
     for (const id in this.opportunitySets) {
       const existingOpportunity = this.opportunitySets[id]
