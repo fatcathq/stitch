@@ -51,24 +51,35 @@ export default class Engine {
       await opportunity.exploit(this.api, this.balance[opportunity.getReferenceUnit()])
 
       log.info(`[EXPLOIT] Finished`)
-      Notifier.emit('Peace')
+      // Notifier.emit('Peace')
     }
   }
 
   // Find the first opportunity in which we have sufficient balance ready for trading
-  private getExploitable(abstractOp: OpportunitySet) : Opportunity | undefined {
+  private async getExploitable(abstractOp: OpportunitySet) : Promise<Opportunity | undefined> {
       for (const currency in this.balance) {
         const opportunity = abstractOp.getOpportunityByStartingCurrency(currency)
 
-        if (opportunity !== undefined && this.sufficientBalance(opportunity, this.balance[currency]) && !opportunity.getNodes().includes('ADA')) {
-          return opportunity
+        if (opportunity === undefined || opportunity.getNodes().includes('ADA')) {
+          continue
         }
+
+        if (opportunity.maxVolume === Infinity) {
+          await opportunity.updateFromAPI(this.api)
+        }
+
+        if (!this.sufficientBalance(opportunity, this.balance[currency])) {
+          log.info(`[ENGINE] Insufficient balance to exploit opportunity ${opportunity.getNodes()}`)
+          continue
+        }
+
+        return opportunity
       }
 
       return undefined
   }
 
-  // TODO: Investigate whether it's too risky to trade in maxVolume 
+  // TODO: Investigate whether it's too risky to trade in maxVolume
   // TODO: Use partial balance
   private sufficientBalance(opportunity: Opportunity, balance: number): boolean {
     log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance}`)
