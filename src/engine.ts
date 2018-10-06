@@ -31,17 +31,17 @@ export default class Engine {
 
   public async registerListeners() {
     Notifier.on('OpportunityAdded', async (id: number) => {
-      await this.handleOpportunityOpened(id)
+      await this.handleOpportunityAdded(id)
     })
   }
 
   // If engine is locked do not exploit the opportunity.
-  private async handleOpportunityOpened(id: number) {
+  private async handleOpportunityAdded(id: number) {
     if (this.opportunitySets[id] === undefined || this.locked) {
       return
     }
 
-    const opportunity = this.getExploitable(this.opportunitySets[id])
+    const opportunity = await this.getExploitable(this.opportunitySets[id])
 
     if (opportunity !== undefined) {
       Notifier.emit('War', opportunity)
