@@ -51,6 +51,8 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<any> {
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
+
     return await this.placeAndFillOrder({
       type: 'limit',
       side: 'sell',
@@ -77,8 +79,7 @@ export class Edge {
 
     log.info(`Method: ${method}`)
 
-    log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order with volume: ${args.volume} ${this.source} on price ${args.price} ${this.target}`)
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}`)
 
     if (args.mock) {
       return
@@ -88,7 +89,6 @@ export class Edge {
 
     try {
       log.info(`Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
-
       const res = await args.api[method](this.getMarket(), args.volume, args.price)
 
       console.log(res)
@@ -160,8 +160,14 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<void> {
+    /*
+     * real price = 1 / virtual price
+     * real volume = virtual price * virtual volume = virtual volume / real price
+     */
     args.price = 1 / this.price
     args.volume = args.volume / args.price
+
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
 
     return await this.placeAndFillOrder({
       type: 'limit',
