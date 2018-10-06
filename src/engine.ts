@@ -4,8 +4,8 @@ import { numberIsDeformed } from './utils/helpers'
 import log from './loggers/winston'
 import Notifier from './utils/notifier'
 
-const MAX_VOLUME_SAFETY_THRESHOLD = 0.9
-const MIN_VOLUME_SAFETY_THRESHOLD = 1 / 0.9
+const MAX_VOLUME_SAFETY_MARGIN = 0.9
+const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
 
 export default class Engine {
   public balance: Balance = {}
@@ -74,8 +74,8 @@ export default class Engine {
     log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance}`)
 
     return opportunity.minVolume < opportunity.maxVolume
-        && opportunity.minVolume * MIN_VOLUME_SAFETY_THRESHOLD < balance
-        && opportunity.maxVolume * MAX_VOLUME_SAFETY_THRESHOLD > balance
+        && opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance
+        && opportunity.maxVolume * MAX_VOLUME_SAFETY_MARGIN > balance
   }
 
   /*
