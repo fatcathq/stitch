@@ -2,28 +2,39 @@ import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
-import { Node, Triangle, OrderDetails } from '../types'
+import { Currency, Triangle, OrderDetails, Volume } from '../types'
 
 // TODO: Rename it to OpportunityWrapper or OpportunityContainer?
-export default class OpportunitySet {
+export default class {
   public id: string
   public arbitrage: number
   public exchange: string
+  public maxVolume: Volume
+  public minVolume: Volume
   public created: Date = new Date()
-  public mutatedOpportunities: Opportunity[] = []
-  public nodes: Set<Node> = new Set()
+  public triangle: Triangle
+  public refUnit: string
+  public nodes: Set<Currency> = new Set()
 
-  constructor(exchange: string, triangle: EdgeDriver[]) {
+  constructor (exchange: string, triangle: EdgeDriver[]) {
     this.nodes = new Set(triangle.map(e => e.source))
-    this.exchange = exchange  
+    this.exchange = exchange
+    this.triangle = triangle
 
-    this.generateMutations(triangle)
+    this.refUnit = triangle[0].source
     this.arbitrage = this.calculateArbitrage(triangle)
     this.id = this.generateIndex(triangle)
+
+    this.minVolume = this.getMinVolume()
+    this.maxVolume = this.getMaxVolume()
   }
 
-  public getOne(): Opportunity {
-    return this.mutatedOpportunities[0]
+  public contains (unit: Currency) {
+    return this.nodes.has(unit)
+  }
+
+  public getReferenceUnit() {
+    return this.refUnit
   }
 
   public calculateArbitrage (triangle: Triangle): number {
@@ -38,46 +49,66 @@ export default class OpportunitySet {
     return triangle.map(e => e.source).sort().join('')
   }
 
-  async updateFromAPI(api: any) {
-    log.info(`Updating from API opportunity: ${[...this.nodes.values()]}`)
+  public changeStartingPoint (unit: string) {
+    const index = this.triangle.findIndex((edge: EdgeDriver) => edge.source === unit)
+
+    if (index === -1) {
+      throw new Error('Invalid reference unit')
+    }
+
+    getRotated(this.triangle, index)
+
+    this.refUnit = unit
+    this.maxVolume = this.getMaxVolume()
+    this.minVolume = this.getMinVolume()
+  }
+
+
+  public async updateFromAPI(api: any) {
+    log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
     try {
       // No worries, caching will do it's job
-      await Promise.all(this.mutatedOpportunities.map((opportunity: Opportunity) => opportunity.updateFromAPI(api)))
+      await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
     } catch (e) {
       log.warn(`Could not update volumes. ${e.message}`)
     }
   }
 
-  public generateMutations (triangle: Triangle) {
-    for (let i = 0; i < triangle.length; ++i)  {
-      this.mutatedOpportunities.push(new Opportunity(this.exchange, getRotated(triangle, i)))
-    }
-  }
+  public getMaxVolume (): number {
+    let volumeIt = this.triangle[0].volume
 
-  public getOpportunityByStartingCurrency (currency: Node): Opportunity | undefined {
-    for (const opportunity of this.mutatedOpportunities) {
-      if (opportunity.getInitialCurrency() == currency) {
-        return opportunity
+    for (const edge of this.triangle) {
+      if (edge.volume === Infinity) {
+        return Infinity
       }
+
+      if (volumeIt > edge.volume) {
+        volumeIt = edge.volume
+      }
+
+      volumeIt *= edge.getPrice()
     }
+
+    return volumeIt
   }
-}
 
-export class Opportunity {
-  public exchange: string
-  public arbitrage: number
-  public created: Date
-  public minVolume: number = 0
-  public maxVolume: number = Infinity
-  public triangle: EdgeDriver[] = []
+  public getNodes () {
+    return Array.from(this.nodes)
+  }
 
-  constructor(exchange: string, triangle: EdgeDriver[], created = new Date()) {
-    this.created = created
-    this.exchange = exchange,  
-    this.triangle = triangle
-    this.arbitrage = this.generateArbitrage()
-    this.minVolume = this.getMinVolume()
+  private getMinVolume(): number {
+    let volumeIt = this.triangle[0].minVolume
+
+    for (const edge of this.triangle) {
+      if (volumeIt < edge.minVolume) {
+        volumeIt = edge.minVolume
+      }
+
+      volumeIt *= edge.getPrice()
+    }
+
+    return volumeIt
   }
 
   public async exploit(api: any, startingBalance: number) {
@@ -106,19 +137,11 @@ export class Opportunity {
     }
   }
 
-  public getReferenceUnit() {
-    return this.triangle[0].source
-  }
-
-  public getNodes(triangle: Triangle = this.triangle) {
-    return triangle.map(a => a.source)
-  }
-
   public async save() {
     const res = await db('opportunities').insert({
       created_at: this.created,
       closed_at: new Date(),
-      min_trade_volume: this.minVolume,
+      min_trade_volume: this.getMinVolume(),
       max_trade_volume: this.maxVolume === Infinity ? null : this.maxVolume,
       exchange: this.exchange,
       cycle: this.triangle.map((edge: EdgeDriver) => edge.source),
@@ -126,52 +149,5 @@ export class Opportunity {
     }).returning('id')
 
     return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
-  }
-
-  public generateArbitrage (): number {
-    return this.triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
-  }
-
-  async updateFromAPI(api: any): Promise<void> {
-    try {
-      await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
-
-      this.maxVolume = this.getMaxVolume()
-      this.generateArbitrage()
-    } catch (e) {
-      log.warn(`Could not update volumes. ${e.message}`)
-    }
-  }
-
-  public getMaxVolume (): number {
-    let volumeIt = this.triangle[0].volume
-
-    for (const edge of this.triangle) {
-      if (volumeIt > edge.volume) {
-        volumeIt = edge.volume
-      }
-
-      volumeIt *= edge.getPrice()
-    }
-
-    return volumeIt
-  }
-
-  private getMinVolume(): number {
-    let volumeIt = this.triangle[0].minVolume
-
-    for (const edge of this.triangle) {
-      if (volumeIt < edge.minVolume) {
-        volumeIt = edge.minVolume
-      }
-
-      volumeIt *= edge.getPrice()
-    }
-
-    return volumeIt
-  }
-
-  public getInitialCurrency (): Node {
-    return this.triangle[0].source
   }
 }

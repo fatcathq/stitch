@@ -1,5 +1,5 @@
 import { Edge as EdgeDriver } from './models/edge'
-import OpportunitySet from './models/opportunity'
+import Opportunity from './models/opportunity'
 
 export type Market = {
   [key: string]: any
@@ -25,6 +25,6 @@ export type OrderDetails = {
   api: Api,
 }
 
-export type OpportunitySets = {
-  [key: string]: OpportunitySet
+export type OpportunityMap = {
+  [key: string]: Opportunity
 }

@@ -1,5 +1,5 @@
-import { Balance, OpportunitySets } from './types'
-import OpportunitySet, { Opportunity } from './models/opportunity'
+import { Balance, OpportunityMap } from './types'
+import Opportunity from './models/opportunity'
 import { numberIsDeformed } from './utils/helpers'
 import log from './loggers/winston'
 import Notifier from './utils/notifier'
@@ -9,7 +9,7 @@ const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
 
 export default class Engine {
   public balance: Balance = {}
-  public opportunitySets: OpportunitySets = {}
+  public opportunityMap: OpportunityMap = {}
   public api: any
   public isWorking: boolean = false
   public locked = false
@@ -20,8 +20,8 @@ export default class Engine {
     this.mock = mock
   }
 
-  public linkOpportunities (opportunities: OpportunitySets) {
-    this.opportunitySets = opportunities
+  public linkOpportunities (opportunities: OpportunityMap) {
+    this.opportunityMap = opportunities
   }
 
   public async init() {
@@ -37,11 +37,11 @@ export default class Engine {
 
   // If engine is locked do not exploit the opportunity.
   private async handleOpportunityAdded(id: number) {
-    if (this.opportunitySets[id] === undefined || this.locked) {
+    if (this.opportunityMap[id] === undefined || this.locked) {
       return
     }
 
-    const opportunity = await this.getExploitable(this.opportunitySets[id])
+    const opportunity = await this.getExploitable(this.opportunityMap[id])
 
     if (opportunity !== undefined) {
       Notifier.emit('War', opportunity)
@@ -56,19 +56,15 @@ export default class Engine {
   }
 
   // Find the first opportunity in which we have sufficient balance ready for trading
-  private async getExploitable(abstractOp: OpportunitySet) : Promise<Opportunity | undefined> {
+  private async getExploitable(opportunity: Opportunity) : Promise<Opportunity | undefined> {
       for (const currency in this.balance) {
-        const opportunity = abstractOp.getOpportunityByStartingCurrency(currency)
-
-        if (opportunity === undefined || opportunity.getNodes().includes('ADA')) {
+        if (!opportunity.contains(currency)) {
           continue
         }
 
-        if (opportunity.maxVolume === Infinity) {
-          await opportunity.updateFromAPI(this.api)
-        }
+        opportunity.changeStartingPoint(currency)
 
-        if (!this.sufficientBalance(opportunity, this.balance[currency])) {
+        if (!this.sufficientBalance(opportunity)) {
           log.info(`[ENGINE] Insufficient balance to exploit opportunity ${opportunity.getNodes()}`)
           continue
         }
@@ -81,7 +77,9 @@ export default class Engine {
 
   // TODO: Investigate whether it's too risky to trade in maxVolume
   // TODO: Use partial balance
-  private sufficientBalance(opportunity: Opportunity, balance: number): boolean {
+  private sufficientBalance(opportunity: Opportunity): boolean {
+    const balance = this.balance[opportunity.getReferenceUnit()]
+
     log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance}`)
 
     return opportunity.minVolume < opportunity.maxVolume

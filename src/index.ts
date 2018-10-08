@@ -1,10 +1,10 @@
 import ArbitrageFinder from './arbitrage-finder'
 import config from  './utils/config'
 import Logger from './loggers'
-import { OpportunitySets } from './types'
+import { OpportunityMap } from './types'
 import log from './loggers/winston'
 import Api from './connectors/api'
-import Engine from './engine'
+// import Engine from './engine'
 
 async function main (): Promise<void> {
   log.info(`Analyzing triangular arbitrage for exchange: *${config.exchange}*, with threshold: *${config.threshold}*`)
@@ -12,15 +12,17 @@ async function main (): Promise<void> {
   const api = new Api()
  
   //Find a proper name
-  const opportunities = {} as OpportunitySets
+  const opportunities = {} as OpportunityMap
 
   const finder = new ArbitrageFinder(api)
   finder.linkOpportunities(opportunities)
   await finder.init()
 
+  /*
   const engine = new Engine(api)
   engine.linkOpportunities(opportunities)
   await engine.init()
+  */
 
   const logger = new Logger()
   logger.linkOpportunities(opportunities)
