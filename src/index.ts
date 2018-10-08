@@ -11,7 +11,6 @@ async function main (): Promise<void> {
 
   const api = new Api()
  
-  //Find a proper name
   const opportunities = {} as OpportunityMap
 
   const finder = new ArbitrageFinder(api)
