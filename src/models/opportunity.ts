@@ -12,9 +12,9 @@ export default class {
   public maxVolume: Volume
   public minVolume: Volume
   public created: Date = new Date()
-  public triangle: Triangle
-  public refUnit: string
-  public nodes: Set<Currency> = new Set()
+  private triangle: Triangle
+  private refUnit: string
+  private nodes: Set<Currency> = new Set()
 
   constructor (exchange: string, triangle: EdgeDriver[]) {
     this.nodes = new Set(triangle.map(e => e.source))
@@ -37,16 +37,12 @@ export default class {
     return this.refUnit
   }
 
-  public calculateArbitrage (triangle: Triangle): number {
-    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
-  }
-
   public getDuration() {
     return (new Date()).getTime() - this.created.getTime()
   }
 
-  private generateIndex(triangle: Triangle) {
-    return triangle.map(e => e.source).sort().join('')
+  public getNodes () {
+    return Array.from(this.nodes)
   }
 
   public changeStartingPoint (unit: string) {
@@ -63,7 +59,6 @@ export default class {
     this.minVolume = this.getMinVolume()
   }
 
-
   public async updateFromAPI(api: any) {
     log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
@@ -73,42 +68,6 @@ export default class {
     } catch (e) {
       log.warn(`Could not update volumes. ${e.message}`)
     }
-  }
-
-  public getMaxVolume (): number {
-    let volumeIt = this.triangle[0].volume
-
-    for (const edge of this.triangle) {
-      if (edge.volume === Infinity) {
-        return Infinity
-      }
-
-      if (volumeIt > edge.volume) {
-        volumeIt = edge.volume
-      }
-
-      volumeIt *= edge.getPrice()
-    }
-
-    return volumeIt
-  }
-
-  public getNodes () {
-    return Array.from(this.nodes)
-  }
-
-  private getMinVolume(): number {
-    let volumeIt = this.triangle[0].minVolume
-
-    for (const edge of this.triangle) {
-      if (volumeIt < edge.minVolume) {
-        volumeIt = edge.minVolume
-      }
-
-      volumeIt *= edge.getPrice()
-    }
-
-    return volumeIt
   }
 
   public async exploit(api: any, startingBalance: number) {
@@ -149,5 +108,45 @@ export default class {
     }).returning('id')
 
     return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
+  }
+
+  private getMaxVolume (): number {
+    let volumeIt = this.triangle[0].volume
+
+    for (const edge of this.triangle) {
+      if (edge.volume === Infinity) {
+        return Infinity
+      }
+
+      if (volumeIt > edge.volume) {
+        volumeIt = edge.volume
+      }
+
+      volumeIt *= edge.getPrice()
+    }
+
+    return volumeIt
+  }
+
+  private getMinVolume(): number {
+    let volumeIt = this.triangle[0].minVolume
+
+    for (const edge of this.triangle) {
+      if (volumeIt < edge.minVolume) {
+        volumeIt = edge.minVolume
+      }
+
+      volumeIt *= edge.getPrice()
+    }
+
+    return volumeIt
+  }
+
+  private calculateArbitrage (triangle: Triangle): number {
+    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
+  }
+
+  private generateIndex(triangle: Triangle) {
+    return triangle.map(e => e.source).sort().join('')
   }
 }
