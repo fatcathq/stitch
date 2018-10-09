@@ -31,13 +31,15 @@ export default class Engine {
 
   public async registerListeners() {
     Notifier.on('OpportunityAdded', async (id: number) => {
-      await this.handleOpportunityAdded(id)
+      if (!this.locked) {
+        await this.handleOpportunityAdded(id)
+      }
     })
   }
 
   // If engine is locked do not exploit the opportunity.
   private async handleOpportunityAdded(id: number) {
-    if (this.opportunityMap[id] === undefined || this.locked) {
+    if (this.opportunityMap[id] === undefined) {
       return
     }
 
@@ -45,6 +47,11 @@ export default class Engine {
 
     if (opportunity !== undefined) {
       Notifier.emit('War', opportunity)
+
+      //Last moment check
+      if (this.locked) {
+        return
+      }
 
       log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
 
