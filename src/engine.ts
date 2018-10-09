@@ -85,9 +85,13 @@ export default class Engine {
   // TODO: Investigate whether it's too risky to trade in maxVolume
   // TODO: Use partial balance
   private sufficientBalance(opportunity: Opportunity): boolean {
+    if (opportunity.maxVolume === Infinity) {
+      log.warn(`[SUFFICIENT_BALANCE_CHECK] Max Volumes of opportunity ${opportunity.getNodes()} are not defined. This shouldn't be happening`)
+      return false
+    }
     const balance = this.balance[opportunity.getReferenceUnit()]
 
-    log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance}`)
+    log.info(`Checking opportunity ${opportunity.getNodes()} for sufficient balance. MinVolume: ${opportunity.minVolume}, MaxVolume: ${opportunity.maxVolume}, balance: ${balance} ${opportunity.getReferenceUnit()}`)
 
     return opportunity.minVolume < opportunity.maxVolume
         && opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance
