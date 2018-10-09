@@ -15,7 +15,7 @@ export default class Engine {
   public locked = false
   public mock: boolean
 
-  constructor(api: any, mock = true) {
+  constructor(api: any, mock = false) {
     this.api = api
     this.mock = mock
   }
@@ -48,7 +48,7 @@ export default class Engine {
 
       log.info(`[EXPLOIT] Triangle: ${opportunity.getNodes()}. MinVolume: ${opportunity.minVolume}, maxVolume: ${opportunity.maxVolume}`)
 
-      await opportunity.exploit(this.api, this.balance[opportunity.getReferenceUnit()])
+      await opportunity.exploit(this.api, this.balance[opportunity.getReferenceUnit()], this.mock)
 
       log.info(`[EXPLOIT] Finished`)
       // Notifier.emit('Peace')
