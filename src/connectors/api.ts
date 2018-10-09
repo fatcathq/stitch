@@ -19,9 +19,9 @@ export default class instance extends ccxt[config.exchange] {
     return this._fetchOrderBook(market, limit)
   }
 
-  public emptyCache () {
+  public emptyQueue () {
     log.info(`[CACHE] Emptying queue`)
-    this.fetchImplementation = new RateLimiter(this.fetchWithCache, { limit: 1, interval: 2000, bucketSize: 1 })
+    this.fetchImplementation = new RateLimiter(this.fetchWithCache, { limit: 1, interval: 1000, bucketSize: 1 })
   }
 
   private async fetchWithCache (url: string, ...args: any[]) {
