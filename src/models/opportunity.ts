@@ -26,7 +26,6 @@ export default class {
     this.id = this.generateIndex(triangle)
 
     this.minVolume = this.getMinVolume()
-    this.maxVolume = this.getMaxVolume()
   }
 
   public contains (unit: Currency) {
@@ -62,17 +61,16 @@ export default class {
   public async updateFromAPI(api: any) {
     log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
-    try {
-      // No worries, caching will do it's job
-      await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
-    } catch (e) {
-      log.warn(`Could not update volumes. ${e.message}`)
-    }
+    // No worries, caching will do it's job
+    await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
+
+    this.maxVolume = this.getMaxVolume()
   }
 
-  public async exploit(api: any, startingBalance: number) {
+  public async exploit(api: any, startingBalance: number, mock = true) {
     if (this.maxVolume === Infinity) {
       log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
+      return
     }
 
     let volumeIt = startingBalance
@@ -85,7 +83,7 @@ export default class {
       const details = {
         volume: volumeIt,
         api: api,
-        mock: true
+        mock: mock
       } as OrderDetails
 
       await edge.traverse(details)
