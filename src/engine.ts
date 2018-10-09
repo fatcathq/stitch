@@ -112,7 +112,7 @@ export default class Engine {
     try {
       balance = (await this.api.fetchBalance()).free
     } catch (e) {
-      log.warn(`Could not update balance. Locking engine`)
+      log.warn(`Could not update balance. Locking engine. Error: ${e.message}`)
       this.lock()
       return
     }
