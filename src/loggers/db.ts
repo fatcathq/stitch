@@ -1,10 +1,10 @@
-import OpportunitySet from '../models/opportunity'
+import Opportunity from '../models/opportunity'
 import { LoggerInterface } from './'
 
 export class DatabaseLogger implements LoggerInterface {
-  public closeOpportunity(opportunity: OpportunitySet): void {
+  public closeOpportunity(opportunity: Opportunity): void {
     try {
-      opportunity.getOne().save()
+      opportunity.save()
     } catch (e) {
       console.log(`Error: ${e.message}`)
     }

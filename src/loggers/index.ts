@@ -1,6 +1,6 @@
-import OpportunitySet from '../models/opportunity'
+import Opportunity from '../models/opportunity'
 import config from '../utils/config'
-import { OpportunitySets } from '../types'
+import { OpportunityMap } from '../types'
 import Notifier from '../utils/notifier'
 
 import { SlackLogger } from './slack'
@@ -8,7 +8,7 @@ import { DatabaseLogger } from './db'
 import { WinstonLogger } from './winston'
 
 export default class {
-  private opportunities: OpportunitySets = {}
+  private opportunities: OpportunityMap = {}
   private dbLogging: boolean = config.log.db.enabled
   private slackLogging: boolean = config.log.slack.enabled
   private loggers: Map<string, any> = new Map()
@@ -18,7 +18,7 @@ export default class {
     this.registerListeners()
   }
 
-  private createOpportunity(opportunity: OpportunitySet) {
+  private createOpportunity(opportunity: Opportunity) {
     this.loggers.forEach((logger) => {
       if (typeof logger.createOpportunity == 'function') {
         logger.createOpportunity(opportunity)
@@ -26,11 +26,11 @@ export default class {
     })
   }
 
-  public linkOpportunities (opportunities: OpportunitySets) {
+  public linkOpportunities (opportunities: OpportunityMap) {
     this.opportunities = opportunities
   }
 
-  private updateOpportunity(opportunity: OpportunitySet, prevArb: number) {
+  private updateOpportunity(opportunity: Opportunity, prevArb: number) {
     this.loggers.forEach((logger) => {
       if (typeof logger.updateOpportunity == 'function') {
         logger.updateOpportunity(opportunity, prevArb)
@@ -38,7 +38,7 @@ export default class {
     })
   }
 
-  private closeOpportunity(opportunity: OpportunitySet, duration: number) {
+  private closeOpportunity(opportunity: Opportunity, duration: number) {
     this.loggers.forEach((logger) => {
       if (typeof logger.closeOpportunity == 'function') {
         logger.closeOpportunity(opportunity, duration)
@@ -55,7 +55,7 @@ export default class {
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
-    Notifier.on('OpportunityClosed', (opportunity: OpportunitySet, duration: number) => {
+    Notifier.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {
       this.closeOpportunity(opportunity, duration)
     })
   }
@@ -74,7 +74,7 @@ export default class {
 }
 
 export interface LoggerInterface {
-  createOpportunity?:  (opportunity: OpportunitySet) => void
-  updateOpportunity?: (opportunity: OpportunitySet, prevArb: number) => void
-  closeOpportunity?: (opportunity: OpportunitySet, duration: number) => void
+  createOpportunity?:  (opportunity: Opportunity) => void
+  updateOpportunity?: (opportunity: Opportunity, prevArb: number) => void
+  closeOpportunity?: (opportunity: Opportunity, duration: number) => void
 }
