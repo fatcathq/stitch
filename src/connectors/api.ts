@@ -25,12 +25,11 @@ export default class instance extends ccxt[config.exchange] {
   }
 
   private async fetchWithCache (url: string, ...args: any[]) {
-    log.info(`[REQUEST] ${url}`)
+    const now = Date.now()
+    const res = await fetch(url, ...args)
 
-    if (args[0].body !== undefined) {
-      log.info(`[REQUEST] body: ${args[0].body}`)
-    }
+    log.info(`[REQUEST] ${url}, duration: ${Date.now() - now} ms`)
 
-    return await fetch(url, ...args)
+    return res
   }
 }
