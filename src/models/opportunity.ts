@@ -9,7 +9,7 @@ export default class {
   public id: string
   public arbitrage: number
   public exchange: string
-  public maxVolume: Volume
+  public maxVolume: Volume = Infinity
   public minVolume: Volume
   public created: Date = new Date()
   private triangle: Triangle
