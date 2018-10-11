@@ -44,6 +44,16 @@ export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve,ms))
 }
 
-export function getRotated(array: any[], times: number = 1) {
-  return array.slice(array.length - times).concat(array.slice(0, array.length - times))
+export function getRotated (array: any[], count: number) {
+  // save references to array functions to make lookup faster
+  var len = array.length >>> 0, // convert to uint
+      count = count >> 0; // convert to int
+
+  // convert count to value in range [0, len)
+  count = ((count % len) + len) % len;
+
+  // use splice.call() instead of this.splice() to make function generic
+  Array.prototype.push.apply(array, Array.prototype.splice.call(array, 0, count));
+
+  return array
 }

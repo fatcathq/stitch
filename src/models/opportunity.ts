@@ -14,10 +14,8 @@ export default class {
   public created: Date = new Date()
   private triangle: Triangle
   private refUnit: string
-  private nodes: Set<Currency> = new Set()
 
   constructor (exchange: string, triangle: EdgeDriver[]) {
-    this.nodes = new Set(triangle.map(e => e.source))
     this.exchange = exchange
     this.triangle = triangle
 
@@ -29,7 +27,7 @@ export default class {
   }
 
   public contains (unit: Currency) {
-    return this.nodes.has(unit)
+    return this.getNodes().includes(unit)
   }
 
   public getReferenceUnit() {
@@ -41,19 +39,23 @@ export default class {
   }
 
   public getNodes () {
-    return Array.from(this.nodes)
+    return this.triangle.map(e => e.source)
   }
 
-  public changeStartingPoint (unit: string) {
-    const index = this.triangle.findIndex((edge: EdgeDriver) => edge.source === unit)
+  public changeStartingPoint (currency: Currency) {
+    const index = this.triangle.findIndex((edge: EdgeDriver) => edge.source === currency)
 
-    if (index === -1) {
+    if (!this.contains(currency)) {
       throw new Error('Invalid reference unit')
     }
 
     getRotated(this.triangle, index)
 
-    this.refUnit = unit
+    if (this.triangle[0].source !== currency) {
+      throw new Error(`Triangle rotation didn't work as expected`)
+    }
+
+    this.refUnit = currency
     this.maxVolume = this.getMaxVolume()
     this.minVolume = this.getMinVolume()
   }
@@ -67,10 +69,12 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public async exploit(api: any, startingBalance: number, mock = true) {
+  public async exploit(api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
+    this.changeStartingPoint(currency)
+
     if (this.maxVolume === Infinity) {
       log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
-      return
+      return false
     }
 
     let volumeIt = startingBalance
@@ -86,12 +90,19 @@ export default class {
         mock: mock
       } as OrderDetails
 
-      await edge.traverse(details)
+      const traversed = await edge.traverse(details)
+
+      if (!traversed) {
+        log.error(`[OPPORTUNITY] Cannot exploit opportunity ${this.getNodes()}. Edge traversal failed for ${edge.stringified}`)
+        return false
+      }
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
       volumeIt *= (1 - edge.fee) * edge.getPrice()
     }
+
+    return true
   }
 
   public async save() {

@@ -1,7 +1,7 @@
 import Opportunity from '../models/opportunity'
 import config from '../utils/config'
+import EventEmmiter from 'events'
 import { OpportunityMap } from '../types'
-import Notifier from '../utils/notifier'
 
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
@@ -13,9 +13,9 @@ export default class {
   private slackLogging: boolean = config.log.slack.enabled
   private loggers: Map<string, any> = new Map()
 
-  constructor () {
+  constructor (notifier: EventEmmiter) {
     this.registerLoggers()
-    this.registerListeners()
+    this.registerListeners(notifier)
   }
 
   private createOpportunity(opportunity: Opportunity) {
@@ -46,16 +46,16 @@ export default class {
     })
   }
 
-  private registerListeners (): void {
-    Notifier.on('OpportunityAdded', (id: string) => {
+  private registerListeners (notifier: EventEmmiter): void {
+    notifier.on('OpportunityAdded', (id: string) => {
       this.createOpportunity(this.opportunities[id])
     })
 
-    Notifier.on('OpportunityUpdated', (id: string, prevArb: number) => {
+    notifier.on('OpportunityUpdated', (id: string, prevArb: number) => {
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
-    Notifier.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {
+    notifier.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {
       this.closeOpportunity(opportunity, duration)
     })
   }

@@ -50,7 +50,7 @@ export class Edge {
   /*
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
-  public async traverse (args: OrderDetails): Promise<any> {
+  public async traverse (args: OrderDetails): Promise<boolean> {
     log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
 
     return await this.placeAndFillOrder({
@@ -65,30 +65,27 @@ export class Edge {
    * Volume and Price for this function call are given for the real market, not the virtual market
    * (both for Edge and VirtualEdge)
    */
-  public async placeAndFillOrder(args: OrderDetails): Promise<void> {
-    let status
-    log.info(`[TRADING] Placing order ${this.source} -> ${this.target}`)
+  public async placeAndFillOrder(args: OrderDetails): Promise<boolean> {
+    log.info(`[EDGE] Placing order ${this.source} -> ${this.target}`)
 
     if (args.mock) {
-      log.info(`[TRADING] Mocking the trade`)
+      log.info(`[EDGE] Mocking the trade`)
     }
 
     let method = args.side === 'sell' ?
       (args.type === 'limit' ? 'createLimitSellOrder' : 'createMarketSellOrder') :
       (args.type === 'limit' ? 'createLimitBuyOrder' : 'createMarketBuyOrder')
 
-    log.info(`Method: ${method}`)
-
-    log.info(`[ACTIVE_TRADING] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}`)
+    log.info(`[EDGE] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}`)
 
     if (args.mock) {
-      return
+      return true
     }
 
     let id: null | number = null
 
     try {
-      log.info(`Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
+      log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
       const res = await args.api[method](this.getMarket(), args.volume, args.price)
 
       console.log(res)
@@ -96,26 +93,29 @@ export class Edge {
       id = res.id
     }
     catch (e) {
-      console.log(e)
-      return
+      log.error(`[EDGE] Cannot traverse edge ${this.stringified}: ${e.message}`)
+      return false
     }
 
     if (id === null) {
       log.info(`Invalid id: ${id}`)
-      return
+      return false
     }
 
-    log.info(`[ACTIVE_TRADING] Placed order with id: ${id}`)
+    log.info(`[EDGE] Placed order with id: ${id}. Now waiting order to be filled`)
 
-    log.info(`[ACTIVE_TRADING] Waiting for order to be filled`)
+    let status: string
+    const now = Date.now()
+
     do {
-      const res = await args.api.fetchOrder(id)
-      console.log('FetchOrder res', res)
-      const status = res.status
-      log.debug(`Status ${status}`)
+      const apiRes = await args.api.fetchOrder(id)
+      status = apiRes.status
+      log.info(`[EDGE] Status: status`)
     } while (status !== 'closed')
 
-    log.info(`[ACTIVE_TRADING] Order was filled`)
+    log.info(`[EDGE] Order was filled. Duration: ${now - Date.now()}`)
+
+    return true
   }
 
   public async save(cycleId: number) {
@@ -159,7 +159,7 @@ export class VirtualEdge extends Edge {
     this.volume = volume * price
   }
 
-  public async traverse (args: OrderDetails): Promise<void> {
+  public async traverse (args: OrderDetails): Promise<boolean> {
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price

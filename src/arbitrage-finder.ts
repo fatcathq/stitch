@@ -2,62 +2,44 @@ import * as _ from 'lodash'
 import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import config from  './utils/config'
-import Notifier from './utils/notifier'
 import log from './loggers/winston'
 import { OpportunityMap } from './types'
+import EventEmmiter from 'events'
 
-export default class ArbitrageFinder {
+export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
   private opportunityMap: OpportunityMap = {}
-  private running = true
-  /*
-   * Peace mode: Finder updates from tickers, creates, updates and emits opportunities
-   * War mode: Finder updates from orderBooks only the given opportunities
-   */
-  private mode: 'peace' | 'war' = 'peace'
   private api: any
+  private running = true
 
   constructor (api: any) {
-    this.api = api
-  }
+    super()
 
-  public linkOpportunities(opportunities: OpportunityMap) {
-    this.opportunityMap = opportunities
+    this.api = api
   }
 
   async init (): Promise<void> {
     this.graph = new Graph(this.exchange, await this.api.loadMarkets())
-
-    await this.registerListeners()
   }
 
-  private async registerListeners () {
-    Notifier.on('War', async (opportunity) => {
-      log.info(`[ARBITRAGE_FINDER] War mode. Finding prices and volumes only for opportunity: ${opportunity.getNodes()}`)
-      this.mode = 'war'
-    })
-
-    Notifier.on('Peace', async () => {
-      log.info('[ARBITRAGE_FINDER] Peace mode again. Finding opportunities from tickers.')
-      this.mode = 'peace'
-    })
-  }
-
-  async run(): Promise<void> {
+  async run (): Promise<void> {
     while (this.running) {
-      if (this.mode === 'peace') {
-        await this.updatePrices()
+      await this.updatePrices()
 
-        const opportunities = this.extractOpportunitiesFromGraph()
+      const opportunities = this.extractOpportunitiesFromGraph()
 
-        this.updateOpportunities(opportunities)
-      }
-      else if (this.mode === 'war') {
-        // Null check is not required here
-        // this.watchOpportunity!.updateFromAPI(this.api)
-      }
+      this.updateOpportunities(opportunities)
     }
+  }
+
+  public async linkOpportunities (opportunities: OpportunityMap) {
+    this.opportunityMap = opportunities
+  }
+
+  public pause () {
+    this.running = false
+    this.api.emptyQueue()
   }
 
   async updateOpportunities(newOpportunities: OpportunityMap) {
@@ -70,12 +52,16 @@ export default class ArbitrageFinder {
         return
       }
 
-      Notifier.emit('OpportunityClosed', this.opportunityMap[id], this.opportunityMap[id].getDuration())
+      this.emit('OpportunityClosed', this.opportunityMap[id], this.opportunityMap[id].getDuration())
 
       delete this.opportunityMap[id]
     }
 
     for (const id in newOpportunities) {
+      if (!this.running) {
+        log.info(`[FINDER] No new opportunities will be updated/emmited`)
+        return
+      }
       // New opportunity found
       if (this.opportunityMap[id] === undefined) {
         this.opportunityMap[id] = newOpportunities[id]
@@ -84,7 +70,7 @@ export default class ArbitrageFinder {
           await this.opportunityMap[id].updateFromAPI(this.api)
         }
 
-        Notifier.emit('OpportunityAdded', id)
+        this.emit('OpportunityAdded', id)
       }
     }
   }
@@ -95,7 +81,7 @@ export default class ArbitrageFinder {
     try {
       tickers = await this.api.fetchTickers()
     } catch (e) {
-      log.error(`Could not fetch tickers. Problem: ${e.message}`)
+      log.error(`[FINDER] Could not fetch tickers. Problem: ${e.message}`)
       return
     }
 
