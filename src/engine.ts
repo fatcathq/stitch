@@ -20,7 +20,6 @@ export default class Engine {
     await this.balance.init()
   }
 
-  // Find the first opportunity in which we have sufficient balance ready for trading
   public hasExploitableCurrency(opportunity: Opportunity) : Currency | undefined {
     for (const currency of this.balance.getIntersection(opportunity)) {
       if (this.balance.sufficient(opportunity, currency)) {
@@ -40,6 +39,7 @@ export default class Engine {
     }
 
     this.lock()
+    const now = Date.now()
 
     const exploited = await opportunity.exploit(this.api, currency, this.balance.get(currency), this.mock)
 
@@ -47,7 +47,7 @@ export default class Engine {
       log.error(`[ENGINE] Opportunity is not exploited`)
     }
 
-    log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}.`)
+    log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
 
     this.unlock()
   }
