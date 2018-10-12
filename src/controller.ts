@@ -45,7 +45,7 @@ export default class StitchController extends EventEmmiter {
     })
   }
 
-  private async  handleOpportunityAdded (opportunity: Opportunity) {
+  private async handleOpportunityAdded (opportunity: Opportunity) {
     if (this.engine.isLocked()) {
       log.info(`[CONTROLLER] Engine is locked. Skipping opportunity ${opportunity.getNodes()}`)
       return
@@ -58,7 +58,7 @@ export default class StitchController extends EventEmmiter {
     }
 
     this.finder.pause()
-    await this.api.emptyQueue()
+    await this.api.restartQueue()
 
     log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is exploitable`)
     await this.engine.exploit(opportunity, currency)
