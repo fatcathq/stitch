@@ -39,9 +39,6 @@ export default class {
       this.balance[currency] =  balance[currency]
     }
 
-    this.balance.ETH = 0.1
-    this.balance.BTC = 0.0025
-
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
     console.log(this.balance)
   }
