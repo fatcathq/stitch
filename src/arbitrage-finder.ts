@@ -39,7 +39,6 @@ export default class ArbitrageFinder extends EventEmmiter {
 
   public pause () {
     this.running = false
-    this.api.emptyQueue()
   }
 
   async updateOpportunities(newOpportunities: OpportunityMap) {

@@ -41,8 +41,6 @@ export default class Engine {
 
     this.lock()
 
-    await this.api.emptyQueue()
-
     const exploited = await opportunity.exploit(this.api, currency, this.balance.get(currency), this.mock)
 
     if (!exploited) {
