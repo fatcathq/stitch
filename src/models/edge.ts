@@ -110,10 +110,10 @@ export class Edge {
     do {
       const apiRes = await args.api.fetchOrder(id)
       status = apiRes.status
-      log.info(`[EDGE] Status: status`)
+      log.info(`[EDGE] Status: ${status}`)
     } while (status !== 'closed')
 
-    log.info(`[EDGE] Order was filled. Duration: ${now - Date.now()}`)
+    log.info(`[EDGE] Order was filled. Duration: ${Date.now() - now}`)
 
     return true
   }
