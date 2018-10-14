@@ -35,10 +35,6 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
-  public getWeight (): number {
-    return this.price
-  }
-
   public async updateFromAPI (api: any): Promise<void> {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
     const [price, volume] = ob.bids[0]
@@ -88,8 +84,6 @@ export class Edge {
       log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
       const res = await args.api[method](this.getMarket(), args.volume, args.price)
 
-      console.log(res)
-
       id = res.id
     }
     catch (e) {
@@ -109,6 +103,7 @@ export class Edge {
 
     do {
       const apiRes = await args.api.fetchOrder(id)
+
       status = apiRes.status
       log.info(`[EDGE] Status: ${status}`)
     } while (status !== 'closed')
@@ -160,6 +155,8 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<boolean> {
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
+
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
@@ -167,7 +164,6 @@ export class VirtualEdge extends Edge {
     args.price = 1 / this.price
     args.volume = args.volume / args.price
 
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
 
     return await this.placeAndFillOrder({
       type: 'limit',
