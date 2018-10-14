@@ -5,6 +5,7 @@ import Opportunity from '../models/opportunity'
 
 const _ = require('lodash')
 
+const EXCLUDE = ['DTH']
 const MAX_VOLUME_SAFETY_MARGIN = 0.9
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
 
@@ -32,7 +33,7 @@ export default class {
     this.balance = {}
 
     for (const currency of Object.keys(balance)) {
-      if (numberIsDeformed(balance[currency]) || balance[currency] === 0) {
+      if (numberIsDeformed(balance[currency]) || balance[currency] === 0 || EXCLUDE.includes(currency)) {
         continue
       }
 
