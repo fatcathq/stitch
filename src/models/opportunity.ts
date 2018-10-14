@@ -69,7 +69,7 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public async exploit(balance: any, api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
+  public async exploit(api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
     this.changeStartingPoint(currency)
 
     if (this.maxVolume === Infinity) {
