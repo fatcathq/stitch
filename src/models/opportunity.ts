@@ -69,7 +69,7 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public async exploit(api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
+  public async exploit(balance: any, api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
     this.changeStartingPoint(currency)
 
     if (this.maxVolume === Infinity) {
@@ -131,7 +131,7 @@ export default class {
         volumeIt = edge.volume
       }
 
-      volumeIt *= edge.getPrice()
+      volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
 
     return volumeIt
@@ -145,14 +145,15 @@ export default class {
         volumeIt = edge.minVolume
       }
 
-      volumeIt *= edge.getPrice()
+      volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
+
 
     return volumeIt
   }
 
   private calculateArbitrage (triangle: Triangle): number {
-    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getWeight(), 1)
+    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getPrice(), 1)
   }
 
   private generateIndex(triangle: Triangle) {
