@@ -38,10 +38,24 @@ export default class Engine {
       return
     }
 
+    if (opportunity.getReferenceUnit() !== currency) {
+      log.error(`[ENGINE] Opportunity upon exploit must be already changed in the proper exploit currency`)
+    }
+
     this.lock()
     const now = Date.now()
 
-    const exploited = await opportunity.exploit(this.api, currency, this.balance.get(currency), this.mock)
+    let startingBalance
+
+    if (opportunity.maxVolume < this.balance.get(currency)) {
+      log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
+      startingBalance = opportunity.maxVolume
+    }
+    else {
+      startingBalance = this.balance.get(currency)
+    }
+
+    const exploited = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
 
     if (!exploited) {
       log.error(`[ENGINE] Opportunity is not exploited`)

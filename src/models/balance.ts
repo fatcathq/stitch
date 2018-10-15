@@ -68,7 +68,6 @@ export default class {
 
     return opportunity.minVolume < opportunity.maxVolume
         && opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance
-        && opportunity.maxVolume * MAX_VOLUME_SAFETY_MARGIN > balance
   }
 
   public getIntersection (opportunity: Opportunity) {
