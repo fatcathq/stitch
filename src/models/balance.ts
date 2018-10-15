@@ -7,8 +7,9 @@ const _ = require('lodash')
 
 const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
+const DECIMAL_POINT_PRECISION = 5
 
-export default class {
+export default class BalanceHandler {
   public balance: Balance = {}
   private api: any
 
@@ -36,7 +37,7 @@ export default class {
         continue
       }
 
-      this.balance[currency] =  balance[currency]
+      this.balance[currency] =  balance[currency].toFixed(DECIMAL_POINT_PRECISION)
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
@@ -71,5 +72,33 @@ export default class {
 
   public getIntersection (opportunity: Opportunity) {
     return _.intersection(opportunity.getNodes(), Object.keys(this.balance))
+  }
+
+  public getCheckpoint (): Balance {
+    return this.balance
+  }
+
+  public compareWithCheckpoint(oldBalance: Balance) {
+    let diff: Balance = {}
+
+    for (const currency of Object.keys(oldBalance)) {
+      // Balance in this currency doesn't exist anymore
+      if (!(currency in this.balance)) {
+        diff[currency] = - oldBalance[currency]
+      }
+      else if (oldBalance[currency] !== this.balance[currency]) {
+        // Balance in this currency changed
+        diff[currency] = this.balance[currency] - oldBalance[currency]
+      }
+    }
+
+    // New balance
+    for (const currency of Object.keys(oldBalance)) {
+      if (!(currency in oldBalance)) {
+        diff[currency] = this.balance[currency]
+      }
+    }
+
+    return diff
   }
 }

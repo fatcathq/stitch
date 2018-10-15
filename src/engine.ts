@@ -44,6 +44,7 @@ export default class Engine {
 
     this.lock()
     const now = Date.now()
+    const balanceCheckpoint = this.balance.getCheckpoint()
 
     let startingBalance
 
@@ -61,7 +62,11 @@ export default class Engine {
       log.error(`[ENGINE] Opportunity is not exploited`)
     }
 
+    await this.balance.update()
+
     log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
+    log.info(`[ENGINE] Diff of balance after exploit:`)
+    console.log(this.balance.compareWithCheckpoint(balanceCheckpoint))
 
     this.unlock()
   }
