@@ -5,8 +5,7 @@ import Opportunity from '../models/opportunity'
 
 const _ = require('lodash')
 
-const EXCLUDE = ['DTH']
-const MAX_VOLUME_SAFETY_MARGIN = 0.9
+const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
 
 export default class {
