@@ -47,7 +47,7 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price * (1 - this.fee)} ${this.target}`)
 
     return await this.placeAndFillOrder({
       type: 'limit',
@@ -155,7 +155,7 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price * (1 - this.fee) } ${this.target}`)
 
     /*
      * real price = 1 / virtual price
