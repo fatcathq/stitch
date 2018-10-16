@@ -7,7 +7,7 @@ const _ = require('lodash')
 
 const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
-const DECIMAL_POINT_PRECISION = 5
+const DECIMAL_POINT_PRECISION = 8
 
 export default class BalanceHandler {
   public balance: Balance = {}
