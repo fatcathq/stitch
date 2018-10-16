@@ -6,6 +6,7 @@ type Config = {
   },
   threshold: number,
   // TODO: Get fee from API
+  activeTrading: boolean,
   log: {
     slack: {
       webhook: string,

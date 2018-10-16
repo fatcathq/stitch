@@ -2,12 +2,13 @@ import Balance from './models/balance'
 import Opportunity from './models/opportunity'
 import { Currency } from './types'
 import log from './loggers/winston'
+import config from  './utils/config'
 
 export default class Engine {
   public balance: Balance
   public api: any
   private locked: boolean
-  private mock: boolean
+  private mock: boolean = !config.activeTrading
 
   constructor(api: any, mock = false) {
     this.api = api
