@@ -65,8 +65,15 @@ export default class Engine {
     await this.balance.update()
 
     log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
-    log.info(`[ENGINE] Diff of balance after exploit:`)
-    console.log(this.balance.compareWithCheckpoint(balanceCheckpoint))
+
+    const diff = this.balance.compareWithCheckpoint(balanceCheckpoint)
+
+    if (Object.keys(diff).length > 0) {
+      log.info(`[ENGINE] Diff of balance after exploit:`)
+      console.log(diff)
+    } else {
+      log.warn(`[ENGINE] No money gained from this opportunity exploit :(`)
+    }
 
     this.unlock()
   }
