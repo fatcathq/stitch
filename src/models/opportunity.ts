@@ -58,6 +58,8 @@ export default class {
     this.refUnit = currency
     this.maxVolume = this.getMaxVolume()
     this.minVolume = this.getMinVolume()
+
+    log.info(`Changed reference unit to ${currency}. MinVolume: ${this.minVolume}, MaxVolume: ${this.maxVolume}`)
   }
 
   public async updateFromAPI(api: any) {
