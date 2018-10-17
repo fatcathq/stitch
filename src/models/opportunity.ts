@@ -5,7 +5,7 @@ import { getRotated, financial } from '../utils/helpers'
 import { Currency, Triangle, OrderDetails, Volume } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
-const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD']
+const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
 export default class {
   public id: string
@@ -88,7 +88,22 @@ export default class {
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
+
+      let type: 'limit' | 'market' = 'limit'
+
+      /*
+      if (edge.source in NEUTRAL_COINS) {
+        type = 'limit'
+        log.info(`Edge source: ${edge.source} in neutral coins. Proceeding to limit order`)
+      }
+      else {
+        type = 'market'
+        log.info(`Edge source: ${edge.source} not in neutral coins. Proceeding to market order`)
+      }
+      */
+
       const details = {
+        type: type,
         volume: volumeIt,
         api: api,
         mock: mock
