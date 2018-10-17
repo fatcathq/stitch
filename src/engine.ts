@@ -4,6 +4,12 @@ import { Currency } from './types'
 import log from './loggers/winston'
 import config from  './utils/config'
 
+/*
+ * Kraken doesn't trade on maxVolume.
+ * TODO: ^ Find why
+ */
+const MAX_VOLUME_SAFETY_THRESHOLD = 0.9
+
 export default class Engine {
   public balance: Balance
   public api: any
@@ -51,7 +57,7 @@ export default class Engine {
 
     if (opportunity.maxVolume < this.balance.get(currency)) {
       log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
-      startingBalance = opportunity.maxVolume
+      startingBalance = opportunity.maxVolume * MAX_VOLUME_SAFETY_THRESHOLD
     }
     else {
       startingBalance = this.balance.get(currency)
