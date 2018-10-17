@@ -1,14 +1,12 @@
 import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
-import { getRotated } from '../utils/helpers'
+import { getRotated, financial } from '../utils/helpers'
 import { Currency, Triangle, OrderDetails, Volume } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD']
-const DECIMAL_POINT_PRECISION = 6
 
-// TODO: Rename it to OpportunityWrapper or OpportunityContainer?
 export default class {
   public id: string
   public arbitrage: number
@@ -83,7 +81,7 @@ export default class {
       return false
     }
 
-    let volumeIt = startingBalance
+    let volumeIt = financial(startingBalance)
 
     log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
     log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${(this.arbitrage - 1) * startingBalance} ${this.getReferenceUnit()}`)
@@ -114,7 +112,7 @@ export default class {
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
-      volumeIt *= (1 - edge.fee) * edge.getPrice()
+      volumeIt *= financial((1 - edge.fee) * edge.getPrice())
     }
 
     return true
@@ -181,7 +179,7 @@ export default class {
       volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
 
-    return parseFloat(volumeIt.toFixed(DECIMAL_POINT_PRECISION))
+    return financial(volumeIt)
   }
 
   private getMinVolume(): number {
@@ -199,7 +197,7 @@ export default class {
       volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
 
-    return parseFloat(volumeIt.toFixed(DECIMAL_POINT_PRECISION))
+    return financial(volumeIt)
   }
 
   private calculateArbitrage (triangle: Triangle): number {

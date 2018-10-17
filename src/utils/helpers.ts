@@ -2,6 +2,8 @@ import { Triangle } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
 
+const DECIMAL_POINT_PRECISION = 6
+
 export function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)
   const nodesB = triangleB.map(a => a.source)
@@ -56,4 +58,13 @@ export function getRotated (array: any[], count: number) {
   Array.prototype.push.apply(array, Array.prototype.splice.call(array, 0, count));
 
   return array
+}
+
+export function financial(num: number | string): number {
+  if (typeof num === 'string') {
+    return Number(parseFloat(num).toFixed(DECIMAL_POINT_PRECISION))
+  }
+  else {
+    return Number(num.toFixed(DECIMAL_POINT_PRECISION) )
+  }
 }

@@ -1,13 +1,12 @@
 import { Balance, Currency } from '../types'
 import log from '../loggers/winston'
-import { numberIsDeformed } from '../utils/helpers'
+import { numberIsDeformed, financial } from '../utils/helpers'
 import Opportunity from '../models/opportunity'
 
 const _ = require('lodash')
 
 const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
-const DECIMAL_POINT_PRECISION = 8
 
 export default class BalanceHandler {
   public balance: Balance = {}
@@ -37,7 +36,7 @@ export default class BalanceHandler {
         continue
       }
 
-      this.balance[currency] =  balance[currency].toFixed(DECIMAL_POINT_PRECISION)
+      this.balance[currency] =  financial(balance[currency])
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)

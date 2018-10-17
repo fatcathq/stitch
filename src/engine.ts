@@ -60,7 +60,7 @@ export default class Engine {
       startingBalance = opportunity.maxVolume * MAX_VOLUME_SAFETY_THRESHOLD
     }
     else {
-      startingBalance = this.balance.get(currency)
+      startingBalance = this.balance.get(currency) * MAX_VOLUME_SAFETY_THRESHOLD
     }
 
     const exploited = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
