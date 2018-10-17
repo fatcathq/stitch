@@ -6,7 +6,7 @@ import Opportunity from '../models/opportunity'
 const _ = require('lodash')
 
 const EXCLUDE: any[] = []
-const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.9
+const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.8
 
 export default class BalanceHandler {
   public balance: Balance = {}
