@@ -1,6 +1,9 @@
 import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
+import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+
+const FILLED_ORDER_TRIES = 6
 
 export class Edge {
   public virtual: boolean = false
@@ -50,7 +53,7 @@ export class Edge {
     log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price * (1 - this.fee)} ${this.target}`)
 
     return await this.placeAndFillOrder({
-      type: 'limit',
+      type: args.type ? args.type : 'limit',
       side: 'sell',
       price: this.price,
       ...args
@@ -87,8 +90,7 @@ export class Edge {
       id = res.id
     }
     catch (e) {
-      log.error(`[EDGE] Cannot traverse edge ${this.stringified}: ${e.message}`)
-      return false
+      throw new TraversalAPIError(this, `${method} failed`,  e.message)
     }
 
     if (id === null) {
@@ -100,13 +102,34 @@ export class Edge {
 
     let status: string
     const now = Date.now()
+    let tries = 0
+    let apiRes
 
     do {
-      const apiRes = await args.api.fetchOrder(id)
+      ++tries
+
+      try {
+        apiRes = await args.api.fetchOrder(id)
+        console.log(apiRes)
+      } catch (e) {
+        throw new TraversalAPIError(this, `FetchOrder failed`, e.message)
+      }
 
       status = apiRes.status
-      log.info(`[EDGE] Status: ${status}`)
-    } while (status !== 'closed')
+      log.info(`[EDGE] Status: ${status}, tries: ${tries}`)
+    } while (status !== 'closed' && tries < FILLED_ORDER_TRIES)
+
+    if (status !== 'closed') {
+      log.warn(`[EDGE] Order was not filled`)
+      try {
+        await args.api.cancelOrder(id)
+      } catch (e) {
+        throw new TraversalAPIError(this, `Cancelorder failed for id ${id}`,  e.message)
+      }
+      log.warn(`[EDGE] Edge traversal (Order) was cancelled`)
+
+      throw new OrderFillTimeoutError(this, `Order was not filled after ${tries} tries`)
+    }
 
     log.info(`[EDGE] Order was filled. Duration: ${Date.now() - now}`)
 
@@ -164,9 +187,8 @@ export class VirtualEdge extends Edge {
     args.price = 1 / this.price
     args.volume = args.volume / args.price
 
-
     return await this.placeAndFillOrder({
-      type: 'limit',
+      type: args.type ? args.type : 'limit',
       side: 'buy',
       ...args
     })

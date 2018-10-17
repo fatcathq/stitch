@@ -3,6 +3,10 @@ import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
 import { Currency, Triangle, OrderDetails, Volume } from '../types'
+import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+
+const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD']
+const DECIMAL_POINT_PRECISION = 6
 
 // TODO: Rename it to OpportunityWrapper or OpportunityContainer?
 export default class {
@@ -92,7 +96,16 @@ export default class {
         mock: mock
       } as OrderDetails
 
-      const traversed = await edge.traverse(details)
+      let traversed
+
+      try {
+        traversed = await edge.traverse(details)
+      } catch (e) {
+        if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
+          await this.backToSafety(api, e.edge.source, volumeIt)
+          return false
+        }
+      }
 
       if (!traversed) {
         log.error(`[OPPORTUNITY] Cannot exploit opportunity ${this.getNodes()}. Edge traversal failed for ${edge.stringified}`)
@@ -105,6 +118,38 @@ export default class {
     }
 
     return true
+  }
+
+  /**
+   * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
+   */
+  private backToSafety(api: any, currency: Currency, volume: Volume) {
+    log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
+
+    this.changeStartingPoint(currency)
+
+    let volumeIt = volume
+
+    for (const edge of this.triangle) {
+      log.info(`[OPPORTUNITY_FALLBACK], Testing edge ${edge.stringified}`)
+
+      if (edge.source in NEUTRAL_COINS) {
+        log.info(`[OPPORTUNITY_FALLBACK] Back to neutral currency: ${edge.source}`)
+        return
+      }
+
+      log.info(`[OPPORTUNITY_FALLBACK] Creating market order to leave from non neutral currency: ${edge.source}`)
+
+      const details = {
+        type: 'market',
+        volume: volumeIt,
+        api: api,
+      } as OrderDetails
+
+      edge.traverse(details)
+
+      volumeIt *= (1 - edge.fee) * edge.getPrice()
+    }
   }
 
   public async save() {
@@ -136,7 +181,7 @@ export default class {
       volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
 
-    return volumeIt
+    return parseFloat(volumeIt.toFixed(DECIMAL_POINT_PRECISION))
   }
 
   private getMinVolume(): number {
@@ -150,8 +195,7 @@ export default class {
       volumeIt *= edge.getPrice() * (1 - edge.fee)
     }
 
-
-    return volumeIt
+    return parseFloat(volumeIt.toFixed(DECIMAL_POINT_PRECISION))
   }
 
   private calculateArbitrage (triangle: Triangle): number {
