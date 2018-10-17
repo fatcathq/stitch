@@ -188,6 +188,10 @@ export default class {
     let volumeIt = this.triangle[0].minVolume
 
     for (const edge of this.triangle) {
+      if (edge.minVolume === 0) {
+        return 0
+      }
+
       if (volumeIt < edge.minVolume) {
         volumeIt = edge.minVolume
       }
