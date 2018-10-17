@@ -1,5 +1,7 @@
-import { Market, Triangle, Edge } from '../types'
 const Graph = require('graphlib').Graph
+const minTradeVolumes = require('../../data/min_volumes')
+
+import { Market, Triangle, Edge } from '../types'
 import log from '../loggers/winston'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
@@ -18,10 +20,19 @@ export default class extends Graph {
         return
       }
 
-      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, market.limits.amount.min))
+      let minVolume: number
+
+      if (minTradeVolumes[exchange] && minTradeVolumes[exchange][market.base]) {
+        minVolume  = minTradeVolumes[exchange][market.base]
+      }
+      else {
+        minVolume = market.limits.amount.min
+      }
+
+      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, minVolume))
 
       // TODO: Fix min volume
-      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, market.limits.amount.min * market.limits.price.min))
+      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, 0))
     })
   }
 
@@ -39,6 +50,10 @@ export default class extends Graph {
       try {
         this.edge(asset, currency).setPrice(market.bid)
         this.edge(currency, asset).setPrice(market.ask)
+
+        if ((this.edge(currency, asset)).minVolume === 0) {
+          this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume * market.ask
+        }
       }
       catch (e) {
         log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol, e.message)
