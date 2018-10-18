@@ -60,11 +60,11 @@ export function getRotated (array: any[], count: number) {
   return array
 }
 
-export function financial(num: number | string): number {
+export function financial(num: number | string, precision = DECIMAL_POINT_PRECISION): number {
   if (typeof num === 'string') {
-    return Number(parseFloat(num).toFixed(DECIMAL_POINT_PRECISION))
+    return Number(parseFloat(num).toFixed(precision))
   }
   else {
-    return Number(num.toFixed(DECIMAL_POINT_PRECISION) )
+    return Number(num.toFixed(precision) )
   }
 }

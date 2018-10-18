@@ -1,4 +1,4 @@
-import { Balance, Currency } from '../types'
+import { Balance, Currency, Precisions } from '../types'
 import log from '../loggers/winston'
 import { numberIsDeformed, financial } from '../utils/helpers'
 import Opportunity from '../models/opportunity'
@@ -7,16 +7,19 @@ const _ = require('lodash')
 
 const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.8
+const DECIMAL_POINT_PRECISION = 6
 
 export default class BalanceHandler {
   public balance: Balance = {}
   private api: any
+  private precisions: {[key: string]: number} ={}
 
   constructor (api: any) {
     this.api = api
   }
 
-  public async init() {
+  public async init(precisions: Precisions) {
+    this.precisions = precisions
     await this.update()
   }
 
@@ -32,11 +35,11 @@ export default class BalanceHandler {
     this.balance = {}
 
     for (const currency of Object.keys(balance)) {
-      if (numberIsDeformed(balance[currency]) || balance[currency] === 0 || EXCLUDE.includes(currency)) {
+      if (numberIsDeformed(balance[currency]) || financial(balance[currency]) === 0 || EXCLUDE.includes(currency)) {
         continue
       }
 
-      this.balance[currency] =  financial(balance[currency])
+      this.balance[currency] =  financial(balance[currency], (this.precisions[currency] ? this.precisions[currency] : DECIMAL_POINT_PRECISION))
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
@@ -65,8 +68,14 @@ export default class BalanceHandler {
 
     log.info(`[SUFFICIENT_BALANCE_CHECK] Triangle ${opportunity.getNodes()}. Volumes: [${opportunity.minVolume}, ${opportunity.maxVolume}]. Balance: ${balance} ${opportunity.getReferenceUnit()}`)
 
-    return opportunity.minVolume < opportunity.maxVolume
+    console.log('minVolume---------------', Number(opportunity.minVolume) * MIN_VOLUME_SAFETY_MARGIN, balance)
+    console.log('minVolume < maxVolume', opportunity.minVolume, opportunity.maxVolume, opportunity.minVolume < opportunity.maxVolume)
+    console.log('opportunity.minVolume < balance', Number(opportunity.minVolume), balance, Number(opportunity.minVolume) * MIN_VOLUME_SAFETY_MARGIN < balance)
+    const shouldTrade =  opportunity.minVolume < opportunity.maxVolume
         && opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance
+
+    console.log('shouldTrade', shouldTrade)
+    return shouldTrade
   }
 
   public getIntersection (opportunity: Opportunity) {

@@ -28,3 +28,7 @@ export type OrderDetails = {
 export type OpportunityMap = {
   [key: string]: Opportunity
 }
+
+export type Precisions = {
+  [key: string]: number
+}

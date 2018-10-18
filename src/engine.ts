@@ -1,6 +1,6 @@
 import Balance from './models/balance'
 import Opportunity from './models/opportunity'
-import { Currency } from './types'
+import { Currency, Precisions } from './types'
 import log from './loggers/winston'
 import config from  './utils/config'
 
@@ -15,6 +15,7 @@ export default class Engine {
   public api: any
   private locked: boolean
   private mock: boolean = !config.activeTrading
+  private precisions: Precisions = {}
 
   constructor(api: any, mock = false) {
     this.api = api
@@ -23,8 +24,9 @@ export default class Engine {
     this.locked = false
   }
 
-  public async init() {
-    await this.balance.init()
+  public async init(markets: any) {
+    this.precisions = Engine.marketsToPrecisions(markets)
+    await this.balance.init(this.precisions)
   }
 
   public hasExploitableCurrency(opportunity: Opportunity) : Currency | undefined {
@@ -95,5 +97,20 @@ export default class Engine {
 
   private unlock() {
     this.locked = false
+  }
+
+  public static marketsToPrecisions(markets: any): Precisions {
+    let precisions: Precisions = {}
+
+    for (const id of Object.keys(markets)) {
+      const market = markets[id]
+      precisions[market.base] = market.precision.amount
+      precisions[market.quote] = market.precision.price
+    }
+
+    log.info(`[ENGINE] Precisions updated`)
+    console.log(precisions)
+
+    return precisions
   }
 }

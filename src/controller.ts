@@ -29,8 +29,10 @@ export default class StitchController extends EventEmmiter {
   }
 
   async init() {
-    await this.engine.init()
-    await this.finder.init()
+    const markets = await this.api.loadMarkets()
+
+    await this.engine.init(markets)
+    await this.finder.init(markets)
 
     this.registerListeners()
   }

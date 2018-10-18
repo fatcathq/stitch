@@ -83,8 +83,8 @@ export default class {
 
     let volumeIt = financial(startingBalance)
 
-    log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${(this.arbitrage - 1) * startingBalance} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] Starting Volume ${volumeIt} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${financial((this.arbitrage - 1) * startingBalance)} ${this.getReferenceUnit()}`)
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
@@ -127,7 +127,7 @@ export default class {
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
-      volumeIt *= financial((1 - edge.fee) * edge.getPrice())
+      volumeIt *= financial((1 - edge.fee) * edge.getPrice(), edge.targetPrecision)
     }
 
     return true

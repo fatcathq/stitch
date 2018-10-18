@@ -29,10 +29,10 @@ export default class extends Graph {
         minVolume = market.limits.amount.min
       }
 
-      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, minVolume))
+      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, minVolume, [market.precision.amount, market.precision.price]))
 
       // TODO: Fix min volume
-      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, 0))
+      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, 0, [market.precision.price, market.precision.amount]))
     })
   }
 

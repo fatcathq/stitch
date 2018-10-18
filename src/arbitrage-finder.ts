@@ -19,8 +19,8 @@ export default class ArbitrageFinder extends EventEmmiter {
     this.api = api
   }
 
-  async init (): Promise<void> {
-    this.graph = new Graph(this.exchange, await this.api.loadMarkets())
+  async init (markets: any): Promise<void> {
+    this.graph = new Graph(this.exchange, markets)
   }
 
   async run (): Promise<void> {

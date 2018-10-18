@@ -2,6 +2,7 @@ import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+import { financial } from '../utils/helpers'
 
 const FILLED_ORDER_TRIES = 6
 
@@ -9,6 +10,8 @@ export class Edge {
   public virtual: boolean = false
   public source: Currency
   public target: Currency
+  public sourcePrecision: number
+  public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
   public volume: Volume = Infinity // Volume of OrderBook Top
@@ -17,11 +20,15 @@ export class Edge {
   // Price is target unit (in both Edge and VirtualEdge)
   protected price: Price = 0
 
-  constructor (source: string, target: string, fee: number, minVolume: Volume) {
+  constructor (source: string, target: string, fee: number, minVolume: Volume, precisions: [number, number]) {
     this.source = source
     this.target = target
     this.fee = fee
     this.minVolume = minVolume
+
+    this.sourcePrecision = precisions[0]
+    this.targetPrecision = precisions[1]
+
     this.stringified = `${this.source} -> ${this.target}`
   }
 
@@ -50,7 +57,7 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price * (1 - this.fee)} ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target})`)
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
@@ -85,7 +92,7 @@ export class Edge {
 
     try {
       log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
-      const res = await args.api[method](this.getMarket(), args.volume, args.price)
+      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision), args.price)
 
       id = res.id
     }
@@ -150,14 +157,17 @@ export class Edge {
 }
 
 export class VirtualEdge extends Edge {
-  constructor (source: string, target: string, fee: number, minVolume: number) {
-    super(source, target, fee, minVolume)
+  public realPrice: number = 0
+
+  constructor (source: string, target: string, fee: number, minVolume: number, precisions: [number, number]) {
+    super(source, target, fee, minVolume, precisions)
     this.virtual = true
-    this.stringified = `${this.source} -> ${this.target}`
   }
 
   public setPrice(price: number) {
     this.price = 1 / price
+    this.realPrice = price
+
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
@@ -178,13 +188,13 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${args.volume * this.price * (1 - this.fee) } ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target}`)
 
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
      */
-    args.price = 1 / this.price
+    args.price = this.realPrice
     args.volume = args.volume / args.price
 
     return await this.placeAndFillOrder({
