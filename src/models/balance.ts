@@ -35,11 +35,13 @@ export default class BalanceHandler {
     this.balance = {}
 
     for (const currency of Object.keys(balance)) {
-      if (numberIsDeformed(balance[currency]) || financial(balance[currency]) === 0 || EXCLUDE.includes(currency)) {
+      const precision = this.precisions[currency] ? this.precisions[currency] : DECIMAL_POINT_PRECISION
+
+      if (numberIsDeformed(balance[currency]) || financial(balance[currency], precision) === 0 || EXCLUDE.includes(currency)) {
         continue
       }
 
-      this.balance[currency] =  financial(balance[currency], (this.precisions[currency] ? this.precisions[currency] : DECIMAL_POINT_PRECISION))
+      this.balance[currency] =  financial(balance[currency], precision)
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
@@ -47,7 +49,7 @@ export default class BalanceHandler {
   }
 
   public get (currency: Currency) {
-    return this.balance[currency]
+    return this.balance[currency] ? this.balance[currency] : 0
   }
 
   public has (currency: Currency) {
