@@ -2,49 +2,52 @@
 import Api from '../src/connectors/api'
 import { Edge, VirtualEdge } from '../src/models/edge'
 import Balance from '../src/models/balance'
+import Engine from '../src/engine'
 import { OrderDetails, Currency } from '../src/types'
+import { financial } from '../src/utils/helpers'
 
-async function testEdge (asset: Currency, currency: Currency, isVirtual: boolean = false, fee: number = 0.002, minVolume: number = 0) {
+async function testEdge (asset: Currency, currency: Currency, isVirtual: boolean = false, fee: number = 0.0020, minVolume: number = 0) {
   const api = new Api()
-
   const balance = new Balance(api)
-  await balance.init()
+  const precisions = Engine.marketsToPrecisions(await api.loadMarkets())
+  await balance.init(precisions)
 
-  const prev_balance_asset = balance.get(asset)
-  const prev_balance_currency = balance.get(currency)
+  let preTradeBalanceAsset = balance.get(asset)
+  let forTradeVolume = preTradeBalanceAsset
 
   let edge
   if (isVirtual) {
-    edge = new VirtualEdge(asset, currency, fee, minVolume)
+    edge = new VirtualEdge(asset, currency, fee, minVolume, [precisions[asset], precisions[currency]])
   }
   else {
-    edge = new Edge(asset, currency, fee, minVolume)
+    edge = new Edge(asset, currency, fee, minVolume, [precisions[currency], precisions[asset]])
   }
 
   await edge.updateFromAPI(api)
 
-  console.log(`[TEST] We should get volume = ${prev_balance_asset} * price = ${edge.getPrice()} * (1 - fee = ${fee})= ${prev_balance_asset * edge.getPrice() * (1 - fee)} ${currency}`)
+  console.log(`[TEST] We should get Volume * Price * (1 - fee) =>`)
+  console.log(`[TEST] => ${preTradeBalanceAsset} * ${edge.getPrice()} * ${1 - fee} = ${forTradeVolume * edge.getPrice() * (1 - fee)} ${currency}`)
 
   const details = {
-    volume: prev_balance_asset,
+    volume: forTradeVolume,
     api: api,
     mock: false
   } as OrderDetails
 
   await edge.traverse(details)
+  const afterTradeBalanceEstimation = preTradeBalanceAsset * edge.getPrice() * (1 - fee)
 
   await balance.update()
 
-  const new_balance_asset = balance.get(asset)
-  const new_balance_currency = balance.get(currency)
+  //console.log('After trade balance from api:', afterTradeBalanceAPI)
+  console.log('After trade balance from estimation:', financial(afterTradeBalanceEstimation, precisions[currency]))
+  console.log('Real balance', balance.get(currency))
 
-  console.log(`[TEST] Got ${new_balance_currency} - ${prev_balance_currency !== undefined ? prev_balance_asset : 0} ${currency}`)
-  console.log(`[TEST] Left ${new_balance_asset !== undefined ? new_balance_asset : 0} ${asset} in the asset unit`)
+  console.log(`[TEST] Left ${balance.get(asset)} ${asset} in the asset unit`)
 }
 
 async function testTraverseCycle (from: Currency, to: Currency) {
-  await testEdge(from, to)
-  await testEdge(to, from, true)
+  await testEdge(from, to, true)
 }
 
-testTraverseCycle('LTC', 'BTC')
+testTraverseCycle('BTC', 'ZEC')
