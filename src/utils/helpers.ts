@@ -1,6 +1,7 @@
 import { Triangle, Volume, Currency } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
+import Decimal from 'decimal.js'
 
 const DECIMAL_POINT_PRECISION = 6
 
@@ -60,13 +61,10 @@ export function getRotated (array: any[], count: number) {
   return array
 }
 
-export function financial(num: number | string, precision = DECIMAL_POINT_PRECISION): number {
-  if (typeof num === 'string') {
-    return Number(parseFloat(num).toFixed(precision))
-  }
-  else {
-    return Number(num.toFixed(precision) )
-  }
+export function financial(num: number | string | Decimal, precision = DECIMAL_POINT_PRECISION): number {
+  const n = new Decimal(num)
+
+  return Number(n.toFixed(precision))
 }
 
 export function smartCompare(a: Volume, b: Volume, unit: Currency) {

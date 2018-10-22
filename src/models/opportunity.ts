@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js'
 import {Edge as EdgeDriver} from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
@@ -81,7 +82,7 @@ export default class {
       return false
     }
 
-    let volumeIt = financial(startingBalance)
+    let volumeIt = new Decimal(startingBalance)
 
     log.info(`[EXPLOIT] Starting Volume ${volumeIt} ${this.getReferenceUnit()}`)
     log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${financial((this.arbitrage - 1) * startingBalance)} ${this.getReferenceUnit()}`)
@@ -104,7 +105,7 @@ export default class {
 
       const details = {
         type: type,
-        volume: volumeIt,
+        volume: volumeIt.toNumber(),
         api: api,
         mock: mock
       } as OrderDetails
@@ -127,7 +128,7 @@ export default class {
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
-      volumeIt *= financial((1 - edge.fee) * edge.getPrice(), edge.targetPrecision)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(1 - edge.fee)
     }
 
     return true
@@ -136,12 +137,12 @@ export default class {
   /**
    * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
    */
-  private backToSafety(api: any, currency: Currency, volume: Volume) {
+  private backToSafety(api: any, currency: Currency, volume: Decimal) {
     log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
 
     this.changeStartingPoint(currency)
 
-    let volumeIt = volume
+    let volumeIt = new Decimal(volume)
 
     for (const edge of this.triangle) {
       log.info(`[OPPORTUNITY_FALLBACK], Testing edge ${edge.stringified}`)
@@ -155,13 +156,13 @@ export default class {
 
       const details = {
         type: 'market',
-        volume: volumeIt,
+        volume: volumeIt.toNumber(),
         api: api,
       } as OrderDetails
 
       edge.traverse(details)
 
-      volumeIt *= (1 - edge.fee) * edge.getPrice()
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(1 - edge.fee)
     }
   }
 
@@ -180,10 +181,10 @@ export default class {
   }
 
   private getMaxVolume (): number {
-    let volumeIt = this.triangle[0].volume
+    let volumeIt = this.triangle[0].getVolumeAsDecimal()
 
     for (const edge of this.triangle) {
-      if (edge.volume === Infinity) {
+      if (!edge.volume.isFinite()) {
         return Infinity
       }
 
@@ -191,25 +192,25 @@ export default class {
         volumeIt = edge.volume
       }
 
-      volumeIt *= edge.getPrice() * (1 - edge.fee)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((1 - edge.fee))
     }
 
     return financial(volumeIt)
   }
 
   private getMinVolume(): number {
-    let volumeIt = this.triangle[0].minVolume
+    let volumeIt = new Decimal(this.triangle[0].minVolume)
 
     for (const edge of this.triangle) {
       if (edge.minVolume === 0) {
         return 0
       }
 
-      if (volumeIt < edge.minVolume) {
-        volumeIt = edge.minVolume
+      if (volumeIt.toNumber() < edge.minVolume) {
+        volumeIt = new Decimal(edge.minVolume)
       }
 
-      volumeIt *= edge.getPrice() * (1 - edge.fee)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((1 - edge.fee))
     }
 
     return financial(volumeIt)

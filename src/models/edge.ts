@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js'
 import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
@@ -14,11 +15,11 @@ export class Edge {
   public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
-  public volume: Volume = Infinity // Volume of OrderBook Top
+  public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: number = 0
   public stringified: string
   // Price is target unit (in both Edge and VirtualEdge)
-  protected price: Price = 0
+  protected price: Decimal = new Decimal(0)
 
   constructor (source: string, target: string, fee: number, minVolume: Volume, precisions: [number, number]) {
     this.source = source
@@ -33,12 +34,24 @@ export class Edge {
   }
 
   public setPrice (price: Price): void {
-    this.price = price
+    this.price = new Decimal(price)
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
   public getPrice(): Price {
+    return this.price.toNumber()
+  }
+
+  public getVolume(): Volume {
+    return this.volume.toNumber()
+  }
+
+  public getPriceAsDecimal(): Decimal {
     return this.price
+  }
+
+  public getVolumeAsDecimal(): Decimal {
+    return this.volume
   }
 
   public getMarket (): string {
@@ -49,20 +62,18 @@ export class Edge {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
     const [price, volume] = ob.bids[0]
 
-    this.price = price
-    this.volume = volume
+    this.price = new Decimal(price)
+    this.volume = new Decimal(volume)
   }
 
   /*
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target})`)
-
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: 'sell',
-      price: this.price,
+      price: this.getPrice(),
       ...args
     })
   }
@@ -73,7 +84,9 @@ export class Edge {
    */
   public async placeAndFillOrder(args: OrderDetails): Promise<boolean> {
     log.info(`[EDGE] Placing order ${this.source} -> ${this.target}`)
-    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target})`)
+
+    const expected = this.getPriceAsDecimal().mul(args.volume).mul(1 - this.fee)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(expected, this.targetPrecision)} ${this.target})`)
 
     if (args.mock) {
       log.info(`[EDGE] Mocking the trade`)
@@ -154,22 +167,19 @@ export class Edge {
       target: this.target,
       price: this.price,
       taker_fee: this.fee,
-      volume: this.volume !== Infinity ? this.volume : null
+      volume: this.getVolume() !== Infinity ? this.volume : null
     })
   }
 }
 
 export class VirtualEdge extends Edge {
-  public realPrice: number = 0
-
   constructor (source: string, target: string, fee: number, minVolume: number, precisions: [number, number]) {
     super(source, target, fee, minVolume, precisions)
     this.virtual = true
   }
 
   public setPrice(price: number) {
-    this.price = 1 / price
-    this.realPrice = price
+    this.price = new Decimal(price).pow(-1)
 
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
@@ -187,7 +197,7 @@ export class VirtualEdge extends Edge {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
-    this.volume = volume * price
+    this.volume = new Decimal(volume).mul(price)
   }
 
   public async traverse (args: OrderDetails): Promise<boolean> {
@@ -195,8 +205,8 @@ export class VirtualEdge extends Edge {
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
      */
-    args.price = this.realPrice
-    args.volume = args.volume / args.price
+    args.price = this.price.pow(-1).toNumber()
+    args.volume = new Decimal(args.volume).div(args.price).toNumber()
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
