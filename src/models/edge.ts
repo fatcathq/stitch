@@ -73,6 +73,7 @@ export class Edge {
    */
   public async placeAndFillOrder(args: OrderDetails): Promise<boolean> {
     log.info(`[EDGE] Placing order ${this.source} -> ${this.target}`)
+    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target})`)
 
     if (args.mock) {
       log.info(`[EDGE] Mocking the trade`)
@@ -129,7 +130,9 @@ export class Edge {
     if (status !== 'closed') {
       log.warn(`[EDGE] Order was not filled`)
       try {
-        await args.api.cancelOrder(id)
+        const res = await args.api.cancelOrder(id)
+        log.info(`[EDGE] Order was cancelled`)
+        console.log(res)
       } catch (e) {
         throw new TraversalAPIError(this, `Cancelorder failed for id ${id}`,  e.message)
       }
@@ -188,8 +191,6 @@ export class VirtualEdge extends Edge {
   }
 
   public async traverse (args: OrderDetails): Promise<boolean> {
-    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(args.volume * this.price * (1 - this.fee), this.targetPrecision)} ${this.target}`)
-
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
