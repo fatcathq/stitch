@@ -3,6 +3,7 @@ import Opportunity from './models/opportunity'
 import { Currency, Precisions } from './types'
 import log from './loggers/winston'
 import config from  './utils/config'
+import Decimal from 'decimal.js'
 
 /*
  * Kraken doesn't trade on maxVolume.
@@ -59,10 +60,10 @@ export default class Engine {
 
     if (opportunity.maxVolume < this.balance.get(currency)) {
       log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
-      startingBalance = opportunity.maxVolume * MAX_VOLUME_SAFETY_THRESHOLD
+      startingBalance = new Decimal(opportunity.maxVolume).mul(MAX_VOLUME_SAFETY_THRESHOLD)
     }
     else {
-      startingBalance = this.balance.get(currency) * MAX_VOLUME_SAFETY_THRESHOLD
+      startingBalance = new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
     }
 
     const exploited = await opportunity.exploit(this.api, currency, startingBalance, this.mock)

@@ -85,8 +85,6 @@ export class Edge {
   public async placeAndFillOrder(args: OrderDetails): Promise<boolean> {
     log.info(`[EDGE] Placing order ${this.source} -> ${this.target}`)
 
-    log.info(`[ACTIVE_TRADING] Expecting to get ${financial(this.estimateVolumeAfterTraversal(args.volume), this.targetPrecision)} ${this.target})`)
-
     if (args.mock) {
       log.info(`[EDGE] Mocking the trade`)
     }
@@ -105,7 +103,7 @@ export class Edge {
 
     try {
       log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
-      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision), args.price)
+      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision).toNumber(), args.price)
 
       id = res.id
     }
@@ -156,10 +154,6 @@ export class Edge {
     log.info(`[EDGE] Order was filled. Duration: ${Date.now() - now}`)
 
     return true
-  }
-
-  public estimateVolumeAfterTraversal(volume: number): number {
-    return this.getPriceAsDecimal().mul(volume).mul(1 - this.fee).toNumber()
   }
 
   public async save(cycleId: number) {

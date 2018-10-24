@@ -37,11 +37,11 @@ export default class BalanceHandler {
     for (const currency of Object.keys(balance)) {
       const precision = this.precisions[currency] ? this.precisions[currency] : DECIMAL_POINT_PRECISION
 
-      if (numberIsDeformed(balance[currency]) || financial(balance[currency], precision) === 0 || EXCLUDE.includes(currency)) {
+      if (numberIsDeformed(balance[currency]) || financial(balance[currency], precision).toNumber() === 0 || EXCLUDE.includes(currency)) {
         continue
       }
 
-      this.balance[currency] =  financial(balance[currency], precision)
+      this.balance[currency] =  financial(balance[currency], precision).toNumber()
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)

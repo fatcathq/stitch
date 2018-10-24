@@ -27,6 +27,7 @@ export default class {
 
     this.minVolume = this.getMinVolume()
   }
+
   public setIterator(it: Iterator) {
     this.iterator = it
   }
