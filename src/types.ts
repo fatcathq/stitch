@@ -1,5 +1,6 @@
-import { Edge as EdgeDriver } from './models/edge'
+import { Edge } from './models/edge'
 import Opportunity from './models/opportunity'
+import Decimal from 'decimal.js'
 
 export type Market = {
   [key: string]: any
@@ -9,7 +10,7 @@ type Api = any
 export type Node = string
 export type Currency = string
 export type Edge = { v: Node, w: Node }
-export type Triangle = EdgeDriver[]
+export type Triangle = Edge[]
 export type Balance = {
   [key: string]: Volume
 }
@@ -32,3 +33,5 @@ export type OpportunityMap = {
 export type Precisions = {
   [key: string]: number
 }
+
+export type Iterator = (it: Decimal, edge: Edge) => Decimal

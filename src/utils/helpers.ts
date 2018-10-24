@@ -61,10 +61,10 @@ export function getRotated (array: any[], count: number) {
   return array
 }
 
-export function financial(num: number | string | Decimal, precision = DECIMAL_POINT_PRECISION): number {
+export function financial(num: number | string | Decimal, precision = DECIMAL_POINT_PRECISION): Decimal {
   const n = new Decimal(num)
 
-  return Number(n.toFixed(precision))
+  return new Decimal(n.toFixed(precision))
 }
 
 export function smartCompare(a: Volume, b: Volume, unit: Currency) {

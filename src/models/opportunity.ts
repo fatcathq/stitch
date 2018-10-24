@@ -1,9 +1,9 @@
 import Decimal from 'decimal.js'
-import {Edge as EdgeDriver} from './edge'
+import { Edge } from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated, financial } from '../utils/helpers'
-import { Currency, Triangle, OrderDetails, Volume } from '../types'
+import { Currency, Triangle, OrderDetails, Volume, Iterator } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
@@ -11,15 +11,14 @@ const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 export default class {
   public id: string
   public arbitrage: number
-  public exchange: string
   public maxVolume: Volume = Infinity
   public minVolume: Volume
+  public iterator: Iterator = function() {return new Decimal(0)}
   public created: Date = new Date()
   private triangle: Triangle
   private refUnit: string
 
-  constructor (exchange: string, triangle: EdgeDriver[]) {
-    this.exchange = exchange
+  constructor (triangle: Edge[]) {
     this.triangle = triangle
 
     this.refUnit = triangle[0].source
@@ -27,6 +26,9 @@ export default class {
     this.id = this.generateIndex(triangle)
 
     this.minVolume = this.getMinVolume()
+  }
+  public setIterator(it: Iterator) {
+    this.iterator = it
   }
 
   public contains (unit: Currency) {
@@ -46,7 +48,7 @@ export default class {
   }
 
   public changeStartingPoint (currency: Currency) {
-    const index = this.triangle.findIndex((edge: EdgeDriver) => edge.source === currency)
+    const index = this.triangle.findIndex((edge: Edge) => edge.source === currency)
 
     if (!this.contains(currency)) {
       throw new Error('Invalid reference unit')
@@ -69,7 +71,7 @@ export default class {
     log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
     // No worries, caching will do it's job
-    await Promise.all(this.triangle.map((edge: EdgeDriver) => edge.updateFromAPI(api)))
+    await Promise.all(this.triangle.map((edge: Edge) => edge.updateFromAPI(api)))
 
     this.maxVolume = this.getMaxVolume()
   }
@@ -128,7 +130,7 @@ export default class {
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(1 - edge.fee)
+      volumeIt = this.iterator(volumeIt, edge)
     }
 
     return true
@@ -172,12 +174,11 @@ export default class {
       closed_at: new Date(),
       min_trade_volume: this.getMinVolume(),
       max_trade_volume: this.maxVolume === Infinity ? null : this.maxVolume,
-      exchange: this.exchange,
-      cycle: this.triangle.map((edge: EdgeDriver) => edge.source),
+      cycle: this.triangle.map((edge: Edge) => edge.source),
       arbitrage: this.arbitrage,
     }).returning('id')
 
-    return this.triangle.map((edge: EdgeDriver) => edge.save(res[0]))
+    return this.triangle.map((edge: Edge) => edge.save(res[0]))
   }
 
   private getMaxVolume (): number {
@@ -192,10 +193,10 @@ export default class {
         volumeIt = edge.volume
       }
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((1 - edge.fee))
+      volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return financial(volumeIt)
+    return financial(volumeIt).toNumber()
   }
 
   private getMinVolume(): number {
@@ -210,10 +211,10 @@ export default class {
         volumeIt = new Decimal(edge.minVolume)
       }
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((1 - edge.fee))
+      volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return financial(volumeIt)
+    return financial(volumeIt).toNumber()
   }
 
   private calculateArbitrage (triangle: Triangle): number {
