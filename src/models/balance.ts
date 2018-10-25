@@ -7,7 +7,7 @@ const _ = require('lodash')
 
 const EXCLUDE: any[] = []
 const MIN_VOLUME_SAFETY_MARGIN = 1 / 0.8
-const DECIMAL_POINT_PRECISION = 6
+const DECIMAL_POINT_PRECISION = 15
 
 export default class BalanceHandler {
   public balance: Balance = {}
@@ -48,7 +48,7 @@ export default class BalanceHandler {
     console.log(this.balance)
   }
 
-  public get (currency: Currency) {
+  public get (currency: Currency): number {
     return this.balance[currency] ? this.balance[currency] : 0
   }
 
