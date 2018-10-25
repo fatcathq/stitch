@@ -93,7 +93,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     const triangles = this.graph.getTriangles()
 
     for (const triangle of triangles) {
-      const opportunity = new Opportunity(triangle)
+      const opportunity = new Opportunity(this.exchange, triangle)
 
       if (opportunity.arbitrage > config.threshold) {
         opportunities[opportunity.id] = opportunity

@@ -13,12 +13,14 @@ export default class {
   public arbitrage: number
   public maxVolume: Volume = Infinity
   public minVolume: Volume
+  public exchange: string
   public iterator: Iterator = function() {return new Decimal(0)}
   public created: Date = new Date()
   private triangle: Triangle
   private refUnit: string
 
-  constructor (triangle: Edge[]) {
+  constructor (exchange: string, triangle: Edge[]) {
+    this.exchange = exchange
     this.triangle = triangle
 
     this.refUnit = triangle[0].source
