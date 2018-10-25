@@ -68,15 +68,12 @@ export default class BalanceHandler {
 
     const balance = this.balance[opportunity.getReferenceUnit()]
 
-    log.info(`[SUFFICIENT_BALANCE_CHECK] Triangle ${opportunity.getNodes()}. Volumes: [${opportunity.minVolume}, ${opportunity.maxVolume}]. Balance: ${balance} ${opportunity.getReferenceUnit()}`)
+    log.info(`[SUFFICIENT_BALANCE_CHECK] Triangle ${opportunity.getNodes()}.
+              Volumes: [${opportunity.minVolume}, ${opportunity.maxVolume}].
+              Balance: ${balance} ${opportunity.getReferenceUnit()}`)
 
-    console.log('minVolume---------------', Number(opportunity.minVolume) * MIN_VOLUME_SAFETY_MARGIN, balance)
-    console.log('minVolume < maxVolume', opportunity.minVolume, opportunity.maxVolume, opportunity.minVolume < opportunity.maxVolume)
-    console.log('opportunity.minVolume < balance', Number(opportunity.minVolume), balance, Number(opportunity.minVolume) * MIN_VOLUME_SAFETY_MARGIN < balance)
-    const shouldTrade =  opportunity.minVolume < opportunity.maxVolume
-        && opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance
+    const shouldTrade =  (opportunity.minVolume < opportunity.maxVolume) && (opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance)
 
-    console.log('shouldTrade', shouldTrade)
     return shouldTrade
   }
 
@@ -88,27 +85,23 @@ export default class BalanceHandler {
     return this.balance
   }
 
-  public compareWithCheckpoint(oldBalance: Balance) {
-    let diff: Balance = {}
+  public compareWithCheckpoint(oldBalance: Balance): Balance {
+    let difference: Balance = {}
 
-    for (const currency of Object.keys(oldBalance)) {
-      // Balance in this currency doesn't exist anymore
-      if (!(currency in this.balance)) {
-        diff[currency] = - oldBalance[currency]
-      }
-      else if (oldBalance[currency] !== this.balance[currency]) {
-        // Balance in this currency changed
-        diff[currency] = this.balance[currency] - oldBalance[currency]
+    for (const currency in oldBalance) {
+      const diff = this.get(currency) - oldBalance[currency]
+
+      if (diff !== 0) {
+        difference[currency] = diff
       }
     }
 
-    // New balance
-    for (const currency of Object.keys(oldBalance)) {
+    for (const currency in this.balance) {
       if (!(currency in oldBalance)) {
-        diff[currency] = this.balance[currency]
+        difference[currency] = this.get(currency)
       }
     }
 
-    return diff
+    return difference
   }
 }

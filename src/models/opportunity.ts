@@ -90,7 +90,7 @@ export default class {
     let volumeIt = new Decimal(startingBalance)
 
     log.info(`[EXPLOIT] Starting Volume ${volumeIt} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${financial((this.arbitrage - 1) * startingBalance)} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${financial((this.arbitrage - 1) * startingBalance, this.triangle[0].sourcePrecision)} ${this.getReferenceUnit()}`)
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
