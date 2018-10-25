@@ -1,9 +1,7 @@
-import { Triangle, Volume, Currency } from '../types'
+import { Triangle } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
 import Decimal from 'decimal.js'
-
-const DECIMAL_POINT_PRECISION = 6
 
 export function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)
@@ -61,25 +59,8 @@ export function getRotated (array: any[], count: number) {
   return array
 }
 
-export function financial(num: number | string | Decimal, precision = DECIMAL_POINT_PRECISION): Decimal {
+export function financial(num: number | string | Decimal, precision: number): Decimal {
   const n = new Decimal(num)
 
   return new Decimal(n.toFixed(precision))
-}
-
-export function smartCompare(a: Volume, b: Volume, unit: Currency) {
-  switch (unit) {
-    case 'BTC':
-      return financial(a, 7) === financial(b, 7)
-    break
-    case 'ETH':
-      return financial(a, 6) === financial(b, 6)
-    break
-    case 'BTC':
-      return financial(a, 6) === financial(b, 6)
-    break
-    default:
-      return financial(a, 5) === financial(b, 5)
-    break
-  }
 }
