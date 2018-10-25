@@ -199,7 +199,7 @@ export default class {
       volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return financial(volumeIt).toNumber()
+    return volumeIt.toNumber()
   }
 
   private getMinVolume(): number {
@@ -217,7 +217,7 @@ export default class {
       volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return financial(volumeIt).toNumber()
+    return volumeIt.toNumber()
   }
 
   private calculateArbitrage (triangle: Triangle): number {
