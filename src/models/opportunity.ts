@@ -234,7 +234,10 @@ export default class {
   }
 
   private calculateArbitrage (triangle: Triangle): number {
-    return triangle.reduce((acc, edge) => acc * (1 - edge.fee) * edge.getPrice(), 1)
+    log.info(`Calculating arbitrage on triangle: ${triangle.map((e) => e.source)}`)
+    return triangle.reduce((acc, edge) => {
+      return new Decimal(acc).mul(1 - edge.fee).mul(edge.getPriceAsDecimal()).toNumber()
+    }, 1)
   }
 
   private generateIndex(triangle: Triangle) {
