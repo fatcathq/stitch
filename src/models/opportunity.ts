@@ -5,6 +5,7 @@ import log from '../loggers/winston'
 import { getRotated, financial } from '../utils/helpers'
 import { Currency, Triangle, OrderDetails, Volume, Iterator } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+import { bitfinex as DefaultIterator } from '../utils/iterators'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
@@ -26,12 +27,16 @@ export default class {
     this.refUnit = triangle[0].source
     this.arbitrage = this.calculateArbitrage(triangle)
     this.id = this.generateIndex(triangle)
+    this.setIterator(DefaultIterator)
 
     this.minVolume = this.getMinVolume()
   }
 
   public setIterator(it: Iterator) {
     this.iterator = it
+
+    this.getMinVolume()
+    // this.getMaxVolume()
   }
 
   public contains (unit: Currency) {
@@ -184,7 +189,8 @@ export default class {
     return this.triangle.map((edge: Edge) => edge.save(res[0]))
   }
 
-  private getMaxVolume (): number {
+  // TODO: Calculate without including fees
+  public getMaxVolume (): number {
     let volumeIt = this.triangle[0].getVolumeAsDecimal()
 
     for (const edge of this.triangle) {
@@ -202,8 +208,10 @@ export default class {
     return volumeIt.toNumber()
   }
 
-  private getMinVolume(): number {
+  // TODO: Calculate without including fees
+  public getMinVolume(): number {
     let volumeIt = new Decimal(this.triangle[0].minVolume)
+    let fees = []
 
     for (const edge of this.triangle) {
       if (edge.minVolume === 0) {
@@ -215,9 +223,14 @@ export default class {
       }
 
       volumeIt = this.iterator(volumeIt, edge)
+      fees.push(edge.fee)
     }
 
-    return volumeIt.toNumber()
+    const reversedFees = fees.reduce((acc, fee) => {
+      return new Decimal(acc).mul(new Decimal(fee).pow(-1)).toNumber()
+    }, 1)
+
+    return volumeIt.mul(reversedFees).toNumber()
   }
 
   private calculateArbitrage (triangle: Triangle): number {
