@@ -3,7 +3,7 @@ import { Edge, VirtualEdge } from '../models/edge'
 
 // Fees are applied in always in the target of the edge
 export function bitfinex(volume: Decimal, edge: Edge): Decimal {
-  return volume.mul(edge.getPriceAsDecimal()).mul((1 - edge.fee))
+  return volume.mul(edge.getPriceAsDecimal()).mul((new Decimal(1).minus(edge.fee)))
 }
 
 /**
@@ -18,6 +18,6 @@ export function bittrex(volume: Decimal, edge: Edge): Decimal {
     return afterFee.mul(edge.getPriceAsDecimal())
   }
   else {
-    return volume.mul(edge.getPriceAsDecimal()).mul(1 - edge.fee)
+    return volume.mul(edge.getPriceAsDecimal()).mul(new Decimal(1).minus(edge.fee))
   }
 }

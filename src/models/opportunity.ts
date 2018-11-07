@@ -11,11 +11,11 @@ const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
 export default class {
   public id: string
-  public arbitrage: number
-  public maxVolume: Volume = Infinity
+  public arbitrage: Decimal
+  public maxVolume: Volume = new Decimal(Infinity)
   public minVolume: Volume
   public exchange: string
-  public iterator: Iterator = function() {return new Decimal(0)}
+  public iterator: Iterator = () => new Decimal(0)
   public created: Date = new Date()
   private triangle: Triangle
   private refUnit: string
@@ -84,10 +84,10 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public async exploit(api: any, currency: Currency, startingBalance: number, mock = true): Promise<boolean> {
+  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {
     this.changeStartingPoint(currency)
 
-    if (this.maxVolume === Infinity) {
+    if (this.maxVolume.equals(Infinity)) {
       log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
       return false
     }
@@ -95,7 +95,8 @@ export default class {
     let volumeIt = new Decimal(startingBalance)
 
     log.info(`[EXPLOIT] Starting Volume ${volumeIt} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${financial((this.arbitrage - 1) * startingBalance, this.triangle[0].sourcePrecision)} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. 
+      Expecting to gain ${financial(startingBalance.mul(this.arbitrage.minus(1)), this.triangle[0].sourcePrecision)} ${this.getReferenceUnit()}`)
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
@@ -115,7 +116,7 @@ export default class {
 
       const details = {
         type: type,
-        volume: volumeIt.toNumber(),
+        volume: volumeIt,
         api: api,
         mock: mock
       } as OrderDetails
@@ -166,13 +167,13 @@ export default class {
 
       const details = {
         type: 'market',
-        volume: volumeIt.toNumber(),
+        volume: volumeIt,
         api: api,
       } as OrderDetails
 
       edge.traverse(details)
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(1 - edge.fee)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(new Decimal(1).minus(edge.fee))
     }
   }
 
@@ -181,7 +182,7 @@ export default class {
       created_at: this.created,
       closed_at: new Date(),
       min_trade_volume: this.getMinVolume(),
-      max_trade_volume: this.maxVolume === Infinity ? null : this.maxVolume,
+      max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume,
       cycle: this.triangle.map((edge: Edge) => edge.source),
       arbitrage: this.arbitrage,
     }).returning('id')
@@ -190,12 +191,12 @@ export default class {
   }
 
   // TODO: Calculate without including fees
-  public getMaxVolume (): number {
+  public getMaxVolume (): Decimal {
     let volumeIt = this.triangle[0].getVolumeAsDecimal()
 
     for (const edge of this.triangle) {
       if (!edge.volume.isFinite()) {
-        return Infinity
+        return new Decimal(Infinity)
       }
 
       if (volumeIt > edge.volume) {
@@ -205,20 +206,20 @@ export default class {
       volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return volumeIt.toNumber()
+    return volumeIt
   }
 
   // TODO: Calculate without including fees
-  public getMinVolume(): number {
+  public getMinVolume(): Decimal {
     let volumeIt = new Decimal(this.triangle[0].minVolume)
     let fees = []
 
     for (const edge of this.triangle) {
-      if (edge.minVolume === 0) {
-        return 0
+      if (edge.minVolume.equals(0)) {
+        return new Decimal(0)
       }
 
-      if (volumeIt.toNumber() < edge.minVolume) {
+      if (volumeIt.lessThan(edge.minVolume)) {
         volumeIt = new Decimal(edge.minVolume)
       }
 
@@ -230,14 +231,15 @@ export default class {
       return new Decimal(acc).mul(new Decimal(fee).pow(-1)).toNumber()
     }, 1)
 
-    return volumeIt.mul(reversedFees).toNumber()
+    return volumeIt.mul(reversedFees)
   }
 
-  private calculateArbitrage (triangle: Triangle): number {
-    log.info(`Calculating arbitrage on triangle: ${triangle.map((e) => e.source)}`)
-    return triangle.reduce((acc, edge) => {
-      return new Decimal(acc).mul(1 - edge.fee).mul(edge.getPriceAsDecimal()).toNumber()
-    }, 1)
+  private calculateArbitrage (triangle: Triangle): Decimal {
+    return new Decimal(
+      triangle.reduce((acc, edge) => {
+        return new Decimal(acc).mul(new Decimal(1).minus(edge.fee)).mul(edge.getPriceAsDecimal()).toNumber()
+      }, 1)
+    )
   }
 
   private generateIndex(triangle: Triangle) {

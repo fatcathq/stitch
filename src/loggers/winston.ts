@@ -6,13 +6,13 @@ export class WinstonLogger implements LoggerInterface {
   public createOpportunity(opportunity: Opportunity): void {
     const [n1, n2, n3] = opportunity.getNodes()
 
-    client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}]: *${n1}, ${n2}, ${n3}*. Profit: *${(opportunity.arbitrage - 1) * 100} %*`)
+    client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}]: *${n1}, ${n2}, ${n3}*. Profit: *${(opportunity.arbitrage.minus(1).toNumber()) * 100} %*`)
   }
 
   public updateOpportunity(opportunity: Opportunity, prevArb: number): void {
     const [n1, n2, n3] = opportunity.getNodes()
 
-    client.info(`[OPPORTUNITY_UPDATE ${opportunity.exchange}]: Triangle *${n1}, ${n2}, ${n3}*. Changed arbitrage from ${prevArb} to ${opportunity.arbitrage}`)
+    client.info(`[OPPORTUNITY_UPDATE ${opportunity.exchange}]: Triangle *${n1}, ${n2}, ${n3}*. Changed arbitrage from ${prevArb} to ${opportunity.arbitrage.toNumber()}`)
   }
 
   public closeOpportunity(opportunity: Opportunity, duration: number): void {

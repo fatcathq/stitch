@@ -15,8 +15,8 @@ export type Balance = {
   [key: string]: Volume
 }
 
-export type Volume = number
-export type Price = number
+export type Volume = Decimal
+export type Price = Decimal
 export type OrderDetails = {
   side?: 'buy' | 'sell'
   type?: 'market' | 'limit'

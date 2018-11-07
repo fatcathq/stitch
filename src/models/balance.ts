@@ -2,6 +2,7 @@ import { Balance, Currency, Precisions } from '../types'
 import log from '../loggers/winston'
 import { numberIsDeformed, financial } from '../utils/helpers'
 import Opportunity from '../models/opportunity'
+import Decimal from 'decimal.js'
 
 const _ = require('lodash')
 
@@ -37,19 +38,23 @@ export default class BalanceHandler {
     for (const currency of Object.keys(balance)) {
       const precision = this.precisions[currency] ? this.precisions[currency] : DECIMAL_POINT_PRECISION
 
-      if (numberIsDeformed(balance[currency]) || financial(balance[currency], precision).toNumber() === 0 || EXCLUDE.includes(currency)) {
+      if (numberIsDeformed(balance[currency]) || financial(balance[currency], precision).equals(0) || EXCLUDE.includes(currency)) {
         continue
       }
 
-      this.balance[currency] =  financial(balance[currency], precision).toNumber()
+      this.balance[currency] =  financial(balance[currency], precision)
     }
 
-    log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
-    console.log(this.balance)
+    log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`, this.log())
+  }
+  private log (): void {
+    for (const currency in this.balance) {
+      log.info(`${currency}: ${this.balance[currency].toNumber()}`)
+    }
   }
 
-  public get (currency: Currency): number {
-    return this.balance[currency] ? this.balance[currency] : 0
+  public get (currency: Currency): Decimal {
+    return this.balance[currency] ? this.balance[currency] : new Decimal(0)
   }
 
   public has (currency: Currency) {
@@ -61,7 +66,7 @@ export default class BalanceHandler {
 
     opportunity.changeStartingPoint(currency)
 
-    if (opportunity.maxVolume === Infinity) {
+    if (opportunity.maxVolume.equals(Infinity)) {
       log.warn(`[SUFFICIENT_BALANCE_CHECK] Max Volumes of opportunity ${opportunity.getNodes()} are not defined. This shouldn't be happening`)
       return false
     }
@@ -72,7 +77,7 @@ export default class BalanceHandler {
               Volumes: [${opportunity.minVolume}, ${opportunity.maxVolume}].
               Balance: ${balance} ${opportunity.getReferenceUnit()}`)
 
-    const shouldTrade =  (opportunity.minVolume < opportunity.maxVolume) && (opportunity.minVolume * MIN_VOLUME_SAFETY_MARGIN < balance)
+    const shouldTrade =  (opportunity.minVolume < opportunity.maxVolume) && (opportunity.minVolume.mul(MIN_VOLUME_SAFETY_MARGIN).lessThan(balance))
 
     return shouldTrade
   }
@@ -89,9 +94,9 @@ export default class BalanceHandler {
     let difference: Balance = {}
 
     for (const currency in oldBalance) {
-      const diff = this.get(currency) - oldBalance[currency]
+      const diff = this.get(currency).minus(oldBalance[currency])
 
-      if (diff !== 0) {
+      if (!diff.isZero()) {
         difference[currency] = diff
       }
     }

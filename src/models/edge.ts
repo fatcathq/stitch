@@ -16,12 +16,12 @@ export class Edge {
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
   public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
-  public fee: number = 0
+  public fee: Decimal = new Decimal(0)
   public stringified: string
   // Price is target unit (in both Edge and VirtualEdge)
   protected price: Decimal = new Decimal(0)
 
-  constructor (source: string, target: string, fee: number, minVolume: Volume, precisions: [number, number]) {
+  constructor (source: string, target: string, fee: Decimal, minVolume: Volume, precisions: [number, number]) {
     this.source = source
     this.target = target
     this.fee = fee
@@ -39,11 +39,11 @@ export class Edge {
   }
 
   public getPrice(): Price {
-    return this.price.toNumber()
+    return this.price
   }
 
   public getVolume(): Volume {
-    return this.volume.toNumber()
+    return this.volume
   }
 
   public getPriceAsDecimal(): Decimal {
@@ -102,8 +102,8 @@ export class Edge {
     let id: null | number = null
 
     try {
-      log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume}, ${args.price})`)
-      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision).toNumber(), args.price)
+      log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume.toNumber()}, ${args.price!.toNumber()})`)
+      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision).toNumber(), args.price!.toNumber())
 
       id = res.id
     }
@@ -162,20 +162,20 @@ export class Edge {
       virtual: this.virtual,
       source: this.source,
       target: this.target,
-      price: this.price,
-      taker_fee: this.fee,
-      volume: this.getVolume() !== Infinity ? this.volume : null
+      price: this.price.toNumber(),
+      taker_fee: this.fee.toNumber(),
+      volume: !this.getVolume().equals(Infinity) ? this.volume.toNumber() : null
     })
   }
 }
 
 export class VirtualEdge extends Edge {
-  constructor (source: string, target: string, fee: number, minVolume: number, precisions: [number, number]) {
+  constructor (source: string, target: string, fee: Decimal, minVolume: Decimal, precisions: [number, number]) {
     super(source, target, fee, minVolume, precisions)
     this.virtual = true
   }
 
-  public setPrice(price: number) {
+  public setPrice(price: Price) {
     this.price = new Decimal(price).pow(-1)
 
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
@@ -202,8 +202,8 @@ export class VirtualEdge extends Edge {
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
      */
-    args.price = this.price.pow(-1).toNumber()
-    args.volume = new Decimal(args.volume).div(args.price).toNumber()
+    args.price = this.price.pow(-1)
+    args.volume = new Decimal(args.volume).div(args.price)
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',

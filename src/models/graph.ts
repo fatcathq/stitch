@@ -1,6 +1,7 @@
 const Graph = require('graphlib').Graph
 const minTradeVolumes = require('../../data/min_volumes')
 
+import Decimal from 'decimal.js'
 import { Market, Triangle, Edge } from '../types'
 import log from '../loggers/winston'
 import * as _ from 'lodash'
@@ -29,10 +30,10 @@ export default class extends Graph {
         minVolume = market.limits.amount.min
       }
 
-      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, minVolume, [market.precision.amount, market.precision.price]))
+      this.setEdge(market.base, market.quote, new EdgeDriver(market.base, market.quote, market.taker, new Decimal(minVolume), [market.precision.amount, market.precision.price]))
 
       // TODO: Fix min volume
-      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, 0, [market.precision.price, market.precision.amount]))
+      this.setEdge(market.quote, market.base, new VirtualEdgeDriver(market.quote, market.base, market.taker, new Decimal(0), [market.precision.price, market.precision.amount]))
     })
   }
 
@@ -48,11 +49,11 @@ export default class extends Graph {
       [asset, currency] = market.symbol.split('/')
 
       try {
-        this.edge(asset, currency).setPrice(market.bid)
-        this.edge(currency, asset).setPrice(market.ask)
+        this.edge(asset, currency).setPrice(new Decimal(market.bid))
+        this.edge(currency, asset).setPrice(new Decimal(market.ask))
 
-        if ((this.edge(currency, asset)).minVolume === 0) {
-          this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume * market.ask
+        if ((this.edge(currency, asset)).minVolume.equals(0)) {
+          this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume.mul(market.ask)
         }
       }
       catch (e) {
