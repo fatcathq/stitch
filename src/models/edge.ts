@@ -3,9 +3,10 @@ import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
-import { financial } from '../utils/helpers'
 
 const FILLED_ORDER_TRIES = 6
+
+type FeeApplication = 'before' | 'after'
 
 export class Edge {
   public virtual: boolean = false
@@ -20,12 +21,15 @@ export class Edge {
   public stringified: string
   // Price is target unit (in both Edge and VirtualEdge)
   protected price: Decimal = new Decimal(0)
+  private feeApplication: FeeApplication = 'before'
 
-  constructor (source: string, target: string, fee: Decimal, minVolume: Volume, precisions: [number, number]) {
+  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Volume, precisions: [number, number]) {
     this.source = source
     this.target = target
-    this.fee = fee
     this.minVolume = minVolume
+
+    this.fee = fee[0]
+    this.feeApplication = fee[1]
 
     this.sourcePrecision = precisions[0]
     this.targetPrecision = precisions[1]
@@ -69,7 +73,7 @@ export class Edge {
   /*
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
-  public async traverse (args: OrderDetails): Promise<boolean> {
+  public async traverse (args: OrderDetails): Promise<Volume> {
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: 'sell',
@@ -82,38 +86,33 @@ export class Edge {
    * Volume and Price for this function call are given for the real market, not the virtual market
    * (both for Edge and VirtualEdge)
    */
-  public async placeAndFillOrder(args: OrderDetails): Promise<boolean> {
-    log.info(`[EDGE] Placing order ${this.source} -> ${this.target}`)
 
-    if (args.mock) {
-      log.info(`[EDGE] Mocking the trade`)
-    }
+  public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
+    let id: null | number = null
+    const tradeVolume = this.feeApplication == 'after'? args.volume : args.volume.minus(this.fee.mul(args.volume))
+    let apiRes
 
     let method = args.side === 'sell' ?
       (args.type === 'limit' ? 'createLimitSellOrder' : 'createMarketSellOrder') :
       (args.type === 'limit' ? 'createLimitBuyOrder' : 'createMarketBuyOrder')
 
-    log.info(`[EDGE] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}`)
+    log.info(
+     `[EDGE] Placing order ${this.source} -> ${this.target}
+      [EDGE] Fees will be applied ${this.feeApplication} the trade.
+      [EDGE] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}.
+      [EDGE] Calling api.${method}(${this.getMarket()}, ${tradeVolume.toNumber()}, ${args.price!.toNumber()}`)
 
     if (args.mock) {
-      return true
+      log.info(`[EDGE] Mocking the trade`)
+      return this.calculateReturnedFunds({}, tradeVolume)
     }
 
-    let id: null | number = null
-
     try {
-      log.info(`[EDGE] Calling api.${method}(${this.getMarket()}, ${args.volume.toNumber()}, ${args.price!.toNumber()})`)
-      const res = await args.api[method](this.getMarket(), financial(args.volume, this.sourcePrecision).toNumber(), args.price!.toNumber())
-
+      const res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
       id = res.id
     }
     catch (e) {
       throw new TraversalAPIError(this, `${method} failed`,  e.message)
-    }
-
-    if (id === null) {
-      log.info(`Invalid id: ${id}`)
-      return false
     }
 
     log.info(`[EDGE] Placed order with id: ${id}. Now waiting order to be filled`)
@@ -121,7 +120,6 @@ export class Edge {
     let status: string
     const now = Date.now()
     let tries = 0
-    let apiRes
 
     do {
       ++tries
@@ -139,21 +137,46 @@ export class Edge {
 
     if (status !== 'closed') {
       log.warn(`[EDGE] Order was not filled`)
+
       try {
         const res = await args.api.cancelOrder(id)
         log.info(`[EDGE] Order was cancelled`)
         console.log(res)
       } catch (e) {
-        throw new TraversalAPIError(this, `Cancelorder failed for id ${id}`,  e.message)
+        throw new TraversalAPIError(this, `CancelOrder failed for id ${id}`,  e.message)
       }
-      log.warn(`[EDGE] Edge traversal (Order) was cancelled`)
 
       throw new OrderFillTimeoutError(this, `Order was not filled after ${tries} tries`)
     }
 
     log.info(`[EDGE] Order was filled. Duration: ${Date.now() - now}`)
 
-    return true
+    return this.calculateReturnedFunds(apiRes, args.volume)
+  }
+
+  private calculateReturnedFunds (res: any, volume: Volume): Price {
+    const estimation = this.price.mul(volume).mul(new Decimal(1).minus(this.fee))
+
+    if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
+      log.info(`[FUNDS_CALCULATOR] Returned funds from estimation`)
+      return estimation
+    }
+
+    log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
+
+    let calculation: Decimal
+    if (!this.virtual) {
+      calculation = new Decimal(res.cost).minus(res.fee.cost)
+    }
+    else {
+      calculation = new Decimal(res.amount)
+    }
+
+    const diff = (estimation.toNumber() - calculation.toNumber()) / estimation.toNumber() * 100
+
+    log.info(`[FUNDS_CALCULATOR] Estimation: ${estimation.toNumber()}, FromAPI: ${calculation.toNumber()}, [FUNDS_CALCULATOR] Difference: ${Math.abs(diff)}`)
+
+    return calculation
   }
 
   public async save(cycleId: number) {
@@ -170,7 +193,7 @@ export class Edge {
 }
 
 export class VirtualEdge extends Edge {
-  constructor (source: string, target: string, fee: Decimal, minVolume: Decimal, precisions: [number, number]) {
+  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Decimal, precisions: [number, number]) {
     super(source, target, fee, minVolume, precisions)
     this.virtual = true
   }
@@ -197,7 +220,7 @@ export class VirtualEdge extends Edge {
     this.volume = new Decimal(volume).mul(price)
   }
 
-  public async traverse (args: OrderDetails): Promise<boolean> {
+  public async traverse (args: OrderDetails): Promise<Decimal> {
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price

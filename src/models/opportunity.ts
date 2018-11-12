@@ -95,7 +95,7 @@ export default class {
     let volumeIt = new Decimal(startingBalance)
 
     log.info(`[EXPLOIT] Starting Volume ${volumeIt} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. 
+    log.info(`[EXPLOIT] ${this.getNodes()}.
       Expecting to gain ${financial(startingBalance.mul(this.arbitrage.minus(1)), this.triangle[0].sourcePrecision)} ${this.getReferenceUnit()}`)
 
     for (const edge of this.triangle) {
@@ -121,20 +121,13 @@ export default class {
         mock: mock
       } as OrderDetails
 
-      let traversed
-
       try {
-        traversed = await edge.traverse(details)
+        volumeIt = await edge.traverse(details)
       } catch (e) {
         if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
           await this.backToSafety(api, e.edge.source, volumeIt)
           return false
         }
-      }
-
-      if (!traversed) {
-        log.error(`[OPPORTUNITY] Cannot exploit opportunity ${this.getNodes()}. Edge traversal failed for ${edge.stringified}`)
-        return false
       }
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
@@ -148,7 +141,7 @@ export default class {
   /**
    * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
    */
-  private backToSafety(api: any, currency: Currency, volume: Decimal) {
+  private async backToSafety(api: any, currency: Currency, volume: Decimal) {
     log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
 
     this.changeStartingPoint(currency)
@@ -171,10 +164,10 @@ export default class {
         api: api,
       } as OrderDetails
 
-      edge.traverse(details)
-
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul(new Decimal(1).minus(edge.fee))
+      volumeIt = await edge.traverse(details)
     }
+
+    log.info(`[OPPORTUNITY_FALLBACK] Opportunity fallback finished`)
   }
 
   public async save() {

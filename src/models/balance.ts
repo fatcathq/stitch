@@ -58,13 +58,15 @@ export default class BalanceHandler {
     return this.balance[currency] ? this.balance[currency] : new Decimal(0)
   }
 
+  public getAsNumber (currency: Currency): Number {
+    return this.get(currency).toNumber()
+  }
+
   public has (currency: Currency) {
     return this.balance[currency] !== undefined
   }
 
   public sufficient(opportunity: Opportunity, currency: Currency): boolean {
-    console.log('currency', currency)
-
     opportunity.changeStartingPoint(currency)
 
     if (opportunity.maxVolume.equals(Infinity)) {
