@@ -45,7 +45,8 @@ export default class BalanceHandler {
       this.balance[currency] =  financial(balance[currency], precision)
     }
 
-    log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`, this.log())
+    log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
+    this.log()
   }
   private log (): void {
     for (const currency in this.balance) {
