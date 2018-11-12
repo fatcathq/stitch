@@ -109,8 +109,9 @@ export default class Engine {
       precisions[market.quote] = market.precision.price
     }
 
-    log.info(`[ENGINE] Precisions updated`)
-    console.log(precisions)
+    // --- SPAM ---
+    // log.info(`[ENGINE] Precisions updated`)
+    // console.log(precisions)
 
     return precisions
   }
