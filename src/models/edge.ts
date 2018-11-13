@@ -139,9 +139,8 @@ export class Edge {
       log.warn(`[EDGE] Order was not filled`)
 
       try {
-        const res = await args.api.cancelOrder(id)
+        await args.api.cancelOrder(id)
         log.info(`[EDGE] Order was cancelled`)
-        console.log(res)
       } catch (e) {
         throw new TraversalAPIError(this, `CancelOrder failed for id ${id}`,  e.message)
       }
