@@ -154,16 +154,23 @@ export class Edge {
   }
 
   private calculateReturnedFunds (res: any, volume: Volume): Price {
-    const estimation = this.price.mul(volume).mul(new Decimal(1).minus(this.fee))
+    let estimation: Decimal
+    let calculation: Decimal
+
+    if (!this.virtual) {
+      estimation = this.price.mul(volume).mul(new Decimal(1).minus(this.fee))
+    }
+    else {
+      estimation = new Decimal(volume).mul(new Decimal(1).minus(this.fee))
+    }
 
     if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
-      log.info(`[FUNDS_CALCULATOR] Returned funds from estimation`)
+      log.info(`[FUNDS_CALCULATOR] Returned funds from estimation: ${estimation} ${this.target}`)
       return estimation
     }
 
     log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
 
-    let calculation: Decimal
     if (!this.virtual) {
       calculation = new Decimal(res.cost).minus(res.fee.cost)
     }
