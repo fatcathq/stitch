@@ -178,9 +178,13 @@ export class Edge {
       calculation = new Decimal(res.amount)
     }
 
-    const diff = (estimation.toNumber() - calculation.toNumber()) / estimation.toNumber() * 100
+    const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
 
-    log.info(`[FUNDS_CALCULATOR] Estimation: ${estimation.toNumber()}, FromAPI: ${calculation.toNumber()}, [FUNDS_CALCULATOR] Difference: ${Math.abs(diff)}`)
+    log.info(`[FUNDS_CALCULATOR]
+      Estimation: ${estimation.toNumber()} ${this.target},
+      FromAPI: ${calculation.toNumber()} ${this.target},
+      Difference: ${diff} %`
+    )
 
     return calculation
   }
