@@ -205,7 +205,6 @@ export default class {
   // TODO: Calculate without including fees
   public getMinVolume(): Decimal {
     let volumeIt = new Decimal(this.triangle[0].minVolume)
-    let fees = []
 
     for (const edge of this.triangle) {
       if (edge.minVolume.equals(0)) {
@@ -217,14 +216,9 @@ export default class {
       }
 
       volumeIt = this.iterator(volumeIt, edge)
-      fees.push(edge.fee)
     }
 
-    const reversedFees = fees.reduce((acc, fee) => {
-      return new Decimal(acc).mul(new Decimal(fee).pow(-1)).toNumber()
-    }, 1)
-
-    return volumeIt.mul(reversedFees)
+    return volumeIt.mul(volumeIt)
   }
 
   private calculateArbitrage (triangle: Triangle): Decimal {
