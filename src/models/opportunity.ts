@@ -218,7 +218,7 @@ export default class {
       volumeIt = this.iterator(volumeIt, edge)
     }
 
-    return volumeIt.mul(volumeIt)
+    return volumeIt
   }
 
   private calculateArbitrage (triangle: Triangle): Decimal {
