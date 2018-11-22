@@ -19,6 +19,6 @@
       "enabled": false
     }
   }
-  "fetchVolumes": false,
+  "fetchVolumes": true,
   "cacheTime": 1000
 }
