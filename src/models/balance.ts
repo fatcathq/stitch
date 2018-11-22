@@ -78,11 +78,9 @@ export default class BalanceHandler {
 
     log.info(`[SUFFICIENT_BALANCE_CHECK] Triangle ${opportunity.getNodes()}.
               Volumes: [${opportunity.minVolume}, ${opportunity.maxVolume}].
-              Balance: ${balance} ${opportunity.getReferenceUnit()}`)
+              Balance:  ${balance} ${opportunity.getReferenceUnit()}`)
 
-    const shouldTrade =  (opportunity.minVolume < opportunity.maxVolume) && (opportunity.minVolume.mul(MIN_VOLUME_SAFETY_MARGIN).lessThan(balance))
-
-    return shouldTrade
+    return opportunity.minVolume < opportunity.maxVolume && opportunity.minVolume.mul(MIN_VOLUME_SAFETY_MARGIN).lessThan(balance)
   }
 
   public getIntersection (opportunity: Opportunity) {
