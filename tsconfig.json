@@ -14,6 +14,7 @@
     "noUnusedLocals": true,                   /* Report errors on unused locals. */
     "noUnusedParameters": true,               /* Report errors on unused parameters. */
     "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. */
+    "resolveJsonModule": true,
     "plugins": [
       { "name": "tslint-language-service" }
     ]

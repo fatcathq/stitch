@@ -1,3 +1,4 @@
+/*
 type Config = {
   exchange: string,
   api: {
@@ -24,8 +25,8 @@ type Config = {
   fetchVolumes: boolean,
   cacheTime: number
 }
+*/
 
-const CONFIG_FILE = '../../config/config.json'
-const config: Config = require(CONFIG_FILE)
+import config from '../../config/config.json'
 
 export default config
