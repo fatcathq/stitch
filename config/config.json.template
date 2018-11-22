@@ -1,10 +1,10 @@
 {
-  "exchange": "bitfinex",
+  "exchange": "bittrex",
   "api": {
     "key": "test_key",
     "secret": "test_secret"
   },
-  "threshold": 0.9,
+  "threshold": 1,
   "activeTrading": true,
   "log": {
     "slack": {
@@ -19,6 +19,6 @@
       "enabled": false
     }
   }
-  "fetchVolumes": true,
+  "fetchVolumes": false,
   "cacheTime": 1000
 }
