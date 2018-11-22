@@ -23,7 +23,7 @@ export class Edge {
   protected price: Decimal = new Decimal(0)
   private feeApplication: FeeApplication = 'before'
 
-  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Volume, precisions: [number, number]) {
+  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Volume, precisions: [number, number] = [8, 8]) {
     this.source = source
     this.target = target
     this.minVolume = minVolume
