@@ -9,7 +9,6 @@
   "log": {
     "slack": {
       "webhook": "https://hooks.slack.com/services/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",
-      "extended": false,
       "enabled": false
     },
     "db": {
