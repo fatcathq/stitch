@@ -1,5 +1,5 @@
 const Graph = require('graphlib').Graph
-const minTradeVolumes = require('../../data/min_volumes')
+// import * as minTradeVolumes from '../../data/min_volumes.json'
 
 import Decimal from 'decimal.js'
 import { Market, Triangle, Edge } from '../types'
@@ -23,12 +23,18 @@ export default class extends Graph {
 
       let minVolume: number
 
-      if (minTradeVolumes[exchange] && minTradeVolumes[exchange][market.base]) {
-        minVolume  = minTradeVolumes[exchange][market.base]
+      /*
+       * TODO: Fix json + typescript problems
+       *
+      if (exchange in minTradeVolumes && minTradeVolumes[exchange][market.base]) {
+        minVolume = minTradeVolumes[exchange]
       }
       else {
-        minVolume = market.limits.amount.min
+      */
+      minVolume = market.limits.amount.min
+      /*
       }
+      */
 
       this.setEdge(market.base, market.quote,
         new EdgeDriver(market.base, market.quote, [new Decimal(market.taker), 'after'], new Decimal(minVolume), [market.precision.amount, market.precision.price])
