@@ -69,7 +69,7 @@ export default class Engine {
     const exploited = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
 
     if (!exploited) {
-      log.error(`[ENGINE] Opportunity is not exploited`)
+      log.error(`[ENGINE] Opportunity was not exploited`)
     }
 
     await this.balance.update()
