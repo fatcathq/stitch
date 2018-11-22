@@ -31,12 +31,12 @@ export default class extends Graph {
       }
 
       this.setEdge(market.base, market.quote,
-        new EdgeDriver(market.base, market.quote, [market.taker, 'after'], new Decimal(minVolume), [market.precision.amount, market.precision.price])
+        new EdgeDriver(market.base, market.quote, [new Decimal(market.taker), 'after'], new Decimal(minVolume), [market.precision.amount, market.precision.price])
       )
 
       // TODO: Fix min volume
       this.setEdge(market.quote, market.base,
-        new VirtualEdgeDriver(market.quote, market.base, [market.taker, 'before'], new Decimal(0), [market.precision.price, market.precision.amount])
+        new VirtualEdgeDriver(market.quote, market.base, [new Decimal(market.taker), 'before'], new Decimal(0), [market.precision.price, market.precision.amount])
       )
     })
   }
