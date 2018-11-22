@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p ./",
-    "run": "tsc -p ./"
+    "build": "npx tsc --resolveJsonModule -p ./",
+    "run": "node built/src/index.js"
   },
   "repository": {
     "type": "git",
