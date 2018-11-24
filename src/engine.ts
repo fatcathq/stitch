@@ -80,7 +80,7 @@ export default class Engine {
 
     if (Object.keys(diff).length > 0) {
       log.info(`[ENGINE] Diff of balance after exploit:`)
-      console.log(diff)
+      Balance.log(diff)
     } else {
       log.warn(`[ENGINE] No money gained from this opportunity exploit :(`)
     }

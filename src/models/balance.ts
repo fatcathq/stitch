@@ -46,11 +46,12 @@ export default class BalanceHandler {
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
-    this.log()
+    BalanceHandler.log(this.balance)
   }
-  private log (): void {
-    for (const currency in this.balance) {
-      log.info(`${currency}: ${this.balance[currency].toNumber()}`)
+
+  public static log (balance: Balance): void {
+    for (const currency in balance) {
+      log.info(`${currency}: ${balance[currency].toNumber()}`)
     }
   }
 
