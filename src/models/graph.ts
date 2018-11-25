@@ -50,7 +50,7 @@ export default class extends Graph {
   public update (tickers: []): void {
     _.mapValues(tickers, (market: Market): void => {
       if (!marketIsValid(market.symbol) || market.bid === 0 || market.ask === 0) {
-        log.warn(`Invalid market: ${market.symbol}`)
+        // log.warn(`Invalid market: ${market.symbol}`)
         return
       }
 
