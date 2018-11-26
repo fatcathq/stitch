@@ -18,9 +18,8 @@ export default class Engine {
   private mock: boolean = !config.activeTrading
   private precisions: Precisions = {}
 
-  constructor(api: any, mock = false) {
+  constructor(api: any) {
     this.api = api
-    this.mock = mock
     this.balance = new Balance(this.api)
     this.locked = false
   }
