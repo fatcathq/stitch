@@ -170,12 +170,13 @@ export default class {
 
   public async save() {
     const res = await db('opportunities').insert({
+      exchange: this.exchange,
       created_at: this.created,
       closed_at: new Date(),
-      min_trade_volume: this.getMinVolume(),
-      max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume,
-      cycle: this.triangle.map((edge: Edge) => edge.source),
-      arbitrage: this.arbitrage,
+      min_trade_volume: this.getMinVolume().toNumber(),
+      max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume.toNumber(),
+      cycle: this.getNodes(),
+      arbitrage: this.arbitrage.toNumber(),
     }).returning('id')
 
     return this.triangle.map((edge: Edge) => edge.save(res[0]))
