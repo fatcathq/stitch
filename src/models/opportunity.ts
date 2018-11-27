@@ -78,8 +78,9 @@ export default class {
   public async updateFromAPI(api: any) {
     log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
-    // No worries, caching will do it's job
-    await Promise.all(this.triangle.map((edge: Edge) => edge.updateFromAPI(api)))
+    for (const edge of this.triangle) {
+      await edge.updateFromAPI(api)
+    }
 
     this.maxVolume = this.getMaxVolume()
   }

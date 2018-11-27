@@ -63,7 +63,6 @@ export default class StitchController extends EventEmmiter {
     }
 
     this.finder.pause()
-    await this.api.restartQueue()
 
     log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is exploitable`)
     await this.engine.exploit(opportunity, currency)
