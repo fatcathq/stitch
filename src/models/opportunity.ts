@@ -3,14 +3,14 @@ import { Edge } from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
-import { Currency, Triangle, OrderDetails, Volume, ExploitResult } from '../types'
+import { Currency, Triangle, OrderDetails, Volume } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
 export default class {
   public id: string
-  public arbitrage: Decimal
+  public arbitrage!: Decimal
   public maxVolume: Volume = new Decimal(Infinity)
   public minVolume: Volume
   public exchange: string
@@ -23,7 +23,6 @@ export default class {
     this.triangle = triangle
 
     this.refUnit = triangle[0].source
-    this.arbitrage = this.calculateArbitrage(triangle)
     this.id = this.generateIndex(triangle)
 
     this.minVolume = this.getMinVolume()
@@ -76,12 +75,30 @@ export default class {
 
   }
 
-  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<ExploitResult> {
+  public async calculateArbitrage () {
+    let volume = new Decimal(1)
+
+    for (const edge of this.triangle) {
+      volume = await edge.traverse({
+        type: 'limit',
+        volume: volume,
+        api: {},
+        mock: true,
+        sustainLogs: true
+      })
+    }
+
+    this.arbitrage = volume
+
+    return volume
+  }
+
+  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {
     this.changeStartingPoint(currency)
 
     if (this.maxVolume.equals(Infinity)) {
       log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
-      return { success: false }
+      return false
     }
 
     log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
@@ -118,17 +135,14 @@ export default class {
       } catch (e) {
         if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
           await this.backToSafety(api, e.edge.source, volumeIt)
-          return { success: false }
+          return false
         }
       }
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
     }
 
-    return {
-      success: true,
-      arbitrage: new Decimal(new Decimal((volumeIt.minus(startingBalance))).div(startingBalance)).mul(100)
-    }
+    return true
   }
 
   /**
@@ -213,14 +227,6 @@ export default class {
     }
 
     return volumeIt
-  }
-
-  private calculateArbitrage (triangle: Triangle): Decimal {
-    return new Decimal(
-      triangle.reduce((acc, edge) => {
-        return new Decimal(acc).mul(new Decimal(1).minus(edge.fee)).mul(edge.getPriceAsDecimal()).toNumber()
-      }, 1)
-    )
   }
 
   private generateIndex(triangle: Triangle) {

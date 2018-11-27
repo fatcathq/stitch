@@ -23,6 +23,7 @@ export type OrderDetails = {
   price?: Price
   mock?: boolean
   volume: Volume,
+  sustainLogs?: boolean
   api: Api,
 }
 
@@ -35,8 +36,3 @@ export type Precisions = {
 }
 
 export type Iterator = (it: Decimal, edge: Edge) => Decimal
-
-export type ExploitResult = {
-  arbitrage?: Decimal,
-  success: boolean
-}

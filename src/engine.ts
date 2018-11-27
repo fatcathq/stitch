@@ -70,26 +70,14 @@ export default class Engine {
 
     exploit = await opportunity.exploit(this.api, currency, startingBalance, true)
 
-    if (opportunity.arbitrage !== exploit.arbitrage) {
-      log.warn(`Different arbitrage on opportunity mock exploit and arbitrage estimation
-        ExploitMock: ${exploit.arbitrage},
-        Estimation:  ${opportunity.arbitrage}`)
-    }
-
-    if (exploit.arbitrage!.lessThan(config.threshold)) {
-      log.info('[ENGINE] Arbitrage from mock exploit is less than the required threshold so not proceeding to real opportunity exploit')
-      return
-    }
-
     if (this.mock) {
+      this.unlock()
       return
     }
-
-    log.info('[ENGINE] ---- PROCEEDING TO REAL EXPLOIT ----')
 
     exploit = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
 
-    if (!exploit.success) {
+    if (!exploit) {
       log.error(`[ENGINE] Opportunity was not exploited`)
     }
 

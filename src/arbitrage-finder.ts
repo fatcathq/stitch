@@ -24,10 +24,11 @@ export default class ArbitrageFinder extends EventEmmiter {
   }
 
   async run (): Promise<void> {
+    this.running = true
     while (this.running) {
       await this.updatePrices()
 
-      const opportunities = this.extractOpportunitiesFromGraph()
+      const opportunities = await this.extractOpportunitiesFromGraph()
 
       this.updateOpportunities(opportunities)
     }
@@ -87,13 +88,14 @@ export default class ArbitrageFinder extends EventEmmiter {
     this.graph.update(tickers)
   }
 
-  private extractOpportunitiesFromGraph (): OpportunityMap {
+  private async extractOpportunitiesFromGraph (): Promise<OpportunityMap> {
     let opportunities: OpportunityMap = {}
 
     const triangles = this.graph.getTriangles()
 
     for (const triangle of triangles) {
       const opportunity = new Opportunity(this.exchange, triangle)
+      await opportunity.calculateArbitrage()
 
       if (opportunity.arbitrage.greaterThan(config.threshold)) {
         opportunities[opportunity.id] = opportunity
