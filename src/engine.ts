@@ -56,6 +56,7 @@ export default class Engine {
     const balanceCheckpoint = this.balance.getCheckpoint()
 
     let startingBalance
+    let exploit
 
     if (opportunity.maxVolume < this.balance.get(currency)) {
       log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
@@ -65,7 +66,28 @@ export default class Engine {
       startingBalance = new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
     }
 
-    const exploit = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
+    log.info(`[ENGINE] Making a mock opportunity exploit`)
+
+    exploit = await opportunity.exploit(this.api, currency, startingBalance, true)
+
+    if (opportunity.arbitrage !== exploit.arbitrage) {
+      log.warn(`Different arbitrage on opportunity mock exploit and arbitrage estimation
+        ExploitMock: ${exploit.arbitrage},
+        Estimation:  ${opportunity.arbitrage}`)
+    }
+
+    if (exploit.arbitrage!.lessThan(config.threshold)) {
+      log.info('[ENGINE] Arbitrage from mock exploit is less than the required threshold so not proceeding to real opportunity exploit')
+      return
+    }
+
+    if (this.mock) {
+      return
+    }
+
+    log.info('[ENGINE] ---- PROCEEDING TO REAL EXPLOIT ----')
+
+    exploit = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
 
     if (!exploit.success) {
       log.error(`[ENGINE] Opportunity was not exploited`)
