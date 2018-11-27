@@ -3,9 +3,8 @@ import { Edge } from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated, financial } from '../utils/helpers'
-import { Currency, Triangle, OrderDetails, Volume, Iterator } from '../types'
+import { Currency, Triangle, OrderDetails, Volume } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
-import { bitfinex as DefaultIterator } from '../utils/iterators'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
@@ -15,7 +14,6 @@ export default class {
   public maxVolume: Volume = new Decimal(Infinity)
   public minVolume: Volume
   public exchange: string
-  public iterator: Iterator = () => new Decimal(0)
   public created: Date = new Date()
   private triangle: Triangle
   private refUnit: string
@@ -27,16 +25,8 @@ export default class {
     this.refUnit = triangle[0].source
     this.arbitrage = this.calculateArbitrage(triangle)
     this.id = this.generateIndex(triangle)
-    this.setIterator(DefaultIterator)
 
     this.minVolume = this.getMinVolume()
-  }
-
-  public setIterator(it: Iterator) {
-    this.iterator = it
-
-    this.getMinVolume()
-    // this.getMaxVolume()
   }
 
   public contains (unit: Currency) {
@@ -196,7 +186,7 @@ export default class {
         volumeIt = edge.volume
       }
 
-      volumeIt = this.iterator(volumeIt, edge)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((new Decimal(1).minus(edge.fee)))
     }
 
     return volumeIt
@@ -215,7 +205,7 @@ export default class {
         volumeIt = new Decimal(edge.minVolume)
       }
 
-      volumeIt = this.iterator(volumeIt, edge)
+      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((new Decimal(1).minus(edge.fee)))
     }
 
     return volumeIt

@@ -6,7 +6,6 @@ import Opportunity from './models/opportunity'
 import Api from './connectors/api'
 import log from './loggers/winston'
 import Logger from './loggers/index'
-import { bittrex as BittrexIterator } from './utils/iterators'
 
 export default class StitchController extends EventEmmiter {
   private api: any
@@ -53,8 +52,6 @@ export default class StitchController extends EventEmmiter {
       log.info(`[CONTROLLER] Engine is locked. Skipping opportunity ${opportunity.getNodes()}`)
       return
     }
-
-    opportunity.setIterator(BittrexIterator)
 
     const currency = this.engine.hasExploitableCurrency(opportunity)
     if (currency === undefined) {
