@@ -65,9 +65,9 @@ export default class Engine {
       startingBalance = new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
     }
 
-    const exploited = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
+    const exploit = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
 
-    if (!exploited) {
+    if (!exploit.success) {
       log.error(`[ENGINE] Opportunity was not exploited`)
     }
 

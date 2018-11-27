@@ -35,3 +35,8 @@ export type Precisions = {
 }
 
 export type Iterator = (it: Decimal, edge: Edge) => Decimal
+
+export type ExploitResult = {
+  arbitrage?: Decimal,
+  success: boolean
+}

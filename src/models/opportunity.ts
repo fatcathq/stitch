@@ -2,8 +2,8 @@ import Decimal from 'decimal.js'
 import { Edge } from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
-import { getRotated, financial } from '../utils/helpers'
-import { Currency, Triangle, OrderDetails, Volume } from '../types'
+import { getRotated } from '../utils/helpers'
+import { Currency, Triangle, OrderDetails, Volume, ExploitResult } from '../types'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
@@ -73,19 +73,20 @@ export default class {
     }
 
     this.maxVolume = this.getMaxVolume()
+
   }
 
-  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {
+  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<ExploitResult> {
     this.changeStartingPoint(currency)
 
     if (this.maxVolume.equals(Infinity)) {
       log.error(`[EXPLOIT] Max Volume is not defined. Exploit of triangle ${this.getNodes()} cancelled`)
-      return false
+      return { success: false }
     }
 
     log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
     log.info(`[EXPLOIT] ${this.getNodes()}.
-      Expecting to gain ${financial(startingBalance.mul(this.arbitrage.minus(1)), this.triangle[0].sourcePrecision)} ${this.getReferenceUnit()}`)
+      Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
 
     let volumeIt = new Decimal(startingBalance)
 
@@ -117,14 +118,17 @@ export default class {
       } catch (e) {
         if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
           await this.backToSafety(api, e.edge.source, volumeIt)
-          return false
+          return { success: false }
         }
       }
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
     }
 
-    return true
+    return {
+      success: true,
+      arbitrage: new Decimal(new Decimal((volumeIt.minus(startingBalance))).div(startingBalance)).mul(100)
+    }
   }
 
   /**
