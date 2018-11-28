@@ -6,6 +6,7 @@ import Opportunity from './models/opportunity'
 import Api from './connectors/api'
 import log from './loggers/winston'
 import Logger from './loggers/index'
+import config from './utils/config'
 
 export default class StitchController extends EventEmmiter {
   private api: any
@@ -23,6 +24,10 @@ export default class StitchController extends EventEmmiter {
     this.finder.linkOpportunities(this.opportunities)
 
     this.engine = new Engine(this.api)
+
+    if (!config.activeTrading) {
+      this.engine.lock()
+    }
 
     const logger = new Logger(this.finder)
     logger.linkOpportunities(this.opportunities)

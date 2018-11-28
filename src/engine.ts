@@ -2,7 +2,6 @@ import Balance from './models/balance'
 import Opportunity from './models/opportunity'
 import { Currency, Precisions } from './types'
 import log from './loggers/winston'
-import config from  './utils/config'
 import Decimal from 'decimal.js'
 
 /*
@@ -15,7 +14,6 @@ export default class Engine {
   public balance: Balance
   public api: any
   private locked: boolean
-  private mock: boolean = !config.activeTrading
   private precisions: Precisions = {}
 
   constructor(api: any) {
@@ -56,7 +54,6 @@ export default class Engine {
     const balanceCheckpoint = this.balance.getCheckpoint()
 
     let startingBalance
-    let exploit
 
     if (opportunity.maxVolume < this.balance.get(currency)) {
       log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
@@ -66,16 +63,7 @@ export default class Engine {
       startingBalance = new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
     }
 
-    log.info(`[ENGINE] Making a mock opportunity exploit`)
-
-    exploit = await opportunity.exploit(this.api, currency, startingBalance, true)
-
-    if (this.mock) {
-      this.unlock()
-      return
-    }
-
-    exploit = await opportunity.exploit(this.api, currency, startingBalance, this.mock)
+    const exploit = await opportunity.exploit(this.api, currency, startingBalance, false)
 
     if (!exploit) {
       log.error(`[ENGINE] Opportunity was not exploited`)
@@ -101,7 +89,7 @@ export default class Engine {
     return this.locked
   }
 
-  private lock() {
+  public lock() {
     this.locked = true
   }
 
