@@ -109,7 +109,15 @@ export class Edge {
     }
 
     try {
-      const res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
+      let res: any
+
+      if (args.type === 'limit') {
+        res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
+      }
+      else {
+        res = await args.api[method](this.getMarket(), tradeVolume.toNumber())
+      }
+
       id = res.id
     }
     catch (e) {
