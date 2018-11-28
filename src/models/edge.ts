@@ -4,7 +4,7 @@ import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
-const FILLED_ORDER_TRIES = 6
+const FILLED_ORDER_TRIES = 20
 
 type FeeApplication = 'before' | 'after'
 
