@@ -1,6 +1,6 @@
 const ccxt = require('ccxt')
 const fetch = require('fetch-ponyfill')().fetch
-import log from '../loggers/winston'
+// import log from '../loggers/winston'
 
 import config from  '../utils/config'
 
@@ -13,10 +13,10 @@ export default class instance extends ccxt[config.exchange] {
   }
 
   private async fetchWithLog (url: string, ...args: any[]) {
-    const now = Date.now()
+    // const now = Date.now()
     const res = await fetch(url, ...args)
 
-    log.info(`[REQUEST] ${url}, duration: ${Date.now() - now} ms`)
+    // log.info(`[REQUEST] ${url}, duration: ${Date.now() - now} ms`)
 
     return res
   }
