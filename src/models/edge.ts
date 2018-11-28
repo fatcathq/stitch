@@ -127,7 +127,6 @@ export class Edge {
 
       try {
         apiRes = await args.api.fetchOrder(id)
-        console.log(apiRes)
       } catch (e) {
         throw new TraversalAPIError(this, `FetchOrder failed`, e.message)
       }
