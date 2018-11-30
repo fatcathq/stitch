@@ -18,7 +18,7 @@
       "database": "stitch",
       "enabled": false
     }
-  }
+  },
   "fetchVolumes": true,
   "cacheTime": 1000
 }

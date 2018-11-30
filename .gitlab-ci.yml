@@ -1,0 +1,7 @@
+image: node:latest
+before_script:
+- cd src/
+- npm install
+test:
+  script:
+    - npm run test
