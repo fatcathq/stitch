@@ -135,8 +135,8 @@ export default class {
       } catch (e) {
         if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
           await this.backToSafety(api, e.edge.source, volumeIt)
-          return false
         }
+        return false
       }
 
       log.info(`[EXPLOIT] Edge ${edge.source} -> ${edge.target} traversed`)
