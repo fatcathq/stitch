@@ -4,10 +4,6 @@ import { Currency, Precisions } from './types'
 import log from './loggers/winston'
 import Decimal from 'decimal.js'
 
-/*
- * Kraken doesn't trade on maxVolume.
- * TODO: ^ Find why
- */
 const MAX_VOLUME_SAFETY_THRESHOLD = 0.9
 
 export default class Engine {
@@ -50,29 +46,36 @@ export default class Engine {
     }
 
     this.lock()
+
+    const startingVolume = this.calculateStartingVolume(opportunity, currency)
     const now = Date.now()
-    const balanceCheckpoint = this.balance.getCheckpoint()
 
-    let startingBalance
-
-    if (opportunity.maxVolume < this.balance.get(currency)) {
-      log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
-      startingBalance = new Decimal(opportunity.maxVolume).mul(MAX_VOLUME_SAFETY_THRESHOLD)
-    }
-    else {
-      startingBalance = new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
-    }
-
-    const exploit = await opportunity.exploit(this.api, currency, startingBalance, false)
+    const exploit = await opportunity.exploit(this.api, currency, startingVolume, false)
 
     if (!exploit) {
       log.error(`[ENGINE] Opportunity was not exploited`)
     }
+    else {
+      log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
+    }
 
+    await this.logExploitResults(opportunity, startingVolume)
+
+    this.unlock()
+  }
+
+  private calculateStartingVolume (opportunity: Opportunity, currency: Currency): Decimal  {
+    if (opportunity.maxVolume < this.balance.get(currency)) {
+      log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
+      return new Decimal(opportunity.maxVolume).mul(MAX_VOLUME_SAFETY_THRESHOLD)
+    }
+
+    return new Decimal(this.balance.get(currency)).mul(MAX_VOLUME_SAFETY_THRESHOLD)
+  }
+
+  private async logExploitResults (opportunity: Opportunity, startingBalance: Decimal): Promise<void> {
+    const balanceCheckpoint = this.balance.getCheckpoint()
     await this.balance.update()
-
-    log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
-
     const diff = this.balance.compareWithCheckpoint(balanceCheckpoint)
 
     if (Object.keys(diff).length > 0) {
@@ -84,8 +87,6 @@ export default class Engine {
     } else {
       log.warn(`[ENGINE] No money gained from this opportunity exploit :(`)
     }
-
-    this.unlock()
   }
 
   public isLocked() {
