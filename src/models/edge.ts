@@ -74,10 +74,13 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<Volume> {
+    /*
+     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
+     */
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: 'sell',
-      price: this.getPrice(),
+      price: args.type && args.type === 'market' ? this.getPrice().mul(0.1) : this.getPrice(),
       ...args
     })
   }
@@ -92,9 +95,7 @@ export class Edge {
     const tradeVolume = this.feeApplication == 'after'? args.volume : args.volume.minus(this.fee.mul(args.volume))
     let apiRes
 
-    let method = args.side === 'sell' ?
-      (args.type === 'limit' ? 'createLimitSellOrder' : 'createMarketSellOrder') :
-      (args.type === 'limit' ? 'createLimitBuyOrder' : 'createMarketBuyOrder')
+    let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
 
     if (!args.sustainLogs) {
       log.info(
@@ -109,15 +110,7 @@ export class Edge {
     }
 
     try {
-      let res: any
-
-      if (args.type === 'limit') {
-        res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
-      }
-      else {
-        res = await args.api[method](this.getMarket(), tradeVolume.toNumber())
-      }
-
+      let res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
       id = res.id
     }
     catch (e) {
@@ -241,9 +234,10 @@ export class VirtualEdge extends Edge {
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
+     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
      */
-    args.price = this.price.pow(-1)
-    args.volume = new Decimal(args.volume).div(args.price)
+    args.price = args.type && args.type === 'market' ?  this.price.pow(-1).mul(1.2) : this.price.pow(-1)
+    args.volume = new Decimal(args.volume).div(this.price.pow(-1))
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',

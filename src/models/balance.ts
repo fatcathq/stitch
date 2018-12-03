@@ -13,7 +13,7 @@ const DECIMAL_POINT_PRECISION = 15
 export default class BalanceHandler {
   public balance: Balance = {}
   private api: any
-  private precisions: {[key: string]: number} ={}
+  private precisions: {[key: string]: number} = {}
 
   constructor (api: any) {
     this.api = api
