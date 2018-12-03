@@ -5,6 +5,7 @@ import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const FILLED_ORDER_TRIES = 20
+const MARKET_ORDER_PRICE_CHANGE = 0.1
 
 type FeeApplication = 'before' | 'after'
 
@@ -80,7 +81,7 @@ export class Edge {
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: 'sell',
-      price: args.type && args.type === 'market' ? this.getPrice().mul(0.1) : this.getPrice(),
+      price: args.type && args.type === 'market' ? this.getPrice().mul(1 - MARKET_ORDER_PRICE_CHANGE) : this.getPrice(),
       ...args
     })
   }
@@ -236,7 +237,7 @@ export class VirtualEdge extends Edge {
      * real volume = virtual price * virtual volume = virtual volume / real price
      * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
      */
-    args.price = args.type && args.type === 'market' ?  this.price.pow(-1).mul(1.2) : this.price.pow(-1)
+    args.price = args.type && args.type === 'market' ?  this.price.pow(-1).mul(1 + MARKET_ORDER_PRICE_CHANGE) : this.price.pow(-1)
     args.volume = new Decimal(args.volume).div(this.price.pow(-1))
 
     return await this.placeAndFillOrder({
