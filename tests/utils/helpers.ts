@@ -1,4 +1,4 @@
-import { marketIsValid, numberIsDeformed } from '../../utils/helpers'
+import { marketIsValid, numberIsDeformed } from '../../src/utils/helpers'
 
 test('marketIsValid', () => {
   expect(marketIsValid('ETH/BTC')).toBe(true)
