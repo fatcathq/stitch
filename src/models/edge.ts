@@ -155,7 +155,7 @@ export class Edge {
     return this.calculateReturnedFunds(apiRes, args.volume)
   }
 
-  private calculateReturnedFunds (res: any, volume: Volume): Price {
+  protected calculateReturnedFunds (res: any, volume: Volume): Price {
     let estimation: Decimal
     let calculation: Decimal
 
@@ -245,5 +245,30 @@ export class VirtualEdge extends Edge {
       side: 'buy',
       ...args
     })
+  }
+
+  protected calculateReturnedFunds (res: any, volume: Volume): Price {
+    let estimation: Decimal
+    let calculation: Decimal
+
+    estimation = new Decimal(volume).mul(new Decimal(1).minus(this.fee))
+
+    if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
+      return estimation
+    }
+
+    log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
+
+    calculation = new Decimal(res.amount)
+
+    const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
+
+    log.info(`[FUNDS_CALCULATOR]
+      Estimation: ${estimation.toNumber()} ${this.target},
+      FromAPI: ${calculation.toNumber()} ${this.target},
+      Difference: ${diff} %`
+    )
+
+    return calculation
   }
 }
