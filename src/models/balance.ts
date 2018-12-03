@@ -19,9 +19,8 @@ export default class BalanceHandler {
     this.api = api
   }
 
-  public async init(precisions: Precisions) {
+  public setPrecisions(precisions: Precisions) {
     this.precisions = precisions
-    await this.update()
   }
 
   public async update () {

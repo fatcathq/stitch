@@ -20,7 +20,9 @@ export default class Engine {
 
   public async init(markets: any) {
     this.precisions = Engine.marketsToPrecisions(markets)
-    await this.balance.init(this.precisions)
+
+    this.balance.setPrecisions(this.precisions)
+    await this.balance.update()
   }
 
   public hasExploitableCurrency(opportunity: Opportunity) : Currency | undefined {
