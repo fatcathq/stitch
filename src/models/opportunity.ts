@@ -105,37 +105,32 @@ export default class {
     log.info(`[EXPLOIT] ${this.getNodes()}.
       Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
 
-    let volumeIt = new Decimal(startingBalance)
+    let volumeIt: Volume;
 
-    for (const edge of this.triangle) {
-      log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
-
-      let type: 'limit' | 'market' = 'limit'
-
-      /*
-      if (edge.source in NEUTRAL_COINS) {
-        type = 'limit'
-        log.info(`Edge source: ${edge.source} in neutral coins. Proceeding to limit order`)
-      }
-      else {
-        type = 'market'
-        log.info(`Edge source: ${edge.source} not in neutral coins. Proceeding to market order`)
-      }
-      */
-
-      const details = {
-        type: type,
-        volume: volumeIt,
+    try {
+      volumeIt = await this.triangle[0].traverse({
+        type: 'limit',
+        volume: startingBalance,
         api: api,
         mock: mock
-      } as OrderDetails
+      })
+    }
+    catch (e) {
+      console.log(`[FIRST_EDGE_EXPLOIT] Error:`, e)
+      return false
+    }
+
+    for (const edge of this.triangle.slice(1)) {
+      log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
 
       try {
-        volumeIt = await edge.traverse(details)
+        volumeIt = await edge.traverse({
+          type: 'market',
+          volume: volumeIt,
+          api: api,
+          mock: mock
+        })
       } catch (e) {
-        if (e instanceof OrderFillTimeoutError || e instanceof TraversalAPIError) {
-          await this.backToSafety(api, e.edge.source, volumeIt)
-        }
         return false
       }
 
@@ -148,7 +143,7 @@ export default class {
   /**
    * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
    */
-  private async backToSafety(api: any, currency: Currency, volume: Decimal) {
+  public async backToSafety(api: any, currency: Currency, volume: Decimal) {
     log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
 
     this.changeStartingPoint(currency)
