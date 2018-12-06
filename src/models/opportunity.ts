@@ -131,6 +131,7 @@ export default class {
           mock: mock
         })
       } catch (e) {
+        console.log('[EXPLOIT_ERROR]:', e)
         return false
       }
 
