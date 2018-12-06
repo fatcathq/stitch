@@ -4,7 +4,7 @@ import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
 import { Currency, Triangle, OrderDetails, Volume } from '../types'
-import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+// import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
 
