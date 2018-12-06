@@ -5,7 +5,7 @@ import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 
 const FILLED_ORDER_TRIES = 20
-const MARKET_ORDER_PRICE_CHANGE = 0.1
+const MARKET_ORDER_PRICE_CHANGE = 0.01
 
 type FeeApplication = 'before' | 'after'
 
