@@ -2,7 +2,7 @@ import { createLogger, format, transports } from 'winston'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const { combine, timestamp, json, simple, colorize } = format
+const { printf, combine, timestamp, json, simple, colorize } = format
 
 const logDir = 'logs'
 if (!fs.existsSync(logDir)) {
@@ -25,9 +25,13 @@ const logger = createLogger({
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new transports.Console({
     format: combine(
+      timestamp({
+        format: "HH:mm:ss.SSS"
+      }),
       colorize(),
-      simple()
-    )
+      simple(),
+      printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+    ),
   }))
 }
 
