@@ -1,8 +1,8 @@
 import { createLogger, format, transports } from 'winston'
 import * as fs from 'fs'
 import * as path from 'path'
-  
-const { combine, timestamp, prettyPrint, simple, colorize } = format
+
+const { combine, timestamp, json, simple, colorize } = format
 
 const logDir = 'logs'
 if (!fs.existsSync(logDir)) {
@@ -11,15 +11,15 @@ if (!fs.existsSync(logDir)) {
 
 const fileLogFormat = combine(
   timestamp(),
-  prettyPrint()
+  json()
 )
 
 const logger = createLogger({
   transports: [
-    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/error.log'), level: 'error' }), 
-    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/warn.log'), level: 'warn' }), 
+    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/error.log'), level: 'error' }),
+    new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/warn.log'), level: 'warn' }),
     new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/combined.log') })
-  ]
+  ],
 })
 
 if (process.env.NODE_ENV !== 'production') {
@@ -27,8 +27,8 @@ if (process.env.NODE_ENV !== 'production') {
     format: combine(
       colorize(),
       simple()
-    )   
-  })) 
+    )
+  }))
 }
 
 export default logger
