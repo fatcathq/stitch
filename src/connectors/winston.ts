@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== 'production') {
       }),
       colorize(),
       simple(),
-      printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+      printf(info => `${info.timestamp} | ${info.level}: ${info.message}`)
     ),
   }))
 }
