@@ -101,31 +101,15 @@ export default class {
       return false
     }
 
-    log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}.
-      Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
+    this.logOpportunityExploitInfo(startingBalance)
+    let volumeIt = startingBalance
 
-    let volumeIt: Volume;
-
-    try {
-      volumeIt = await this.triangle[0].traverse({
-        type: 'limit',
-        volume: startingBalance,
-        api: api,
-        mock: mock
-      })
-    }
-    catch (e) {
-      console.log(`[FIRST_EDGE_EXPLOIT] Error:`, e)
-      return false
-    }
-
-    for (const edge of this.triangle.slice(1)) {
+    for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
 
       try {
         volumeIt = await edge.traverse({
-          type: 'market',
+          type: 'limit',
           volume: volumeIt,
           api: api,
           mock: mock
@@ -222,6 +206,11 @@ export default class {
     }
 
     return volumeIt
+  }
+
+  private logOpportunityExploitInfo (startingBalance: Decimal) {
+    log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
   }
 
   private generateIndex(triangle: Triangle) {
