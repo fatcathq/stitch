@@ -13,7 +13,7 @@ import * as dotenv from 'dotenv'
   }
 
   await benchmark({
-    exchange: 'bittrex',
+    exchange: EXCHANGE,
     method: 'fetchTickers',
     samples: Number(SAMPLES),
     api: {
