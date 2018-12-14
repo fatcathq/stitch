@@ -7,6 +7,7 @@ const ccxt = require('ccxt')
 type BenchmarkConfig = {
   exchange: string,
   method: string,
+  args?: any[]
   samples: number,
   api: {
     key: string,
@@ -21,10 +22,10 @@ const initCCXT = (exchange: string, creds: {key: string, secret: string}) => {
   })
 }
 
-const benchmarkCCXTRequest = async (ccxtInstance: any, method: string) => {
+const benchmarkCCXTRequest = async (ccxtInstance: any, method: string, args: any[]) => {
   const t = Date.now()
   try {
-    await ccxtInstance[method]()
+    await ccxtInstance[method](...args)
   }
   catch (e) {
     console.log(e)
@@ -42,7 +43,9 @@ export default async (config: BenchmarkConfig) => {
   let samples = []
 
   for (let i = 0; i < config.samples; ++i) {
-    const dt = await benchmarkCCXTRequest(ccxt, config.method)
+    const args = config.args ? config.args : []
+    const dt = await benchmarkCCXTRequest(ccxt, config.method, args)
+
     samples.push(dt)
     bar.tick()
   }
