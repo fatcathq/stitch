@@ -21,14 +21,4 @@ import * as dotenv from 'dotenv'
       secret: API_SECRET
     }
   })
-
-  await benchmark({
-    exchange: 'bittrex',
-    method: 'fetchTickers',
-    samples: Number(SAMPLES),
-    api: {
-      key: API_KEY,
-      secret: API_SECRET
-    }
-  })
 })()
