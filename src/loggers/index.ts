@@ -2,6 +2,7 @@ import Opportunity from '../models/opportunity'
 import config from '../utils/config'
 import EventEmmiter from 'events'
 import { OpportunityMap } from '../types'
+import log from './winston'
 
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
@@ -48,10 +49,20 @@ export default class {
 
   private registerListeners (notifier: EventEmmiter): void {
     notifier.on('OpportunityAdded', (id: string) => {
+      if (!this.opportunities[id]) {
+        console.log('[LOGGER] Opportunity closed before add event')
+        return
+      }
+
       this.createOpportunity(this.opportunities[id])
     })
 
     notifier.on('OpportunityUpdated', (id: string, prevArb: number) => {
+      if (!this.opportunities[id]) {
+        log.warn('[LOGGER] Opportunity closed before update event')
+        return
+      }
+
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
