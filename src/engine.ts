@@ -84,6 +84,7 @@ export default class Engine {
       log.info(`[ENGINE] Diff of balance after exploit:`)
       Balance.log(diff)
 
+      // (startingBalance + diff[p.getRefUnit]) / startingBalance
       const actualArbitrage = new Decimal(startingBalance.plus(diff[opportunity.getReferenceUnit()])).div(startingBalance).toNumber()
       log.info(`[ENGINE] Arbitrage expected: ${opportunity.arbitrage}. Actual arbitrage: ${actualArbitrage}`)
     } else {
