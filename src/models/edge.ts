@@ -86,6 +86,10 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
+  public getSide (): string {
+    return 'sell'
+  }
+
   protected extractTopOfTheOrderBook(ob: any) {
     return ob.bids[0]
   }
@@ -246,6 +250,10 @@ export class VirtualEdge extends Edge {
 
   public getMarket (): string {
     return `${this.target}/${this.source}`
+  }
+
+  public getSide (): string {
+    return 'buy'
   }
 
   protected extractTopOfTheOrderBook (ob: any): any {
