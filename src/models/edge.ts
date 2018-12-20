@@ -172,16 +172,19 @@ export class Edge {
     return this.calculateReturnedFunds(apiRes, args.volume)
   }
 
+  protected calculateOutputVolume (realVolume: Volume): Volume {
+    return this.price.mul(realVolume).mul(new Decimal(1).minus(this.fee))
+  }
+
+  protected calculateCostAfterFees (apiResult: any): Volume {
+    return new Decimal(apiResult.cost).minus(apiResult.fee.cost)
+  }
+
   protected calculateReturnedFunds (res: any, volume: Volume): Price {
     let estimation: Decimal
     let calculation: Decimal
 
-    if (!this.virtual) {
-      estimation = this.price.mul(volume).mul(new Decimal(1).minus(this.fee))
-    }
-    else {
-      estimation = new Decimal(volume).mul(new Decimal(1).minus(this.fee))
-    }
+    estimation = this.calculateOutputVolume(realVolume)
 
     if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
       return estimation
@@ -189,12 +192,7 @@ export class Edge {
 
     log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
 
-    if (!this.virtual) {
-      calculation = new Decimal(res.cost).minus(res.fee.cost)
-    }
-    else {
-      calculation = new Decimal(res.amount)
-    }
+    calculation = this.calculateCostAfterFees(apiResult)
 
     const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
 
