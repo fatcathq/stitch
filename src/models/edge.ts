@@ -186,7 +186,9 @@ export class Edge {
 
     estimation = this.calculateOutputVolume(realVolume)
 
-    if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
+    if (apiResult.cost === undefined
+     || apiResult.fee === undefined
+     || apiResult.amount === undefined) {
       return estimation
     }
 
@@ -225,15 +227,15 @@ export class VirtualEdge extends Edge {
     this.setPrice(price.pow(-1))
   }
 
-  public getRealPrice(): Price {
+  public getRealPrice (): Price {
     return this.price.pow(-1)
   }
 
-  public getMarket(): string {
+  public getMarket (): string {
     return `${this.target}/${this.source}`
   }
 
-  protected extractTopOfTheOrderBook(ob: any): any {
+  protected extractTopOfTheOrderBook (ob: any): any {
     return ob.asks[0]
   }
 
