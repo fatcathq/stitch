@@ -220,11 +220,6 @@ export class Edge {
 // A VirtualEdge allowing us to go from 'source' to 'target' by buying the
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
-  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Decimal, precisions: [number, number]) {
-    super(source, target, fee, minVolume, precisions)
-    this.virtual = true
-  }
-
   public setRealPrice(price: Price): void {
     this.setPrice(price.pow(-1))
   }
