@@ -180,8 +180,8 @@ export class Edge {
     return new Decimal(apiResult.cost).minus(apiResult.fee.cost)
   }
 
-  protected calculateReturnedFunds (res: any, volume: Volume): Price {
-    let estimation: Decimal
+  protected calculateReturnedFunds (apiResult: any, realVolume: Volume): Volume {
+    let estimation: Volume
     let calculation: Decimal
 
     estimation = this.calculateOutputVolume(realVolume)
