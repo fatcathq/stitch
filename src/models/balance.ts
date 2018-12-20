@@ -41,7 +41,7 @@ export default class BalanceHandler {
         continue
       }
 
-      this.balance[currency] =  financial(balance[currency], precision)
+      this.balance[currency] = financial(balance[currency], precision)
     }
 
     log.info(`[BALANCE_HANDLER] Balance updated. Balance now is:`)
@@ -66,7 +66,7 @@ export default class BalanceHandler {
     return this.balance[currency] !== undefined
   }
 
-  public sufficient(opportunity: Opportunity, currency: Currency): boolean {
+  public sufficient (opportunity: Opportunity, currency: Currency): boolean {
     opportunity.changeStartingPoint(currency)
 
     if (opportunity.maxVolume.equals(Infinity)) {
@@ -91,7 +91,7 @@ export default class BalanceHandler {
     return this.balance
   }
 
-  public compareWithCheckpoint(oldBalance: Balance): Balance {
+  public compareWithCheckpoint (oldBalance: Balance): Balance {
     let difference: Balance = {}
 
     for (const currency in oldBalance) {
