@@ -58,8 +58,8 @@ export class Edge {
     return this.price
   }
 
-  public getVolume(): Volume {
-    return this.volume
+  public getRealPrice (): Price {
+    return this.getPrice()
   }
 
   public getPriceAsDecimal(): Decimal {
@@ -224,6 +224,10 @@ export class VirtualEdge extends Edge {
 
   public setRealPrice(price: Price): void {
     this.setPrice(price.pow(-1))
+  }
+
+  public getRealPrice(): Price {
+    return this.price.pow(-1)
   }
 
   public getMarket(): string {
