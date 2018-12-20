@@ -235,6 +235,25 @@ export class VirtualEdge extends Edge {
     return `${this.target}/${this.source}`
   }
 
+  protected extractTopOfTheOrderBook(ob: any): any {
+    return ob.asks[0]
+  }
+
+  protected calculateOutputVolume (realVolume: Volume): Volume {
+    return new Decimal(realVolume).mul(new Decimal(1).minus(this.fee))
+  }
+
+  protected calculateCostAfterFees (apiResult: any): Volume {
+    return new Decimal(apiResult.amount)
+  }
+
+  public async updateFromAPI (api: any): Promise<void> {
+    const ob = await api.fetchOrderBook(this.getMarket(), 1)
+    const [price, volume] = ob.asks[0]
+
+    this.setRealPrice(price)
+  }
+
   protected setRealVolume(volume: Volume): void {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
