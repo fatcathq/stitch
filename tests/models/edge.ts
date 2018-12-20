@@ -19,11 +19,11 @@ const createOrderBookAPIMock = (): any => {
 describe(
   'edges', async () => {
     test('Edges have markets', async () => {
-      let edge = new Edge('ADA', 'BTC', [new Decimal(0), 'before'], new Decimal(0))
+      let edge = new Edge('ADA', 'BTC')
 
       expect(edge.getMarket()).toBe('ADA/BTC')
 
-      let virtualEdge = new VirtualEdge('BTC', 'ADA', [new Decimal(0), 'before'], new Decimal(0))
+      let virtualEdge = new VirtualEdge('BTC', 'ADA')
 
       expect(virtualEdge.getMarket()).toBe('ADA/BTC')
     })
@@ -37,7 +37,7 @@ describe(
       edge.setRealPrice(new Decimal(2.71828))
       expect(edge.getPrice().toNumber()).toBeCloseTo(2.71828)
 
-      let virtualEdge = new VirtualEdge('BTC', 'ADA', [new Decimal(0), 'before'], new Decimal(0))
+      let virtualEdge = new VirtualEdge('BTC', 'ADA')
 
       virtualEdge.setPrice(new Decimal(3))
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(3)
@@ -48,11 +48,14 @@ describe(
 
     test('Edges can update from API', async () => {
       let api = createOrderBookAPIMock()
-      let edge = new Edge('ADA', 'BTC', [new Decimal(0), 'before'], new Decimal(0))
+      let edge = new Edge('ADA', 'BTC')
 
       await edge.updateFromAPI(api)
 
       expect(edge.getVolume().toNumber()).toBe(9)
+      expect(edge.getPrice().toNumber()).toBe(5.1)
+
+      let virtualEdge = new Edge('BTC', 'ADA')
     })
   }
 )
