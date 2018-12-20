@@ -62,11 +62,11 @@ export class Edge {
     return this.getPrice()
   }
 
-  public getPriceAsDecimal(): Decimal {
+  public getPrice (): Decimal {
     return this.price
   }
 
-  public getVolumeAsDecimal(): Decimal {
+  public getVolume (): Decimal {
     return this.volume
   }
 

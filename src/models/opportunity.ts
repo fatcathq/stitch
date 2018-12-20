@@ -172,7 +172,7 @@ export default class {
 
   // TODO: Calculate without including fees
   public getMaxVolume (): Decimal {
-    let volumeIt = this.triangle[0].getVolumeAsDecimal()
+    let volumeIt = this.triangle[0].getVolume()
 
     for (const edge of this.triangle) {
       if (!edge.volume.isFinite()) {
@@ -183,7 +183,7 @@ export default class {
         volumeIt = edge.volume
       }
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((new Decimal(1).minus(edge.fee)))
+      volumeIt = volumeIt.mul(edge.getPrice()).mul((new Decimal(1).minus(edge.fee)))
     }
 
     return volumeIt
@@ -202,7 +202,7 @@ export default class {
         volumeIt = new Decimal(edge.minVolume)
       }
 
-      volumeIt = volumeIt.mul(edge.getPriceAsDecimal()).mul((new Decimal(1).minus(edge.fee)))
+      volumeIt = volumeIt.mul(edge.getPrice()).mul((new Decimal(1).minus(edge.fee)))
     }
 
     return volumeIt
