@@ -70,6 +70,10 @@ export class Edge {
     this.volume = volume
   }
 
+  public getRealVolume (): Volume {
+    return this.volume
+  }
+
   public getVolume (): Decimal {
     return this.volume
   }
@@ -250,6 +254,10 @@ export class VirtualEdge extends Edge {
 
   protected calculateCostAfterFees (apiResult: any): Volume {
     return new Decimal(apiResult.amount)
+  }
+
+  public getRealVolume (): Volume {
+    return this.volume.div(this.getRealPrice())
   }
 
   protected setRealVolume(volume: Volume): void {
