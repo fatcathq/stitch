@@ -66,7 +66,7 @@ export class Edge {
     return this.getPrice()
   }
 
-  protected setRealVolume(volume: Volume) {
+  protected setRealVolume (volume: Volume) {
     this.volume = volume
   }
 
