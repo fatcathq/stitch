@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js'
-import { Currency, Volume, Price, OrderDetails } from '../types'
+import { Currency, Volume, Price, OrderDetails, OrderSide } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
@@ -29,6 +29,7 @@ export class Edge {
   // performed by buying the target unit and paying in the source unit.
   protected price: Decimal = new Decimal(0)
   private feeApplication: FeeApplication = 'before'
+  public side: OrderSide = 'sell'
 
   constructor
     (source: string,
@@ -86,10 +87,6 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
-  public getSide (): string {
-    return 'sell'
-  }
-
   protected extractTopOfTheOrderBook(ob: any) {
     return ob.bids[0]
   }
@@ -120,7 +117,7 @@ export class Edge {
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
-      side: this.getSide(),
+      side: this.side,
       ...args
     })
   }
@@ -248,6 +245,8 @@ export class Edge {
 // A VirtualEdge allowing us to go from 'source' to 'target' by buying the
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
+  public side: OrderSide = 'buy'
+
   public setRealPrice(price: Price): void {
     this.setPrice(price.pow(-1))
   }
@@ -258,10 +257,6 @@ export class VirtualEdge extends Edge {
 
   public getMarket (): string {
     return `${this.target}/${this.source}`
-  }
-
-  public getSide (): string {
-    return 'buy'
   }
 
   protected extractTopOfTheOrderBook (ob: any): any {

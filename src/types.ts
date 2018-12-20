@@ -14,11 +14,12 @@ export type Triangle = Edge[]
 export type Balance = {
   [key: string]: Volume
 }
+export type OrderSide = 'buy' | 'sell'
 
 export type Volume = Decimal
 export type Price = Decimal
 export type OrderDetails = {
-  side?: 'buy' | 'sell'
+  side?: OrderSide
   type?: 'market' | 'limit'
   price?: Price
   mock?: boolean
