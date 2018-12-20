@@ -1,4 +1,5 @@
-import Balance from '../src/models/balance'
+import { Balance } from '../src/types'
+import BalanceHandler from '../src/models/balance'
 import Decimal from 'decimal.js'
 
 const createBalanceAPIMock = (balance: {[key: string]: number}) => {
@@ -9,7 +10,7 @@ const createBalanceAPIMock = (balance: {[key: string]: number}) => {
   }
 }
 
-const balanceToDecimalValues = (balance: any) => {
+const balanceToDecimalValues = (balance: any): Balance => {
   for (const unit of Object.keys(balance)) {
     balance[unit] = new Decimal(balance[unit])
   }
@@ -18,31 +19,60 @@ const balanceToDecimalValues = (balance: any) => {
 }
 
 describe('update', async () => {
-  let balanceHandler: Balance
-  let mockAPI: any
-  const testBalance = {
-    ETH: 100,
-    BTC: 200,
-    USD: 300
-  }
-
-  beforeAll(async () => {
-    mockAPI = createBalanceAPIMock(testBalance)
-    balanceHandler = new Balance(mockAPI)
-    await balanceHandler.update()
-  })
-
   test('Balance handler should update balance obj properly', async () => {
+    let balanceHandler: BalanceHandler
+
+    const testBalance = {
+      ETH: 100,
+      BTC: 200,
+      USD: 300
+    }
+
+    let mockAPI = createBalanceAPIMock(testBalance)
+    balanceHandler = new BalanceHandler(mockAPI)
+    await balanceHandler.update()
+
     expect(balanceHandler.balance).toEqual(balanceToDecimalValues(testBalance))
+    expect(mockAPI.fetchBalance).toHaveBeenCalledTimes(1)
   })
 
-  test('Balance handler should call api.fetchBalance once', async () => {
-    expect(mockAPI.fetchBalance).toHaveBeenCalledTimes(1)
+
+  test('Balance handler calculates checkpoint differences', async () => {
+    let balanceHandler: BalanceHandler
+
+    const testBalanceBegin = {
+      ETH: 100,
+      BTC: 200,
+      USD: 300,
+      ADA: 9001
+    }
+    const testBalanceEnd = {
+      ETH: 101,
+      BTC: 205.025,
+      USD: 297,
+      ADA: 9001,
+      XMR: 7
+    }
+
+    let mockAPI = createBalanceAPIMock(testBalanceBegin)
+    balanceHandler = new BalanceHandler(mockAPI)
+    await balanceHandler.update()
+    let checkpoint = balanceHandler.getCheckpoint()
+    mockAPI.fetchBalance.mockReturnValue({free: testBalanceEnd})
+    await balanceHandler.update()
+
+    let diff: Balance = balanceHandler.compareWithCheckpoint(checkpoint)
+
+    expect(diff.ETH.toNumber()).toEqual(1)
+    expect(diff.BTC.toNumber()).toEqual(5.025)
+    expect(diff.USD.toNumber()).toEqual(-3)
+    expect(diff.XMR.toNumber()).toEqual(7)
+    expect(diff).not.toHaveProperty('ADA')
   })
 })
 
 describe('precisions', async () => {
-  let balanceHandler: Balance
+  let balanceHandler: BalanceHandler
   let mockAPI: any
   const testBalance = {
     ETH: 0.1234567,
@@ -56,7 +86,7 @@ describe('precisions', async () => {
 
   beforeAll(async () => {
     mockAPI = createBalanceAPIMock(testBalance)
-    balanceHandler = new Balance(mockAPI)
+    balanceHandler = new BalanceHandler(mockAPI)
     await balanceHandler.setPrecisions(precisions)
     await balanceHandler.update()
   })
