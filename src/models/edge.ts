@@ -81,8 +81,8 @@ export class Edge {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
     const [price, volume] = this.extractTopOfTheOrderBook(ob)
 
-    this.price = new Decimal(price)
-    this.volume = new Decimal(volume)
+    this.setRealPrice(new Decimal(price))
+    this.setRealVolume(new Decimal(volume))
   }
 
   /*
