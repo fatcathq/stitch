@@ -110,14 +110,17 @@ export class Edge {
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<Volume> {
-    /*
-     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
-     */
+    assert(typeof args.price === 'undefined')
+    args.price = this.getRealPrice()
+    if (args.type && args.type === 'market') {
+      // WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
+      args.price = this.worsenPrice(args.price, MARKET_ORDER_PRICE_CHANGE)
+    }
+    args.volume = this.volumeToRealVolume(new Decimal(args.volume))
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
-      side: 'sell',
-      price: args.type && args.type === 'market' ? this.getPrice().mul(1 - MARKET_ORDER_PRICE_CHANGE) : this.getPrice(),
+      side: this.getSide(),
       ...args
     })
   }
@@ -286,25 +289,5 @@ export class VirtualEdge extends Edge {
 
   protected worsenPrice (price: Price, factor: number) {
     return price.mul(1 + factor)
-  }
-
-  public async traverse (args: OrderDetails): Promise<Decimal> {
-    /*
-     * real price = 1 / virtual price
-     * real volume = virtual price * virtual volume = virtual volume / real price
-     */
-    assert(typeof args.price === 'undefined')
-    args.price = this.getRealPrice()
-    if (args.type && args.type === 'market') {
-      // WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
-      args.price = args.price.mul(1 + MARKET_ORDER_PRICE_CHANGE)
-    }
-    args.volume = new Decimal(args.volume).div(this.getRealPrice())
-
-    return await this.placeAndFillOrder({
-      type: args.type ? args.type : 'limit',
-      side: 'buy',
-      ...args
-    })
   }
 }
