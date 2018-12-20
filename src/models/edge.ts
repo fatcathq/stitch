@@ -62,8 +62,8 @@ export class Edge {
     return this.getPrice()
   }
 
-  public getPrice (): Decimal {
-    return this.price
+  protected setRealVolume(volume: Volume) {
+    this.volume = volume
   }
 
   public getVolume (): Decimal {
