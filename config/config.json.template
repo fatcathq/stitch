@@ -14,7 +14,7 @@
     "db": {
       "host": "127.0.0.1",
       "user": "root",
-      "dassword": "123",
+      "password": "123",
       "database": "stitch",
       "enabled": false
     }
