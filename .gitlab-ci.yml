@@ -1,5 +1,6 @@
 image: node:latest
 before_script:
+- mv config/config.json.template config/config.json
 - cd src/
 - npm install
 test:
