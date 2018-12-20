@@ -196,12 +196,12 @@ export class Edge {
 
     calculation = this.calculateCostAfterFees(apiResult)
 
-    const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
+    const percentageDiff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
 
     log.info(`[FUNDS_CALCULATOR]
       Estimation: ${estimation.toNumber()} ${this.target},
       FromAPI: ${calculation.toNumber()} ${this.target},
-      Difference: ${diff} %`
+      Difference: ${percentageDiff} %`
     )
 
     return calculation
