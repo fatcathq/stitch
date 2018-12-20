@@ -33,6 +33,7 @@ describe(
 
       edge.setPrice(new Decimal(3.14159265))
       expect(edge.getPrice().toNumber()).toBeCloseTo(3.14159265)
+      expect(edge.getRealPrice().toNumber()).toBeCloseTo(3.14159265)
 
       edge.setRealPrice(new Decimal(2.71828))
       expect(edge.getPrice().toNumber()).toBeCloseTo(2.71828)
@@ -42,6 +43,7 @@ describe(
 
       virtualEdge.setPrice(new Decimal(3))
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(3)
+      expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(1/3)
 
       virtualEdge.setRealPrice(new Decimal(5))
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1/5)
