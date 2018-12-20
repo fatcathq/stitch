@@ -66,12 +66,16 @@ export class Edge {
     return this.getPrice()
   }
 
+  protected volumeToRealVolume(volume: Volume): Volume {
+    return volume
+  }
+
   protected setRealVolume (volume: Volume) {
     this.volume = volume
   }
 
   public getRealVolume (): Volume {
-    return this.volume
+    return this.volumeToRealVolume(this.volume)
   }
 
   public getVolume (): Decimal {
@@ -256,8 +260,8 @@ export class VirtualEdge extends Edge {
     return new Decimal(apiResult.amount)
   }
 
-  public getRealVolume (): Volume {
-    return this.volume.div(this.getRealPrice())
+  protected volumeToRealVolume(volume: Volume): Volume {
+    return volume.div(this.getRealPrice())
   }
 
   protected setRealVolume(volume: Volume): void {
