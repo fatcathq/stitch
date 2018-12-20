@@ -73,9 +73,13 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
+  protected extractTopOfTheOrderBook(ob: any) {
+    return ob.bids[0]
+  }
+
   public async updateFromAPI (api: any): Promise<void> {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
-    const [price, volume] = ob.bids[0]
+    const [price, volume] = this.extractTopOfTheOrderBook(ob)
 
     this.price = new Decimal(price)
     this.volume = new Decimal(volume)
