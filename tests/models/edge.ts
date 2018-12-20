@@ -59,7 +59,14 @@ describe(
       expect(edge.getVolume().toNumber()).toBe(9)
       expect(edge.getPrice().toNumber()).toBe(5.1)
 
-      let virtualEdge = new Edge('BTC', 'ADA')
+      let virtualEdge = new VirtualEdge('BTC', 'ADA')
+
+      await virtualEdge.updateFromAPI(api)
+
+      expect(virtualEdge.getRealVolume().toNumber()).toBeCloseTo(8.6)
+      expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(5.2)
+      expect(virtualEdge.getVolume().toNumber()).toBeCloseTo(8.6 * 5.2)
+      expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1 / 5.2)
     })
   }
 )
