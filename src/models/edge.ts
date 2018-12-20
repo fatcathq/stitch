@@ -107,7 +107,10 @@ export class Edge {
 
   public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
     let id: null | number = null
-    const tradeVolume = this.feeApplication == 'after'? args.volume : args.volume.minus(this.fee.mul(args.volume))
+    const tradeVolume = args.volume
+    if (this.feeApplication == 'before') {
+      args.volume = args.volume.minus(this.fee.mul(args.volume))
+    }
     let apiRes
 
     let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
