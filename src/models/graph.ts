@@ -59,8 +59,8 @@ export default class extends Graph {
       [asset, currency] = market.symbol.split('/')
 
       try {
-        this.edge(asset, currency).setPrice(new Decimal(market.bid))
-        this.edge(currency, asset).setPrice(new Decimal(market.ask))
+        this.edge(asset, currency).setRealPrice(new Decimal(market.bid))
+        this.edge(currency, asset).setRealPrice(new Decimal(market.ask))
 
         if ((this.edge(currency, asset)).minVolume.equals(0)) {
           this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume.mul(market.ask)

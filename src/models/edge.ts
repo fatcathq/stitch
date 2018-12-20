@@ -45,8 +45,12 @@ export class Edge {
   }
 
   public setPrice (price: Price): void {
-    this.price = new Decimal(price)
+    this.price = price
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+  }
+
+  public setRealPrice (price: Price): void {
+    this.setPrice(price)
   }
 
   public getPrice(): Price {
@@ -217,10 +221,8 @@ export class VirtualEdge extends Edge {
     this.virtual = true
   }
 
-  public setPrice(price: Price) {
-    this.price = new Decimal(price).pow(-1)
-
-    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+  public setRealPrice(price: Price) {
+    this.setPrice(price.pow(-1))
   }
 
   public getMarket(): string {
@@ -231,7 +233,7 @@ export class VirtualEdge extends Edge {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
     const [price, volume] = ob.asks[0]
 
-    this.setPrice(price)
+    this.setRealPrice(price)
 
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
