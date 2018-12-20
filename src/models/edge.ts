@@ -222,7 +222,7 @@ export class VirtualEdge extends Edge {
     this.virtual = true
   }
 
-  public setRealPrice(price: Price) {
+  public setRealPrice(price: Price): void {
     this.setPrice(price.pow(-1))
   }
 
