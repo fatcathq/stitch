@@ -36,6 +36,7 @@ describe(
 
       edge.setRealPrice(new Decimal(2.71828))
       expect(edge.getPrice().toNumber()).toBeCloseTo(2.71828)
+      expect(edge.getRealPrice().toNumber()).toBeCloseTo(2.71828)
 
       let virtualEdge = new VirtualEdge('BTC', 'ADA')
 
@@ -44,6 +45,7 @@ describe(
 
       virtualEdge.setRealPrice(new Decimal(5))
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1/5)
+      expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(5)
     })
 
     test('Edges can update from API', async () => {
