@@ -18,14 +18,16 @@ const createOrderBookAPIMock = (): any => {
 
 describe(
   'edges', async () => {
-    test('Edges have markets', async () => {
+    test('Edges have markets and sides', async () => {
       let edge = new Edge('ADA', 'BTC')
 
       expect(edge.getMarket()).toBe('ADA/BTC')
+      expect(edge.side).toBe('sell')
 
       let virtualEdge = new VirtualEdge('BTC', 'ADA')
 
       expect(virtualEdge.getMarket()).toBe('ADA/BTC')
+      expect(virtualEdge.side).toBe('buy')
     })
 
     test('Edges have prices', async () => {
