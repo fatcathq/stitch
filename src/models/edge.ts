@@ -13,7 +13,6 @@ type FeeApplication = 'before' | 'after'
 // An Edge indicating a market which allows us to go from the 'source' Currency
 // to the 'target' Currency by selling the 'source' to obtain 'target'.
 export class Edge {
-  public virtual: boolean = false
   public source: Currency
   public target: Currency
   public sourcePrecision: number
@@ -204,7 +203,7 @@ export class Edge {
   public async save(cycleId: number) {
     return db('edges').insert({
       cycle_id: cycleId,
-      virtual: this.virtual,
+      virtual: this instanceof VirtualEdge,
       source: this.source,
       target: this.target,
       price: this.price.toNumber(),
