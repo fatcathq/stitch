@@ -3,6 +3,7 @@ import { Currency, Volume, Price, OrderDetails } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+import assert from 'assert'
 
 const FILLED_ORDER_TRIES = 50
 const MARKET_ORDER_PRICE_CHANGE = 0.01
@@ -245,10 +246,14 @@ export class VirtualEdge extends Edge {
     /*
      * real price = 1 / virtual price
      * real volume = virtual price * virtual volume = virtual volume / real price
-     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
      */
-    args.price = args.type && args.type === 'market' ?  this.price.pow(-1).mul(1 + MARKET_ORDER_PRICE_CHANGE) : this.price.pow(-1)
-    args.volume = new Decimal(args.volume).div(this.price.pow(-1))
+    assert(typeof args.price === 'undefined')
+    args.price = this.getRealPrice()
+    if (args.type && args.type === 'market') {
+      // WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
+      args.price = args.price.mul(1 + MARKET_ORDER_PRICE_CHANGE)
+    }
+    args.volume = new Decimal(args.volume).div(this.getRealPrice())
 
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
