@@ -102,6 +102,10 @@ export class Edge {
     this.setRealVolume(new Decimal(volume))
   }
 
+  protected worsenPrice (price: Price, factor: number) {
+    return price.mul(1 - factor)
+  }
+
   /*
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
@@ -109,6 +113,7 @@ export class Edge {
     /*
      * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
      */
+
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: 'sell',
@@ -277,6 +282,10 @@ export class VirtualEdge extends Edge {
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
     this.volume = new Decimal(volume).mul(this.getRealPrice())
+  }
+
+  protected worsenPrice (price: Price, factor: number) {
+    return price.mul(1 + factor)
   }
 
   public async traverse (args: OrderDetails): Promise<Decimal> {
