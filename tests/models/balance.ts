@@ -1,5 +1,5 @@
-import { Balance } from '../src/types'
-import BalanceHandler from '../src/models/balance'
+import { Balance } from '../../src/types'
+import BalanceHandler from '../../src/models/balance'
 import Decimal from 'decimal.js'
 
 const createBalanceAPIMock = (balance: {[key: string]: number}) => {
