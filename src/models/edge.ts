@@ -9,6 +9,8 @@ const MARKET_ORDER_PRICE_CHANGE = 0.01
 
 type FeeApplication = 'before' | 'after'
 
+// An Edge indicating a market which allows us to go from the 'source' Currency
+// to the 'target' Currency by selling the 'source' to obtain 'target'.
 export class Edge {
   public virtual: boolean = false
   public source: Currency
@@ -20,7 +22,11 @@ export class Edge {
   public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
   public stringified: string
-  // Price is target unit (in both Edge and VirtualEdge)
+  // Price is target unit (in both Edge and VirtualEdge).
+  // It indicates how many target units one can get by giving 1 source unit.
+  // In the case of an Edge, this trade is performed by selling the source unit
+  // to obtain target units. In the case of a VirtualEdge, this trade is
+  // performed by buying the target unit and paying in the source unit.
   protected price: Decimal = new Decimal(0)
   private feeApplication: FeeApplication = 'before'
 
@@ -203,6 +209,8 @@ export class Edge {
   }
 }
 
+// A VirtualEdge allowing us to go from 'source' to 'target' by buying the
+// 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
   constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Decimal, precisions: [number, number]) {
     super(source, target, fee, minVolume, precisions)
