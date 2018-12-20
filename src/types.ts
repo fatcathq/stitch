@@ -15,12 +15,13 @@ export type Balance = {
   [key: string]: Volume
 }
 export type OrderSide = 'buy' | 'sell'
+export type OrderType = 'market' | 'limit'
 
 export type Volume = Decimal
 export type Price = Decimal
 export type OrderDetails = {
   side?: OrderSide
-  type?: 'market' | 'limit'
+  type?: OrderType
   price?: Price
   mock?: boolean
   volume: Volume,
