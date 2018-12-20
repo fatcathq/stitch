@@ -234,16 +234,11 @@ export class VirtualEdge extends Edge {
     return `${this.target}/${this.source}`
   }
 
-  public async updateFromAPI (api: any): Promise<void> {
-    const ob = await api.fetchOrderBook(this.getMarket(), 1)
-    const [price, volume] = ob.asks[0]
-
-    this.setRealPrice(price)
-
+  protected setRealVolume(volume: Volume): void {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
-    this.volume = new Decimal(volume).mul(price)
+    this.volume = new Decimal(volume).mul(this.getRealPrice())
   }
 
   public async traverse (args: OrderDetails): Promise<Decimal> {
