@@ -19,7 +19,7 @@ export class Edge {
   public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
-  public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
+  public volume: Volume = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
   // Price is target unit (in both Edge and VirtualEdge).
   // It indicates how many target units one can get by giving 1 source unit.
