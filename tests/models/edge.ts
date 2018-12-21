@@ -33,8 +33,12 @@ describe(
       expect(virtualEdge.side).toBe('buy')
     })
 
-    test('Edges have prices', async () => {
+    test('Edges can be stringified', async () => {
+      expect(`${edge}`).toBe('ADA -> BTC')
+      expect(`${virtualEdge}`).toBe('BTC -> ADA')
+    })
 
+    test('Edges have prices', async () => {
       edge.setPrice(new Decimal(3.14159265))
       expect(edge.getPrice().toNumber()).toBeCloseTo(3.14159265)
       expect(edge.getRealPrice().toNumber()).toBeCloseTo(3.14159265)
