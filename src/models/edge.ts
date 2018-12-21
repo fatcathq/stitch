@@ -27,7 +27,7 @@ export class Edge {
   // to obtain target units. In the case of a VirtualEdge, this trade is
   // performed by buying the target unit and paying in the source unit.
   protected price: Decimal = new Decimal(0)
-  private feeApplication: FeeApplication = 'before'
+  protected feeApplication: FeeApplication = 'before'
   public side: OrderSide = 'sell'
 
   constructor
