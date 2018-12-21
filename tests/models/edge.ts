@@ -73,5 +73,14 @@ describe(
       expect(virtualEdge.getVolume().toNumber()).toBeCloseTo(8.6 * 5.2)
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1 / 5.2)
     })
+
+    test('Edges can be traversed', async () => {
+      // let api = createOrderBookAPIMock()
+
+      edge.traverse({
+        volume: new Decimal(3.7),
+        mock: true
+      })
+    })
   }
 )
