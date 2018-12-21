@@ -26,7 +26,7 @@ export type OrderDetails = {
   mock?: boolean
   volume: Volume,
   muteLogs?: boolean
-  api: Api,
+  api?: Api,
 }
 
 export type OpportunityMap = {
