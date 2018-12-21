@@ -127,7 +127,7 @@ export class Edge {
    * (both for Edge and VirtualEdge)
    */
 
-  public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
+  protected async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
     let id: null | number = null
     let tradeVolume = args.volume
     if (this.feeApplication == 'before') {
