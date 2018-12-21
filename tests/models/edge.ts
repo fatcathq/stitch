@@ -59,7 +59,9 @@ describe(
       await edge.updateFromAPI(api)
 
       expect(edge.getVolume().toNumber()).toBe(9)
+      expect(edge.getRealVolume().toNumber()).toBe(9)
       expect(edge.getPrice().toNumber()).toBe(5.1)
+      expect(edge.getRealPrice().toNumber()).toBe(5.1)
 
       let virtualEdge = new VirtualEdge('BTC', 'ADA')
 
