@@ -21,7 +21,6 @@ export class Edge {
   // Volume is source units (in both Edge and VirtualEdge)
   public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
-  public stringified: string
   // Price is target unit (in both Edge and VirtualEdge).
   // It indicates how many target units one can get by giving 1 source unit.
   // In the case of an Edge, this trade is performed by selling the source unit
@@ -47,12 +46,15 @@ export class Edge {
     this.sourcePrecision = precisions[0]
     this.targetPrecision = precisions[1]
 
-    this.stringified = `${this.source} -> ${this.target}`
+  }
+
+  public toString (): string {
+    return `${this.source} -> ${this.target}`
   }
 
   public setPrice (price: Price): void {
     this.price = price
-    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+    log.debug(`New price on edge ${this}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
   public setRealPrice (price: Price): void {

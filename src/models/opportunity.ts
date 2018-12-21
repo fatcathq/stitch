@@ -135,7 +135,7 @@ export default class {
     let volumeIt = new Decimal(volume)
 
     for (const edge of this.triangle) {
-      log.info(`[OPPORTUNITY_FALLBACK], Testing edge ${edge.stringified}`)
+      log.info(`[OPPORTUNITY_FALLBACK], Testing edge ${edge}`)
 
       if (edge.source in NEUTRAL_COINS) {
         log.info(`[OPPORTUNITY_FALLBACK] Back to neutral currency: ${edge.source}`)
