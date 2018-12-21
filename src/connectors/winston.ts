@@ -19,19 +19,19 @@ const logger = createLogger({
     new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/error.log'), level: 'error' }),
     new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/warn.log'), level: 'warn' }),
     new transports.File({ format: fileLogFormat, filename: path.join(logDir, '/combined.log') })
-  ],
+  ]
 })
 
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new transports.Console({
     format: combine(
       timestamp({
-        format: "HH:mm:ss.SSS"
+        format: 'HH:mm:ss.SSS'
       }),
       colorize(),
       simple(),
       printf(info => `${info.timestamp} | ${info.level}: ${info.message}`)
-    ),
+    )
   }))
 }
 

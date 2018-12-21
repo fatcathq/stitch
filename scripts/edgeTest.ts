@@ -6,7 +6,13 @@ import Engine from '../src/engine'
 import { OrderDetails, Currency } from '../src/types'
 import Decimal from 'decimal.js'
 
-async function testEdge (asset: Currency, currency: Currency, isVirtual: boolean = false, fee = new Decimal(0.0025), minVolume = new Decimal(0)) {
+async function testEdge (
+  asset: Currency,
+  currency: Currency,
+  isVirtual: boolean = false,
+  fee = new Decimal(0.0025),
+  minVolume = new Decimal(0)
+): void {
   const api = new Api()
   const balance = new Balance(api)
   const precisions = Engine.marketsToPrecisions(await api.loadMarkets())
@@ -18,8 +24,7 @@ async function testEdge (asset: Currency, currency: Currency, isVirtual: boolean
   let edge
   if (isVirtual) {
     edge = new VirtualEdge(asset, currency, [fee, 'before'], minVolume, [precisions[asset], precisions[currency]])
-  }
-  else {
+  } else {
     edge = new Edge(asset, currency, [fee, 'after'], minVolume, [precisions[currency], precisions[asset]])
   }
 
@@ -43,7 +48,7 @@ async function testEdge (asset: Currency, currency: Currency, isVirtual: boolean
   console.log(`[TEST] Left ${balance.getAsNumber(asset)} ${asset} in the asset unit`)
 }
 
-async function testTraverseCycle (from: Currency, to: Currency) {
+async function testTraverseCycle (from: Currency, to: Currency): Promise<void> {
   await testEdge(from, to, true)
 }
 

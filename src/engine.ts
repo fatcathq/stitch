@@ -12,20 +12,20 @@ export default class Engine {
   private locked: boolean
   private precisions: Precisions = {}
 
-  constructor(api: any) {
+  constructor (api: any) {
     this.api = api
     this.balance = new Balance(this.api)
     this.locked = false
   }
 
-  public async init(markets: any) {
+  public async init (markets: any): Promise<void> {
     this.precisions = Engine.marketsToPrecisions(markets)
 
     this.balance.setPrecisions(this.precisions)
     await this.balance.update()
   }
 
-  public hasExploitableCurrency(opportunity: Opportunity) : Currency | undefined {
+  public hasExploitableCurrency (opportunity: Opportunity): Currency | undefined {
     for (const currency of this.balance.getIntersection(opportunity)) {
       if (this.balance.sufficient(opportunity, currency)) {
         return currency
@@ -35,7 +35,7 @@ export default class Engine {
     }
   }
 
-  public async exploit (opportunity: Opportunity, currency: Currency) {
+  public async exploit (opportunity: Opportunity, currency: Currency): Promise<void> {
     log.info(`[ENGINE] Will exploit opportunity ${opportunity.getNodes()}.`)
 
     if (this.isLocked()) {
@@ -56,8 +56,7 @@ export default class Engine {
 
     if (!exploit) {
       log.error(`[ENGINE] Opportunity was not exploited`)
-    }
-    else {
+    } else {
       log.info(`[ENGINE] Finished exploiting opportunity ${opportunity.getNodes()}. Duration: ${Date.now() - now}`)
     }
 
@@ -66,7 +65,7 @@ export default class Engine {
     this.unlock()
   }
 
-  private calculateStartingVolume (opportunity: Opportunity, currency: Currency): Decimal  {
+  private calculateStartingVolume (opportunity: Opportunity, currency: Currency): Decimal {
     if (opportunity.maxVolume < this.balance.get(currency)) {
       log.info(`[ENGINE] We have ${this.balance.get(currency)} ${currency} but the maxVolume is ${opportunity.minVolume} ${currency}. Using maxVolume to trade.`)
       return new Decimal(opportunity.maxVolume).mul(MAX_VOLUME_SAFETY_THRESHOLD)
@@ -94,19 +93,19 @@ export default class Engine {
     }
   }
 
-  public isLocked() {
+  public isLocked (): boolean {
     return this.locked
   }
 
-  public lock() {
+  public lock (): void {
     this.locked = true
   }
 
-  private unlock() {
+  private unlock (): void {
     this.locked = false
   }
 
-  public static marketsToPrecisions(markets: any): Precisions {
+  public static marketsToPrecisions (markets: any): Precisions {
     let precisions: Precisions = {}
 
     for (const id of Object.keys(markets)) {

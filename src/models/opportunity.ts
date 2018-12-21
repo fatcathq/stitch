@@ -28,23 +28,23 @@ export default class {
     this.minVolume = this.getMinVolume()
   }
 
-  public contains (unit: Currency) {
+  public contains (unit: Currency): boolean {
     return this.getNodes().includes(unit)
   }
 
-  public getReferenceUnit() {
+  public getReferenceUnit (): string {
     return this.refUnit
   }
 
-  public getDuration() {
+  public getDuration (): number {
     return (new Date()).getTime() - this.created.getTime()
   }
 
-  public getNodes () {
+  public getNodes (): string[] {
     return this.triangle.map(e => e.source)
   }
 
-  public changeStartingPoint (currency: Currency) {
+  public changeStartingPoint (currency: Currency): void {
     const index = this.triangle.findIndex((edge: Edge) => edge.source === currency)
 
     if (!this.contains(currency)) {
@@ -64,7 +64,7 @@ export default class {
     log.info(`Changed reference unit to ${currency}. MinVolume: ${this.minVolume}, MaxVolume: ${this.maxVolume}`)
   }
 
-  public async updateFromAPI(api: any) {
+  public async updateFromAPI (api: any): Promise<void> {
     log.info(`Updating from API opportunity: ${this.getNodes()}`)
 
     for (const edge of this.triangle) {
@@ -72,10 +72,9 @@ export default class {
     }
 
     this.maxVolume = this.getMaxVolume()
-
   }
 
-  public async calculateArbitrage () {
+  public async calculateArbitrage (): Promise<Volume> {
     let volume = new Decimal(1)
 
     for (const edge of this.triangle) {
@@ -93,7 +92,7 @@ export default class {
     return volume
   }
 
-  public async exploit(api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {
+  public async exploit (api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {
     this.changeStartingPoint(currency)
 
     if (this.maxVolume.equals(Infinity)) {
@@ -127,7 +126,7 @@ export default class {
   /**
    * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
    */
-  public async backToSafety(api: any, currency: Currency, volume: Decimal) {
+  public async backToSafety (api: any, currency: Currency, volume: Decimal): Promise<void> {
     log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
 
     this.changeStartingPoint(currency)
@@ -147,7 +146,7 @@ export default class {
       const details = {
         type: 'market',
         volume: volumeIt,
-        api: api,
+        api: api
       } as OrderDetails
 
       volumeIt = await edge.traverse(details)
@@ -156,7 +155,7 @@ export default class {
     log.info(`[OPPORTUNITY_FALLBACK] Opportunity fallback finished`)
   }
 
-  public async save() {
+  public async save (): Promise<void> {
     const res = await db('opportunities').insert({
       exchange: this.exchange,
       created_at: this.created,
@@ -164,10 +163,10 @@ export default class {
       min_trade_volume: this.getMinVolume().toNumber(),
       max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume.toNumber(),
       cycle: this.getNodes(),
-      arbitrage: this.arbitrage.toNumber(),
+      arbitrage: this.arbitrage.toNumber()
     }).returning('id')
 
-    return this.triangle.map((edge: Edge) => edge.save(res[0]))
+    this.triangle.forEach((edge: Edge) => edge.save(res[0]))
   }
 
   // TODO: Calculate without including fees
@@ -190,7 +189,7 @@ export default class {
   }
 
   // TODO: Calculate without including fees
-  public getMinVolume(): Decimal {
+  public getMinVolume (): Decimal {
     let volumeIt = new Decimal(this.triangle[0].minVolume)
 
     for (const edge of this.triangle) {
@@ -208,12 +207,12 @@ export default class {
     return volumeIt
   }
 
-  private logOpportunityExploitInfo (startingBalance: Decimal) {
+  private logOpportunityExploitInfo (startingBalance: Decimal): void {
     log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
     log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
   }
 
-  private generateIndex (triangle: Triangle) {
+  private generateIndex (triangle: Triangle): string {
     return triangle.map(e => e.source).sort().join('')
   }
 }

@@ -18,7 +18,8 @@ const createOrderBookAPIMock = (): any => {
 
 describe(
   'edges', async () => {
-    let edge: Edge, virtualEdge: VirtualEdge
+    let edge: Edge
+    let virtualEdge: VirtualEdge
 
     beforeEach(() => {
       edge = new Edge('ADA', 'BTC')
@@ -49,10 +50,10 @@ describe(
 
       virtualEdge.setPrice(new Decimal(3))
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(3)
-      expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(1/3)
+      expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(1 / 3)
 
       virtualEdge.setRealPrice(new Decimal(5))
-      expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1/5)
+      expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1 / 5)
       expect(virtualEdge.getRealPrice().toNumber()).toBeCloseTo(5)
     })
 
