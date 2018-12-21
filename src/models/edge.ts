@@ -1,16 +1,18 @@
 import Decimal from 'decimal.js'
-import { Currency, Volume, Price, OrderDetails } from '../types'
+import { Currency, Volume, Price, OrderDetails, OrderSide } from '../types'
 import log from '../loggers/winston'
 import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
+import assert from 'assert'
 
 const FILLED_ORDER_TRIES = 50
 const MARKET_ORDER_PRICE_CHANGE = 0.01
 
 type FeeApplication = 'before' | 'after'
 
+// An Edge indicating a market which allows us to go from the 'source' Currency
+// to the 'target' Currency by selling the 'source' to obtain 'target'.
 export class Edge {
-  public virtual: boolean = false
   public source: Currency
   public target: Currency
   public sourcePrecision: number
@@ -20,11 +22,21 @@ export class Edge {
   public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
   public stringified: string
-  // Price is target unit (in both Edge and VirtualEdge)
+  // Price is target unit (in both Edge and VirtualEdge).
+  // It indicates how many target units one can get by giving 1 source unit.
+  // In the case of an Edge, this trade is performed by selling the source unit
+  // to obtain target units. In the case of a VirtualEdge, this trade is
+  // performed by buying the target unit and paying in the source unit.
   protected price: Decimal = new Decimal(0)
   private feeApplication: FeeApplication = 'before'
+  public side: OrderSide = 'sell'
 
-  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Volume, precisions: [number, number] = [8, 8]) {
+  constructor
+    (source: string,
+     target: string,
+     fee: [Decimal, FeeApplication] = [new Decimal(0), 'before'],
+     minVolume: Volume = new Decimal(0),
+     precisions: [number, number] = [8, 8]) {
     this.source = source
     this.target = target
     this.minVolume = minVolume
@@ -39,23 +51,35 @@ export class Edge {
   }
 
   public setPrice (price: Price): void {
-    this.price = new Decimal(price)
+    this.price = price
     log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+  }
+
+  public setRealPrice (price: Price): void {
+    this.setPrice(price)
   }
 
   public getPrice(): Price {
     return this.price
   }
 
-  public getVolume(): Volume {
-    return this.volume
+  public getRealPrice (): Price {
+    return this.getPrice()
   }
 
-  public getPriceAsDecimal(): Decimal {
-    return this.price
+  protected volumeToRealVolume(volume: Volume): Volume {
+    return volume
   }
 
-  public getVolumeAsDecimal(): Decimal {
+  protected setRealVolume (volume: Volume) {
+    this.volume = volume
+  }
+
+  public getRealVolume (): Volume {
+    return this.volumeToRealVolume(this.volume)
+  }
+
+  public getVolume (): Decimal {
     return this.volume
   }
 
@@ -63,25 +87,37 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
+  protected extractTopOfTheOrderBook(ob: any) {
+    return ob.bids[0]
+  }
+
   public async updateFromAPI (api: any): Promise<void> {
     const ob = await api.fetchOrderBook(this.getMarket(), 1)
-    const [price, volume] = ob.bids[0]
+    const [price, volume] = this.extractTopOfTheOrderBook(ob)
 
-    this.price = new Decimal(price)
-    this.volume = new Decimal(volume)
+    this.setRealPrice(new Decimal(price))
+    this.setRealVolume(new Decimal(volume))
+  }
+
+  protected worsenPrice (price: Price, factor: number) {
+    return price.mul(1 - factor)
   }
 
   /*
    * Volume and Price for this function call are given in the same units as this.volume and this.price
    */
   public async traverse (args: OrderDetails): Promise<Volume> {
-    /*
-     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
-     */
+    assert(typeof args.price === 'undefined')
+    args.price = this.getRealPrice()
+    if (args.type && args.type === 'market') {
+      // WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
+      args.price = this.worsenPrice(args.price, MARKET_ORDER_PRICE_CHANGE)
+    }
+    args.volume = this.volumeToRealVolume(new Decimal(args.volume))
+
     return await this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
-      side: 'sell',
-      price: args.type && args.type === 'market' ? this.getPrice().mul(1 - MARKET_ORDER_PRICE_CHANGE) : this.getPrice(),
+      side: this.side,
       ...args
     })
   }
@@ -93,7 +129,10 @@ export class Edge {
 
   public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
     let id: null | number = null
-    const tradeVolume = this.feeApplication == 'after'? args.volume : args.volume.minus(this.fee.mul(args.volume))
+    const tradeVolume = args.volume
+    if (this.feeApplication == 'before') {
+      args.volume = args.volume.minus(this.fee.mul(args.volume))
+    }
     let apiRes
 
     let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
@@ -155,36 +194,36 @@ export class Edge {
     return this.calculateReturnedFunds(apiRes, args.volume)
   }
 
-  protected calculateReturnedFunds (res: any, volume: Volume): Price {
-    let estimation: Decimal
+  protected calculateOutputVolume (realVolume: Volume): Volume {
+    return this.price.mul(realVolume).mul(new Decimal(1).minus(this.fee))
+  }
+
+  protected calculateCostAfterFees (apiResult: any): Volume {
+    return new Decimal(apiResult.cost).minus(apiResult.fee.cost)
+  }
+
+  protected calculateReturnedFunds (apiResult: any, realVolume: Volume): Volume {
+    let estimation: Volume
     let calculation: Decimal
 
-    if (!this.virtual) {
-      estimation = this.price.mul(volume).mul(new Decimal(1).minus(this.fee))
-    }
-    else {
-      estimation = new Decimal(volume).mul(new Decimal(1).minus(this.fee))
-    }
+    estimation = this.calculateOutputVolume(realVolume)
 
-    if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
+    if (apiResult.cost === undefined
+     || apiResult.fee === undefined
+     || apiResult.amount === undefined) {
       return estimation
     }
 
     log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
 
-    if (!this.virtual) {
-      calculation = new Decimal(res.cost).minus(res.fee.cost)
-    }
-    else {
-      calculation = new Decimal(res.amount)
-    }
+    calculation = this.calculateCostAfterFees(apiResult)
 
-    const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
+    const percentageDiff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
 
     log.info(`[FUNDS_CALCULATOR]
       Estimation: ${estimation.toNumber()} ${this.target},
       FromAPI: ${calculation.toNumber()} ${this.target},
-      Difference: ${diff} %`
+      Difference: ${percentageDiff} %`
     )
 
     return calculation
@@ -193,7 +232,7 @@ export class Edge {
   public async save(cycleId: number) {
     return db('edges').insert({
       cycle_id: cycleId,
-      virtual: this.virtual,
+      virtual: this instanceof VirtualEdge,
       source: this.source,
       target: this.target,
       price: this.price.toNumber(),
@@ -203,72 +242,47 @@ export class Edge {
   }
 }
 
+// A VirtualEdge allowing us to go from 'source' to 'target' by buying the
+// 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
-  constructor (source: string, target: string, fee: [Decimal, FeeApplication], minVolume: Decimal, precisions: [number, number]) {
-    super(source, target, fee, minVolume, precisions)
-    this.virtual = true
+  public side: OrderSide = 'buy'
+
+  public setRealPrice(price: Price): void {
+    this.setPrice(price.pow(-1))
   }
 
-  public setPrice(price: Price) {
-    this.price = new Decimal(price).pow(-1)
-
-    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+  public getRealPrice (): Price {
+    return this.price.pow(-1)
   }
 
-  public getMarket(): string {
+  public getMarket (): string {
     return `${this.target}/${this.source}`
   }
 
-  public async updateFromAPI (api: any): Promise<void> {
-    const ob = await api.fetchOrderBook(this.getMarket(), 1)
-    const [price, volume] = ob.asks[0]
+  protected extractTopOfTheOrderBook (ob: any): any {
+    return ob.asks[0]
+  }
 
-    this.setPrice(price)
+  protected calculateOutputVolume (realVolume: Volume): Volume {
+    return new Decimal(realVolume).mul(new Decimal(1).minus(this.fee))
+  }
 
+  protected calculateCostAfterFees (apiResult: any): Volume {
+    return new Decimal(apiResult.amount)
+  }
+
+  protected volumeToRealVolume(volume: Volume): Volume {
+    return volume.div(this.getRealPrice())
+  }
+
+  protected setRealVolume(volume: Volume): void {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
-    this.volume = new Decimal(volume).mul(price)
+    this.volume = new Decimal(volume).mul(this.getRealPrice())
   }
 
-  public async traverse (args: OrderDetails): Promise<Decimal> {
-    /*
-     * real price = 1 / virtual price
-     * real volume = virtual price * virtual volume = virtual volume / real price
-     * WARNING: Mocking market order, so giving type 'limit' to placeAndFillOrder()
-     */
-    args.price = args.type && args.type === 'market' ?  this.price.pow(-1).mul(1 + MARKET_ORDER_PRICE_CHANGE) : this.price.pow(-1)
-    args.volume = new Decimal(args.volume).div(this.price.pow(-1))
-
-    return await this.placeAndFillOrder({
-      type: args.type ? args.type : 'limit',
-      side: 'buy',
-      ...args
-    })
-  }
-
-  protected calculateReturnedFunds (res: any, volume: Volume): Price {
-    let estimation: Decimal
-    let calculation: Decimal
-
-    estimation = new Decimal(volume).mul(new Decimal(1).minus(this.fee))
-
-    if (res.cost === undefined || res.fee === undefined || res.amount === undefined) {
-      return estimation
-    }
-
-    log.info(`[FUNDS_CALCULATOR] Calculating returned funds from api result`)
-
-    calculation = new Decimal(res.amount)
-
-    const diff = new Decimal(estimation.minus(calculation)).div(estimation).mul(100).toFixed(8)
-
-    log.info(`[FUNDS_CALCULATOR]
-      Estimation: ${estimation.toNumber()} ${this.target},
-      FromAPI: ${calculation.toNumber()} ${this.target},
-      Difference: ${diff} %`
-    )
-
-    return calculation
+  protected worsenPrice (price: Price, factor: number) {
+    return price.mul(1 + factor)
   }
 }
