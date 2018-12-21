@@ -25,7 +25,7 @@ export type OrderDetails = {
   price?: Price
   mock?: boolean
   volume: Volume,
-  sustainLogs?: boolean
+  muteLogs?: boolean
   api: Api,
 }
 

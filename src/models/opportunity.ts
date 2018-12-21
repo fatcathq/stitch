@@ -84,7 +84,7 @@ export default class {
         volume: volume,
         api: {},
         mock: true,
-        sustainLogs: true
+        muteLogs: true
       })
     }
 

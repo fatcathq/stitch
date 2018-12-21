@@ -137,7 +137,7 @@ export class Edge {
 
     let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
 
-    if (!args.sustainLogs) {
+    if (!args.muteLogs) {
       log.info(
        `[EDGE] Placing order ${this.source} -> ${this.target}
         [EDGE] Fees will be applied ${this.feeApplication} the trade.
