@@ -213,7 +213,7 @@ export default class {
     log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
   }
 
-  private generateIndex(triangle: Triangle) {
+  private generateIndex (triangle: Triangle) {
     return triangle.map(e => e.source).sort().join('')
   }
 }
