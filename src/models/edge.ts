@@ -129,9 +129,9 @@ export class Edge {
 
   public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
     let id: null | number = null
-    const tradeVolume = args.volume
+    let tradeVolume = args.volume
     if (this.feeApplication == 'before') {
-      args.volume = args.volume.minus(this.fee.mul(args.volume))
+      tradeVolume = tradeVolume.minus(this.fee.mul(tradeVolume))
     }
     let apiRes
 
