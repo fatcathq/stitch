@@ -36,7 +36,6 @@ describe('update', async () => {
     expect(mockAPI.fetchBalance).toHaveBeenCalledTimes(1)
   })
 
-
   test('Balance handler calculates checkpoint differences', async () => {
     let balanceHandler: BalanceHandler
 
@@ -81,7 +80,7 @@ describe('precisions', async () => {
   }
   const precisions = {
     ETH: 2,
-    BTC: 10,
+    BTC: 10
   }
 
   beforeAll(async () => {

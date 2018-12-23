@@ -20,10 +20,10 @@ abstract class EdgeError extends Error {
   logError (): void {
     let edgeType = 'Edge'
     if (this.edge instanceof VirtualEdge) {
-      edgeType = 'VirtualEdge' 
+      edgeType = 'VirtualEdge'
     }
 
-    log.error(`[${this.name}]: ${edgeType}: ${this.edge.stringified}, Message: ${this.message}, ApiMesssage: ${this.apiMessage}`)
+    log.error(`[${this.name}]: ${edgeType}: ${this.edge}, Message: ${this.message}, ApiMesssage: ${this.apiMessage}`)
   }
 }
 

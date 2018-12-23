@@ -19,11 +19,11 @@ export default class BalanceHandler {
     this.api = api
   }
 
-  public setPrecisions(precisions: Precisions) {
+  public setPrecisions (precisions: Precisions): void {
     this.precisions = precisions
   }
 
-  public async update () {
+  public async update (): Promise<void> {
     let balance: any
     try {
       balance = (await this.api.fetchBalance()).free
@@ -62,7 +62,7 @@ export default class BalanceHandler {
     return this.get(currency).toNumber()
   }
 
-  public has (currency: Currency) {
+  public has (currency: Currency): boolean {
     return this.balance[currency] !== undefined
   }
 
@@ -83,7 +83,7 @@ export default class BalanceHandler {
     return opportunity.minVolume < opportunity.maxVolume && opportunity.minVolume.mul(MIN_VOLUME_SAFETY_MARGIN).lessThan(balance)
   }
 
-  public getIntersection (opportunity: Opportunity) {
+  public getIntersection (opportunity: Opportunity): Currency[] {
     return _.intersection(opportunity.getNodes(), Object.keys(this.balance))
   }
 

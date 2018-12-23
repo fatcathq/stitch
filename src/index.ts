@@ -1,4 +1,4 @@
-import config from  './utils/config'
+import config from './utils/config'
 import Controller from './controller'
 import log from './loggers/winston'
 // import Engine from './engine'

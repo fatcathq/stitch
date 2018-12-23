@@ -19,16 +19,15 @@ export class Edge {
   public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
-  public volume: Decimal = new Decimal(Infinity) // Volume of OrderBook Top
+  public volume: Volume = new Decimal(Infinity) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
-  public stringified: string
   // Price is target unit (in both Edge and VirtualEdge).
   // It indicates how many target units one can get by giving 1 source unit.
   // In the case of an Edge, this trade is performed by selling the source unit
   // to obtain target units. In the case of a VirtualEdge, this trade is
   // performed by buying the target unit and paying in the source unit.
   protected price: Decimal = new Decimal(0)
-  private feeApplication: FeeApplication = 'before'
+  protected feeApplication: FeeApplication = 'before'
   public side: OrderSide = 'sell'
 
   constructor
@@ -47,19 +46,22 @@ export class Edge {
     this.sourcePrecision = precisions[0]
     this.targetPrecision = precisions[1]
 
-    this.stringified = `${this.source} -> ${this.target}`
+  }
+
+  public toString (): string {
+    return `${this.source} -> ${this.target}`
   }
 
   public setPrice (price: Price): void {
     this.price = price
-    log.debug(`New price on edge ${this.stringified}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
+    log.debug(`New price on edge ${this}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
 
   public setRealPrice (price: Price): void {
     this.setPrice(price)
   }
 
-  public getPrice(): Price {
+  public getPrice (): Price {
     return this.price
   }
 
@@ -67,11 +69,11 @@ export class Edge {
     return this.getPrice()
   }
 
-  protected volumeToRealVolume(volume: Volume): Volume {
+  protected volumeToRealVolume (volume: Volume): Volume {
     return volume
   }
 
-  protected setRealVolume (volume: Volume) {
+  protected setRealVolume (volume: Volume): void {
     this.volume = volume
   }
 
@@ -87,7 +89,7 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
-  protected extractTopOfTheOrderBook(ob: any) {
+  protected extractTopOfTheOrderBook (ob: any): [Price, Volume] {
     return ob.bids[0]
   }
 
@@ -99,7 +101,7 @@ export class Edge {
     this.setRealVolume(new Decimal(volume))
   }
 
-  protected worsenPrice (price: Price, factor: number) {
+  protected worsenPrice (price: Price, factor: number): Price {
     return price.mul(1 - factor)
   }
 
@@ -127,17 +129,17 @@ export class Edge {
    * (both for Edge and VirtualEdge)
    */
 
-  public async placeAndFillOrder(args: OrderDetails): Promise<Volume> {
+  protected async placeAndFillOrder (args: OrderDetails): Promise<Volume> {
     let id: null | number = null
     let tradeVolume = args.volume
-    if (this.feeApplication == 'before') {
+    if (this.feeApplication === 'before') {
       tradeVolume = tradeVolume.minus(this.fee.mul(tradeVolume))
     }
     let apiRes
 
     let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
 
-    if (!args.sustainLogs) {
+    if (!args.muteLogs) {
       log.info(
        `[EDGE] Placing order ${this.source} -> ${this.target}
         [EDGE] Fees will be applied ${this.feeApplication} the trade.
@@ -152,9 +154,8 @@ export class Edge {
     try {
       let res = await args.api[method](this.getMarket(), tradeVolume.toNumber(), args.price!.toNumber())
       id = res.id
-    }
-    catch (e) {
-      throw new TraversalAPIError(this, `${method} failed`,  e.message)
+    } catch (e) {
+      throw new TraversalAPIError(this, `${method} failed`, e.message)
     }
 
     log.info(`[EDGE] Placed order with id: ${id}. Now waiting order to be filled`)
@@ -183,7 +184,7 @@ export class Edge {
         await args.api.cancelOrder(id)
         log.info(`[EDGE] Order was cancelled`)
       } catch (e) {
-        throw new TraversalAPIError(this, `CancelOrder failed for id ${id}`,  e.message)
+        throw new TraversalAPIError(this, `CancelOrder failed for id ${id}`, e.message)
       }
 
       throw new OrderFillTimeoutError(this, `Order was not filled after ${tries} tries`)
@@ -229,8 +230,8 @@ export class Edge {
     return calculation
   }
 
-  public async save(cycleId: number) {
-    return db('edges').insert({
+  public async save (cycleId: number): Promise<void> {
+    db('edges').insert({
       cycle_id: cycleId,
       virtual: this instanceof VirtualEdge,
       source: this.source,
@@ -247,7 +248,7 @@ export class Edge {
 export class VirtualEdge extends Edge {
   public side: OrderSide = 'buy'
 
-  public setRealPrice(price: Price): void {
+  public setRealPrice (price: Price): void {
     this.setPrice(price.pow(-1))
   }
 
@@ -271,18 +272,18 @@ export class VirtualEdge extends Edge {
     return new Decimal(apiResult.amount)
   }
 
-  protected volumeToRealVolume(volume: Volume): Volume {
+  protected volumeToRealVolume (volume: Volume): Volume {
     return volume.div(this.getRealPrice())
   }
 
-  protected setRealVolume(volume: Volume): void {
+  protected setRealVolume (volume: Volume): void {
     /** With 1 ETH I buy 120 USD and have volume 0.1 eth
      *  So I can buy max 120 * 0.1 = 12 USD max
      */
     this.volume = new Decimal(volume).mul(this.getRealPrice())
   }
 
-  protected worsenPrice (price: Price, factor: number) {
+  protected worsenPrice (price: Price, factor: number): Price {
     return price.mul(1 + factor)
   }
 }

@@ -18,7 +18,7 @@ type BenchmarkConfig = {
 const initCCXT = (exchange: string, creds: {key: string, secret: string}) => {
   return new ccxt[exchange]({
     apiKey: creds.key,
-    secret: creds.secret,
+    secret: creds.secret
   })
 }
 
@@ -26,8 +26,7 @@ const benchmarkCCXTRequest = async (ccxtInstance: any, method: string, args: any
   const t = Date.now()
   try {
     await ccxtInstance[method](...args)
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e)
   }
 
@@ -40,7 +39,7 @@ export default async (config: BenchmarkConfig) => {
   const bar = new pb(':bar :percent (:eta seconds remaining)', { total: config.samples, width: 100 })
   const ccxt = initCCXT(config.exchange, config.api)
 
-  let samples = []
+  const samples = []
 
   for (let i = 0; i < config.samples; ++i) {
     const args = config.args ? config.args : []
@@ -59,15 +58,15 @@ export default async (config: BenchmarkConfig) => {
   // const histogram = stats.histogram(samples)
   // console.log('histogram', histogram)
 
-  var data = [
+  const data = [
     {
       x: samples,
       nbinsx: NBINSX,
-      type: "histogram"
+      type: 'histogram'
     }
   ]
 
-  var graphOptions = {filename: "response-times-" + Date.now(), fileopt: "overwrite"}
+  let graphOptions = {filename: 'response-times-' + Date.now(), fileopt: 'overwrite'}
   plotly.plot(data, graphOptions, (_: any, msg: any) => {
     console.log(msg)
   })

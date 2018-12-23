@@ -65,8 +65,7 @@ export default class extends Graph {
         if ((this.edge(currency, asset)).minVolume.equals(0)) {
           this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume.mul(market.ask)
         }
-      }
-      catch (e) {
+      } catch (e) {
         log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol, e.message)
       }
     })

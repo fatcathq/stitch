@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import Graph from './models/graph'
 import Opportunity from './models/opportunity'
-import config from  './utils/config'
+import config from './utils/config'
 import log from './loggers/winston'
 import { OpportunityMap } from './types'
 import EventEmmiter from 'events'
@@ -34,16 +34,16 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
   }
 
-  public async linkOpportunities (opportunities: OpportunityMap) {
+  public async linkOpportunities (opportunities: OpportunityMap): Promise<void> {
     this.opportunityMap = opportunities
   }
 
-  public pause () {
+  public pause (): void {
     this.running = false
   }
 
-  async updateOpportunities(newOpportunities: OpportunityMap) {
-    //TODO: Fix sorting
+  async updateOpportunities (newOpportunities: OpportunityMap): Promise<void> {
+    // TODO: Fix sorting
     // sortByProfitability(newOpportunities)
 
     // Delete non existing opportunities
@@ -75,7 +75,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
   }
 
-  private async updatePrices() {
+  private async updatePrices (): Promise<void> {
     let tickers: any = []
 
     try {

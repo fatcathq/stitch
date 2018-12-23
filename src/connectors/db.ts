@@ -3,7 +3,7 @@ import config from '../utils/config'
 
 const client = knex({
   client: 'pg',
-  connection: config.log.db,
+  connection: config.log.db
 })
 
 export default client

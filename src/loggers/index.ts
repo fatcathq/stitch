@@ -2,11 +2,10 @@ import Opportunity from '../models/opportunity'
 import config from '../utils/config'
 import EventEmmiter from 'events'
 import { OpportunityMap } from '../types'
-import log from './winston'
 
+import log, { WinstonLogger } from './winston'
 import { SlackLogger } from './slack'
 import { DatabaseLogger } from './db'
-import { WinstonLogger } from './winston'
 
 export default class {
   private opportunities: OpportunityMap = {}
@@ -19,29 +18,29 @@ export default class {
     this.registerListeners(notifier)
   }
 
-  private createOpportunity(opportunity: Opportunity) {
+  private createOpportunity (opportunity: Opportunity): void {
     this.loggers.forEach((logger) => {
-      if (typeof logger.createOpportunity == 'function') {
+      if (typeof logger.createOpportunity === 'function') {
         logger.createOpportunity(opportunity)
       }
     })
   }
 
-  public linkOpportunities (opportunities: OpportunityMap) {
+  public linkOpportunities (opportunities: OpportunityMap): void {
     this.opportunities = opportunities
   }
 
-  private updateOpportunity(opportunity: Opportunity, prevArb: number) {
+  private updateOpportunity (opportunity: Opportunity, prevArb: number): void {
     this.loggers.forEach((logger) => {
-      if (typeof logger.updateOpportunity == 'function') {
+      if (typeof logger.updateOpportunity === 'function') {
         logger.updateOpportunity(opportunity, prevArb)
       }
     })
   }
 
-  private closeOpportunity(opportunity: Opportunity, duration: number) {
+  private closeOpportunity (opportunity: Opportunity, duration: number): void {
     this.loggers.forEach((logger) => {
-      if (typeof logger.closeOpportunity == 'function') {
+      if (typeof logger.closeOpportunity === 'function') {
         logger.closeOpportunity(opportunity, duration)
       }
     })
@@ -71,7 +70,7 @@ export default class {
     })
   }
 
-  private registerLoggers() {
+  private registerLoggers (): void {
     if (this.dbLogging) {
       this.loggers.set('db', new DatabaseLogger())
     }
@@ -85,7 +84,7 @@ export default class {
 }
 
 export interface LoggerInterface {
-  createOpportunity?:  (opportunity: Opportunity) => void
+  createOpportunity?: (opportunity: Opportunity) => void
   updateOpportunity?: (opportunity: Opportunity, prevArb: number) => void
   closeOpportunity?: (opportunity: Opportunity, duration: number) => void
 }

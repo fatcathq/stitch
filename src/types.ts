@@ -24,9 +24,9 @@ export type OrderDetails = {
   type?: OrderType
   price?: Price
   mock?: boolean
-  volume: Volume,
-  sustainLogs?: boolean
-  api: Api,
+  volume: Volume
+  muteLogs?: boolean
+  api?: Api
 }
 
 export type OpportunityMap = {
