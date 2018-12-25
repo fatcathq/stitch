@@ -9,7 +9,8 @@
   "scripts": {
     "test": "jest",
     "build": "npx tsc --resolveJsonModule -p ./",
-    "run": "node built/src/index.js"
+    "run": "node built/src/index.js",
+    "lint": "npx tslint src/**/*.ts -p ."
   },
   "repository": {
     "type": "git",
