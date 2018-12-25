@@ -117,7 +117,7 @@ export class Edge {
     }
     args.volume = this.volumeToRealVolume(new Decimal(args.volume))
 
-    return await this.placeAndFillOrder({
+    return this.placeAndFillOrder({
       type: args.type ? args.type : 'limit',
       side: this.side,
       ...args

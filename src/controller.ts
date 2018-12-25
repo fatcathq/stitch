@@ -33,7 +33,7 @@ export default class StitchController extends EventEmmiter {
     logger.linkOpportunities(this.opportunities)
   }
 
-  async init (): void {
+  async init (): Promise<void> {
     const markets = await this.api.loadMarkets()
 
     await this.engine.init(markets)
@@ -44,7 +44,7 @@ export default class StitchController extends EventEmmiter {
 
   registerListeners (): void {
     this.finder.on('OpportunityAdded', async (id: number) => {
-      if (this.opportunities[id] === undefined) {
+      if (!(id in this.opportunities[id])) {
         log.error(`[CONTROLLER] Opportunity with id: ${id} should exist on opportunity Map`)
         return
       }
@@ -73,6 +73,6 @@ export default class StitchController extends EventEmmiter {
 
   async run (): Promise<void> {
     log.info(`[CONTROLLER] Starting finder`)
-    await this.finder!.run()
+    await this.finder.run()
   }
 }

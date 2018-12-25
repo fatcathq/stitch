@@ -63,7 +63,7 @@ export default class BalanceHandler {
   }
 
   public has (currency: Currency): boolean {
-    return this.balance[currency] !== undefined
+    return currency in this.balance[currency]
   }
 
   public sufficient (opportunity: Opportunity, currency: Currency): boolean {

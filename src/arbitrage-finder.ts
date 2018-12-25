@@ -30,7 +30,7 @@ export default class ArbitrageFinder extends EventEmmiter {
 
       const opportunities = await this.extractOpportunitiesFromGraph()
 
-      this.updateOpportunities(opportunities)
+      await this.updateOpportunities(opportunities)
     }
   }
 
@@ -63,7 +63,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         return
       }
       // New opportunity found
-      if (this.opportunityMap[id] === undefined) {
+      if (!(id in this.opportunityMap[id])) {
         this.opportunityMap[id] = newOpportunities[id]
 
         if (config.fetchVolumes) {
