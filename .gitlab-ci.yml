@@ -6,3 +6,6 @@ before_script:
 test:
   script:
     - npm run test
+lint:
+  script:
+    - npm run lint
