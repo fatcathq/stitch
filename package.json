@@ -24,6 +24,7 @@
   "homepage": "https://github.com/SignedBlock/stitch#readme",
   "dependencies": {
     "axios": "^0.18.0",
+    "bittrex-orderbook": "^2.0.9",
     "ccxt": "^1.17.324",
     "decimal.js": "^10.0.1",
     "graphlib": "^2.1.5",
