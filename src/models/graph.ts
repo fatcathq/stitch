@@ -1,8 +1,7 @@
 const Graph = require('graphlib').Graph
 // import * as minTradeVolumes from '../../data/min_volumes.json'
-
 import Decimal from 'decimal.js'
-import { Market, Triangle, Edge } from '../types'
+import { Market, Triangle, Edge, OrderBookRecord } from '../types'
 import log from '../loggers/winston'
 import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
@@ -69,6 +68,31 @@ export default class extends Graph {
         log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol, e.message)
       }
     })
+  }
+
+  public updateFromOBTRecord (record: OrderBookRecord): void {
+    switch (record.type) {
+      case 'buy':
+        if (!this.hasEdge(record.asset, record.currency)) {
+          log.error(`Edge ${record.asset}->${record.currency} does not exist on updateFromOBTRecord`)
+          return
+        }
+
+        this.edge(record.asset, record.currency).setRealPrice(new Decimal(record.price))
+        this.edge(record.asset, record.currency).setRealVolume(new Decimal(record.volume))
+        this.edge(record.currency, record.asset).minVolume = this.edge(record.asset, record.currency).minVolume.mul(record.price)
+        break
+
+      case 'sell':
+        if (!this.hasEdge(record.asset, record.currency)) {
+          log.error(`VirtualEdge ${record.currency}->${record.asset} does not exist on updateFromOBTRecord`)
+          return
+        }
+
+        this.edge(record.currency, record.asset).setRealPrice(new Decimal(record.price))
+        this.edge(record.currency, record.asset).setRealVolume(new Decimal(record.volume))
+        break
+    }
   }
 
   /*
