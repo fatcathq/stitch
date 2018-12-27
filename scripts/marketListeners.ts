@@ -1,4 +1,4 @@
-import Api from './connectors/api'
+import Api from '../src/connectors/api'
 import * as _ from 'lodash'
 
 const BittrexOrderBook = require('bittrex-orderbook')
@@ -27,21 +27,22 @@ const createAllMarketEmmiters = async () => {
   return emmiter
 }
 
-const addOBTLogger = async (marketName: string, marketEmmiter: any) => {
-  marketEmmiter.on('askUpdate', (market: any) => {
-    console.log(`${marketName} asks`, market.bids.top(1)[0])
+const addOBTLogger = async (marketName: string, freqMap: any, marketEmmiter: any) => {
+  marketEmmiter.on('bidUpdate', (market: any) => {
+    console.log(`${marketName} bids`, market.bids.top(1)[0], `. Times called ${freqMap[marketName][0]++}`)
   })
 
-  marketEmmiter.on('bidUpdate', (market: any) => {
-    console.log(`${marketName} bids`, market.bids.top(1)[0])
+  marketEmmiter.on('askUpdate', (market: any) => {
+    console.log(`${marketName} asks`, market.asks.top(1)[0], `. Times called ${freqMap[marketName][1]++}`)
   })
 }
 
 const main = async () => {
   const emmiter = await createAllMarketEmmiters()
+  let freqMap = _.zipObject(Object.keys(emmiter.markets), _.times(Object.keys(emmiter.markets).length, _.constant([0, 0])))
 
   for (let marketName in emmiter.markets) {
-    addOBTLogger(marketName, emmiter.markets[marketName])
+    addOBTLogger(marketName, freqMap, emmiter.markets[marketName])
   }
 }
 
