@@ -43,7 +43,7 @@ describe('constructor', () => {
 
 describe('updateFromOBT', () => {
   let graph: Graph
-  before(() => {
+  beforeAll(() => {
     graph = new Graph('Picaccu', markets)
   })
 
