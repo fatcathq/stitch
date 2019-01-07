@@ -70,29 +70,49 @@ export default class extends Graph {
     })
   }
 
-  public updateFromOBTRecord (record: OrderBookRecord): void {
+  public updateFromOBTRecord (record: OrderBookRecord): boolean {
+    let edge
+
     switch (record.type) {
       case 'buy':
         if (!this.hasEdge(record.asset, record.currency)) {
-          log.error(`Edge ${record.asset}->${record.currency} does not exist on updateFromOBTRecord`)
-          return
+          log.error(`[GRAPH] Edge ${record.asset}->${record.currency} does not exist on graph`)
+          return false
         }
 
-        this.edge(record.asset, record.currency).setRealPrice(new Decimal(record.price))
-        this.edge(record.asset, record.currency).setRealVolume(new Decimal(record.volume))
-        this.edge(record.currency, record.asset).minVolume = this.edge(record.asset, record.currency).minVolume.mul(record.price)
-        break
+        edge = this.edge(record.asset, record.currency)
+
+        if (edge.getRealPrice() === new Decimal(record.price) && edge.getRealVolume === new Decimal(record.volume)) {
+          log.info(`[GRAPH] Edge was not updated since websocket update didn't affect the orderbook top`)
+          return false
+        }
+
+        edge.setRealPrice(new Decimal(record.price))
+        edge.setRealVolume(new Decimal(record.volume))
+        edge.minVolume = edge.minVolume.mul(record.price)
+
+        return true
 
       case 'sell':
-        if (!this.hasEdge(record.asset, record.currency)) {
-          log.error(`VirtualEdge ${record.currency}->${record.asset} does not exist on updateFromOBTRecord`)
-          return
+        if (!this.hasEdge(record.currency, record.asset)) {
+          log.error(`[GRAPH] VirtualEdge ${record.currency}->${record.asset} does not exist on graph`)
+          return false
         }
 
-        this.edge(record.currency, record.asset).setRealPrice(new Decimal(record.price))
-        this.edge(record.currency, record.asset).setRealVolume(new Decimal(record.volume))
-        break
+        edge = this.edge(record.currency, record.asset)
+
+        if (edge.getRealPrice() === new Decimal(record.price) && edge.getRealVolume === new Decimal(record.volume)) {
+          log.info(`[GRAPH] Edge was not updated since websocket update didn't affect the orderbook top`)
+          return false
+        }
+
+        edge.setRealPrice(new Decimal(record.price))
+        edge.setRealVolume(new Decimal(record.volume))
+
+        return true
     }
+
+    return false
   }
 
   /*
