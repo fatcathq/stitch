@@ -9,7 +9,7 @@ import EventEmmiter from 'events'
 export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
-  private opportunityMap: OpportunityMap = {}
+  public opportunityMap: OpportunityMap = {}
   private api: any
   private running = true
 
@@ -49,6 +49,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     // Delete non existing opportunities
     for (const id in this.opportunityMap) {
       if (id in newOpportunities) {
+      if (id in Object.keys(newOpportunities)) {
         return
       }
 
@@ -63,12 +64,8 @@ export default class ArbitrageFinder extends EventEmmiter {
         return
       }
       // New opportunity found
-      if (!(id in this.opportunityMap[id])) {
+      if (!(id in Object.keys(this.opportunityMap))) {
         this.opportunityMap[id] = newOpportunities[id]
-
-        if (config.fetchVolumes) {
-          await this.opportunityMap[id].updateFromAPI(this.api)
-        }
 
         this.emit('OpportunityAdded', id)
       }
