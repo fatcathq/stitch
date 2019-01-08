@@ -82,7 +82,7 @@ export default class extends Graph {
 
         edge = this.edge(record.asset, record.currency)
 
-        if (edge.getRealPrice() === new Decimal(record.price) && edge.getRealVolume === new Decimal(record.volume)) {
+        if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
           log.info(`[GRAPH] Edge was not updated since websocket update didn't affect the orderbook top`)
           return false
         }
@@ -101,8 +101,8 @@ export default class extends Graph {
 
         edge = this.edge(record.currency, record.asset)
 
-        if (edge.getRealPrice() === new Decimal(record.price) && edge.getRealVolume === new Decimal(record.volume)) {
-          log.info(`[GRAPH] Edge was not updated since websocket update didn't affect the orderbook top`)
+        if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
+          log.info(`[GRAPH] VirtualEdge was not updated since websocket update didn't affect the orderbook top`)
           return false
         }
 
