@@ -43,7 +43,7 @@ describe('constructor', () => {
 
 describe('updateFromOBT', () => {
   let graph: Graph
-  beforeAll(() => {
+  beforeEach(() => {
     graph = new Graph('Picaccu', markets)
   })
 
@@ -87,7 +87,7 @@ describe('updateFromOBT', () => {
     expect(graph.edge('BTC', 'ETH').getRealPrice().toNumber()).toBeCloseTo(0.03796237)
   })
 
-  test('Should update virtual edge properly', () => {
+  test('Should not update edge if price and volume are the same', () => {
     const record = {
       asset: 'ETH',
       currency: 'BTC',
@@ -97,6 +97,19 @@ describe('updateFromOBT', () => {
     }
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
+    expect(graph.updateFromOBTRecord(record)).toBeFalsy()
+  })
+
+  test('Should not update virtual edge if price and volume are the same', () => {
+    const record = {
+      asset: 'ETH',
+      currency: 'BTC',
+      type: 'sell',
+      volume: 14.332,
+      price: 0.03796237
+    }
+
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
+    expect(graph.updateFromOBTRecord(record)).toBeFalsy()
   })
 })
