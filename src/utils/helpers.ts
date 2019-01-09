@@ -30,7 +30,7 @@ export function opportunityExists (candidate: Opportunity, opportunities: Opport
 }
 
 export function marketIsValid (marketName: string): boolean {
-  return /([A-Za-z ]{2,5}\/[A-Za-z ]{2,5})/.test(marketName)
+  return /([A-Za-z0-9]{2,10}\/[A-Za-z0-9]{2,10})/.test(marketName)
 }
 
 export function numberIsDeformed (balance: number): boolean {
