@@ -44,7 +44,7 @@ export default class StitchController extends EventEmmiter {
 
   registerListeners (): void {
     this.finder.on('OpportunityAdded', async (id: number) => {
-      if (!(id in this.opportunities[id])) {
+      if (!(id in this.opportunities)) {
         log.error(`[CONTROLLER] Opportunity with id: ${id} should exist on opportunity Map`)
         return
       }

@@ -49,8 +49,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     // Delete non existing opportunities
     for (const id in this.opportunityMap) {
       if (id in newOpportunities) {
-      if (id in Object.keys(newOpportunities)) {
-        return
+        continue
       }
 
       this.emit('OpportunityClosed', this.opportunityMap[id], this.opportunityMap[id].getDuration())
@@ -61,10 +60,11 @@ export default class ArbitrageFinder extends EventEmmiter {
     for (const id in newOpportunities) {
       if (!this.running) {
         log.info(`[FINDER] No new opportunities will be updated/emmited`)
-        return
+        continue
       }
+
       // New opportunity found
-      if (!(id in Object.keys(this.opportunityMap))) {
+      if (!(id in this.opportunityMap)) {
         this.opportunityMap[id] = newOpportunities[id]
 
         this.emit('OpportunityAdded', id)
