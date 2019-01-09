@@ -15,6 +15,7 @@ const createMockOpportunity = (triangle: [string, string, string]): Opportunity 
 describe('updateOpportunities', async () => {
   const p1 = createMockOpportunity(['A', 'B', 'C'])
   const p2 = createMockOpportunity(['D', 'E', 'F'])
+  const p3 = createMockOpportunity(['G', 'H', 'I'])
 
   test('deletes non existing opportunity', async () => {
     const arbitrageFinder = new ArbitrageFinder(null)
@@ -38,5 +39,28 @@ describe('updateOpportunities', async () => {
     expect(Object.keys(arbitrageFinder.opportunityMap)).toHaveLength(2)
     expect(arbitrageFinder.opportunityMap['ABC']).toEqual(p1)
     expect(arbitrageFinder.opportunityMap['DEF']).toEqual(p2)
+  })
+
+  test('emits events properly', async () => {
+    const arbitrageFinder = new ArbitrageFinder(null)
+    const addedSpy = jest.fn()
+    const closedSpy = jest.fn()
+
+    arbitrageFinder.on('OpportunityAdded', addedSpy)
+    arbitrageFinder.on('OpportunityClosed', closedSpy)
+
+    arbitrageFinder.opportunityMap['ABC'] = p1
+
+    await arbitrageFinder.updateOpportunities({ 'DEF': p2, 'GHI': p3 })
+
+    expect(addedSpy.mock.calls.length).toEqual(2)
+    expect(addedSpy.mock.calls[0][0]).toEqual('DEF')
+    expect(addedSpy.mock.calls[1][0]).toEqual('GHI')
+
+    expect(closedSpy.mock.calls.length).toEqual(1)
+    expect(closedSpy.mock.calls[0][0]).toEqual(p1)
+
+    arbitrageFinder.removeAllListeners('OpportunityAdded')
+    arbitrageFinder.removeAllListeners('OpportunityClosed')
   })
 })
