@@ -1,18 +1,14 @@
 const BittrexOrderBook = require('bittrex-orderbook')
+import log from '../loggers/winston'
 
 // TODO: Consider changing that for security reasons
 require('events').EventEmitter.defaultMaxListeners = 300
 
-const loadOBEmmiter = (bit: any, marketName: string) => {
-  bit.market(marketName)
-}
-
-export default async (markets: any) => {
-  const emmiter = new BittrexOrderBook()
-
-  for (const market of markets) {
-    loadOBEmmiter(emmiter, market)
+export default class extends BittrexOrderBook {
+  public loadMarkets (marketIds: any): any {
+    log.info('Loading emmiter for all markets given')
+    for (const market of marketIds) {
+      this.market(market)
+    }
   }
-
-  return emmiter
 }

@@ -3,8 +3,9 @@ import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import config from './utils/config'
 import log from './loggers/winston'
-import { OpportunityMap } from './types'
+import { OpportunityMap, OrderBookRecord } from './types'
 import EventEmmiter from 'events'
+import OBEmitter from './connectors/bittrex-ws'
 
 export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
@@ -12,6 +13,7 @@ export default class ArbitrageFinder extends EventEmmiter {
   public opportunityMap: OpportunityMap = {}
   private api: any
   private running = true
+  private obEmitter: any = null
 
   constructor (api: any) {
     super()
@@ -20,18 +22,61 @@ export default class ArbitrageFinder extends EventEmmiter {
   }
 
   async init (markets: any): Promise<void> {
+    this.obEmitter = new OBEmitter()
     this.graph = new Graph(this.exchange, markets)
+    await this.updatePrices()
+
+    const marketIds = Object.keys(markets).map(market => markets[market].id)
+    await this.obEmitter.loadMarkets(marketIds)
+
+    await this.run()
+  }
+
+  async loadListeners (): Promise<void> {
+    for (const marketId in this.obEmitter.markets) {
+      this.obEmitter.markets[marketId].on('bidUpdate', async (market: any) => {
+        const { rate, quantity } = market.bids.top(1)[0]
+        const [currency, asset] = marketId.split('-')
+
+        const record: OrderBookRecord = {
+          asset: asset,
+          currency: currency,
+          type: 'buy',
+          price: rate,
+          volume: quantity
+        }
+
+        if (this.graph.updateFromOBTRecord(record)) {
+          const opportunities = await this.extractOpportunitiesFromGraph()
+          await this.updateOpportunities(opportunities)
+        }
+      })
+
+      this.obEmitter.markets[marketId].on('askUpdate', async (market: any) => {
+        const { rate, quantity } = market.asks.top(1)[0]
+        const [currency, asset] = marketId.split('-')
+
+        const record: OrderBookRecord = {
+          asset: asset,
+          currency: currency,
+          type: 'sell',
+          price: rate,
+          volume: quantity
+        }
+
+        const updated = this.graph.updateFromOBTRecord(record)
+
+        if (updated) {
+          const opportunities = await this.extractOpportunitiesFromGraph()
+          await this.updateOpportunities(opportunities)
+        }
+      })
+    }
   }
 
   async run (): Promise<void> {
     this.running = true
-    while (this.running) {
-      await this.updatePrices()
-
-      const opportunities = await this.extractOpportunitiesFromGraph()
-
-      await this.updateOpportunities(opportunities)
-    }
+    this.loadListeners()
   }
 
   public async linkOpportunities (opportunities: OpportunityMap): Promise<void> {
