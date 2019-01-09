@@ -27,12 +27,12 @@ export default class ArbitrageFinder extends EventEmmiter {
     await this.updatePrices()
 
     const marketIds = Object.keys(markets).map(market => markets[market].id)
-    await this.obEmitter.loadMarkets(marketIds)
+    this.obEmitter.loadMarkets(marketIds)
 
-    await this.run()
+    this.run()
   }
 
-  async loadListeners (): Promise<void> {
+  public loadListeners (): void {
     for (const marketId in this.obEmitter.markets) {
       this.obEmitter.markets[marketId].on('bidUpdate', async (market: any) => {
         const { rate, quantity } = market.bids.top(1)[0]
@@ -48,7 +48,7 @@ export default class ArbitrageFinder extends EventEmmiter {
 
         if (this.graph.updateFromOBTRecord(record)) {
           const opportunities = await this.extractOpportunitiesFromGraph()
-          await this.updateOpportunities(opportunities)
+          this.updateOpportunities(opportunities)
         }
       })
 
@@ -68,13 +68,13 @@ export default class ArbitrageFinder extends EventEmmiter {
 
         if (updated) {
           const opportunities = await this.extractOpportunitiesFromGraph()
-          await this.updateOpportunities(opportunities)
+          this.updateOpportunities(opportunities)
         }
       })
     }
   }
 
-  async run (): Promise<void> {
+  public run (): void {
     this.running = true
     this.loadListeners()
   }
@@ -87,7 +87,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     this.running = false
   }
 
-  async updateOpportunities (newOpportunities: OpportunityMap): Promise<void> {
+  public updateOpportunities (newOpportunities: OpportunityMap): void {
     // TODO: Fix sorting
     // sortByProfitability(newOpportunities)
 
