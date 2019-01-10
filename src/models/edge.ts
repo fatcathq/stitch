@@ -7,6 +7,7 @@ import assert from 'assert'
 
 const FILLED_ORDER_TRIES = 50
 const MARKET_ORDER_PRICE_CHANGE = 0.01
+const MAX_INT = Number.MIN_SAFE_INTEGER
 
 type FeeApplication = 'before' | 'after'
 
@@ -247,6 +248,7 @@ export class Edge {
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
   public side: OrderSide = 'buy'
+  protected price: Decimal = new Decimal(MAX_INT)
 
   public setRealPrice (price: Price): void {
     this.setPrice(price.pow(-1))
