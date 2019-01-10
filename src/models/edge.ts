@@ -20,14 +20,14 @@ export class Edge {
   public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
-  public volume: Volume = new Decimal(Infinity) // Volume of OrderBook Top
+  public volume: Volume = new Decimal(0) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
   // Price is target unit (in both Edge and VirtualEdge).
   // It indicates how many target units one can get by giving 1 source unit.
   // In the case of an Edge, this trade is performed by selling the source unit
   // to obtain target units. In the case of a VirtualEdge, this trade is
   // performed by buying the target unit and paying in the source unit.
-  protected price: Decimal = new Decimal(0)
+  protected price: Decimal = new Decimal(MAX_INT)
   protected feeApplication: FeeApplication = 'before'
   public side: OrderSide = 'sell'
 
@@ -248,7 +248,7 @@ export class Edge {
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
   public side: OrderSide = 'buy'
-  protected price: Decimal = new Decimal(MAX_INT)
+  protected price: Decimal = new Decimal(0)
 
   public setRealPrice (price: Price): void {
     this.setPrice(price.pow(-1))
