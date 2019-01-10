@@ -5,10 +5,10 @@ import log from '../loggers/winston'
 require('events').EventEmitter.defaultMaxListeners = 300
 
 export default class extends BittrexOrderBook {
-  public loadMarkets (marketIds: any): any {
+  public async loadMarkets (marketIds: any): Promise<void> {
     log.info('Loading emmiter for all markets given')
     for (const market of marketIds) {
-      this.market(market)
+      await this.market(market)
     }
   }
 }
