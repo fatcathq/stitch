@@ -11,14 +11,11 @@ export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
   public opportunityMap: OpportunityMap = {}
-  private api: any
   private running = true
   private obEmitter: any = null
 
-  constructor (api: any) {
+  constructor () {
     super()
-
-    this.api = api
   }
 
   async init (markets: any): Promise<void> {
