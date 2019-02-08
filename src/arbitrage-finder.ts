@@ -27,7 +27,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     await this.updatePrices()
 
     const marketIds = Object.keys(markets).map(market => markets[market].id)
-    await this.obEmitter.loadMarkets(marketIds)
+    this.obEmitter.loadMarkets(marketIds)
 
     this.run()
   }
