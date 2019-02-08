@@ -49,6 +49,10 @@ export class Edge {
 
   }
 
+  public hasEmptyValues (): boolean {
+    return this.volume.equals(0) && this.price.equals(MAX_INT)
+  }
+
   public toString (): string {
     return `${this.source} -> ${this.target}`
   }
@@ -256,6 +260,10 @@ export class VirtualEdge extends Edge {
 
   public getRealPrice (): Price {
     return this.price.pow(-1)
+  }
+
+  public hasEmptyValues (): boolean {
+    return this.volume.equals(0) && this.price.equals(0)
   }
 
   public getMarket (): string {

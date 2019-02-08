@@ -115,6 +115,16 @@ export default class extends Graph {
     return false
   }
 
+  public getNonEmptyTriangles (): Triangle[] {
+    const triangles = this.getTriangles()
+
+    return triangles.filter((triangle: Triangle) => {
+      return triangle.every(edge => {
+        return !edge.hasEmptyValues()
+      })
+    })
+  }
+
   /*
    *  Triangles implemented using this paper: http://theory.stanford.edu/~tim/s14/l/l1.pdf
    */

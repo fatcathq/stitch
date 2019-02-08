@@ -1,5 +1,6 @@
 import Graph from '../../src/models/graph'
 import { Edge, VirtualEdge } from '../../src/models/edge'
+import Decimal from 'decimal.js'
 
 const markets = [
   {
@@ -111,5 +112,88 @@ describe('updateFromOBT', () => {
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
     expect(graph.updateFromOBTRecord(record)).toBeFalsy()
+  })
+})
+
+describe('getTriangles', () => {
+  let graph: Graph
+  beforeEach(() => {
+    graph = new Graph('Picaccu', markets)
+  })
+
+  const addEdgeToGraph = (from: string, to: string) => {
+    graph.setEdge(from, to, new Edge(from, to, [new Decimal(0), 'after'], new Decimal(0), [5, 5]))
+  }
+
+  test('Should not return triangles if triangles do not exist', () => {
+    addEdgeToGraph('ETH', 'BTC')
+    graph.edge('ETH', 'BTC').setRealPrice(new Decimal(0.03))
+
+    addEdgeToGraph('BTC', 'ETH')
+    graph.edge('BTC', 'ETH').setRealPrice(new Decimal(30))
+
+    addEdgeToGraph('ZEC', 'ETH')
+    graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
+
+    expect(graph.getTriangles()).toHaveLength(0)
+  })
+
+  test('Should return triangles if triangles exist', () => {
+    addEdgeToGraph('ETH', 'BTC')
+    graph.edge('ETH', 'BTC').setRealPrice(new Decimal(0.03))
+
+    addEdgeToGraph('BTC', 'ZEC')
+    graph.edge('BTC', 'ZEC').setRealPrice(new Decimal(30))
+
+    addEdgeToGraph('ZEC', 'ETH')
+    graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
+
+    const triangles = graph.getTriangles()
+    expect(triangles).toHaveLength(1)
+    expect(triangles[0]).toHaveLength(3)
+  })
+})
+
+describe('getNonEmptyTriangles', () => {
+  let graph: Graph
+  beforeEach(() => {
+    graph = new Graph('Picaccu', markets)
+  })
+
+  const addEdgeToGraph = (from: string, to: string) => {
+    graph.setEdge(from, to, new Edge(from, to, [new Decimal(0), 'after'], new Decimal(0), [5, 5]))
+  }
+
+  test('Should not return triangles if edges are empty', () => {
+    addEdgeToGraph('ETH', 'BTC')
+    addEdgeToGraph('BTC', 'ZEC')
+    addEdgeToGraph('ZEC', 'ETH')
+
+    expect(graph.getNonEmptyTriangles()).toEqual([])
+  })
+
+  test('Should not return triangles if at least one edge is empty', () => {
+    addEdgeToGraph('ETH', 'BTC')
+
+    addEdgeToGraph('BTC', 'ZEC')
+    graph.edge('BTC', 'ZEC').setRealPrice(new Decimal(30))
+
+    addEdgeToGraph('ZEC', 'ETH')
+    graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
+
+    expect(graph.getNonEmptyTriangles()).toEqual([])
+  })
+
+  test('Should return triangles if all edges are non empty', () => {
+    addEdgeToGraph('ETH', 'BTC')
+    graph.edge('ETH', 'BTC').setRealPrice(new Decimal(0.03))
+
+    addEdgeToGraph('BTC', 'ZEC')
+    graph.edge('BTC', 'ZEC').setRealPrice(new Decimal(30))
+
+    addEdgeToGraph('ZEC', 'ETH')
+    graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
+
+    expect(graph.getNonEmptyTriangles()).toHaveLength(1)
   })
 })

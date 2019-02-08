@@ -24,7 +24,6 @@ export default class ArbitrageFinder extends EventEmmiter {
   async init (markets: any): Promise<void> {
     this.obEmitter = new OBEmitter()
     this.graph = new Graph(this.exchange, markets)
-    await this.updatePrices()
 
     const marketIds = Object.keys(markets).map(market => markets[market].id)
     this.obEmitter.loadMarkets(marketIds)
@@ -115,6 +114,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
   }
 
+  /*
   private async updatePrices (): Promise<void> {
     let tickers: any = []
 
@@ -127,11 +127,12 @@ export default class ArbitrageFinder extends EventEmmiter {
 
     this.graph.update(tickers)
   }
+  */
 
   private async extractOpportunitiesFromGraph (): Promise<OpportunityMap> {
     let opportunities: OpportunityMap = {}
 
-    const triangles = this.graph.getTriangles()
+    const triangles = this.graph.getNonEmptyTriangles()
 
     for (const triangle of triangles) {
       const opportunity = new Opportunity(this.exchange, triangle)
