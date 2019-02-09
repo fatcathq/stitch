@@ -10,4 +10,9 @@ export default class extends BittrexOrderBook {
       this.market(market)
     }
   }
+  public subscribeToMarket (market: string): any {
+    return this.conn.call('SubscribeToExchangeDeltas', market).catch((e: string) => {
+      log.warn(`Subscribe to exchange deltas failed for market ${market} with error ${e}`)
+    })
+  }
 }

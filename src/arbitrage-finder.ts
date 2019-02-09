@@ -31,7 +31,13 @@ export default class ArbitrageFinder extends EventEmmiter {
   public loadListeners (): void {
     for (const marketId in this.obEmitter.markets) {
       this.obEmitter.markets[marketId].on('bidUpdate', async (market: any) => {
-        const { rate, quantity } = market.bids.top(1)[0]
+        const ob = market.bids.top(1)[0]
+        if (ob === undefined) {
+          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
+          return
+        }
+
+        const { rate, quantity } = ob
         const [currency, asset] = marketId.split('-')
 
         const record: OrderBookRecord = {
@@ -45,11 +51,18 @@ export default class ArbitrageFinder extends EventEmmiter {
         if (this.graph.updateFromOBTRecord(record)) {
           const opportunities = await this.extractOpportunitiesFromGraph()
           this.updateOpportunities(opportunities)
+          this.graph.logUpdatedEdges()
         }
       })
 
       this.obEmitter.markets[marketId].on('askUpdate', async (market: any) => {
-        const { rate, quantity } = market.asks.top(1)[0]
+        const ob = market.asks.top(1)[0]
+        if (ob === undefined) {
+          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
+          return
+        }
+
+        const { rate, quantity } = ob
         const [currency, asset] = marketId.split('-')
 
         const record: OrderBookRecord = {
