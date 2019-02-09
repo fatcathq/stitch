@@ -27,6 +27,7 @@ export class Edge {
   // In the case of an Edge, this trade is performed by selling the source unit
   // to obtain target units. In the case of a VirtualEdge, this trade is
   // performed by buying the target unit and paying in the source unit.
+  public lastUpdatedTs: number = Date.now()
   protected price: Decimal = new Decimal(MAX_INT)
   protected feeApplication: FeeApplication = 'before'
   public side: OrderSide = 'sell'
@@ -58,6 +59,8 @@ export class Edge {
   }
 
   public setPrice (price: Price): void {
+    this.updateLastUpdatedTs()
+
     this.price = price
     log.debug(`New price on edge ${this}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
@@ -72,6 +75,11 @@ export class Edge {
 
   public getRealPrice (): Price {
     return this.getPrice()
+  }
+
+  public updateLastUpdatedTs (): void {
+    log.info(`Price of market ${this.source}/${this.target} wasn't updated for ${Date.now() - this.lastUpdatedTs} ms.`)
+    this.lastUpdatedTs = Date.now()
   }
 
   protected volumeToRealVolume (volume: Volume): Volume {
