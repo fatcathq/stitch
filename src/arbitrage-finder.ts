@@ -124,21 +124,6 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
   }
 
-  /*
-  private async updatePrices (): Promise<void> {
-    let tickers: any = []
-
-    try {
-      tickers = await this.api.fetchTickers()
-    } catch (e) {
-      log.error(`[FINDER] Could not fetch tickers. Problem: ${e.message}`)
-      return
-    }
-
-    this.graph.update(tickers)
-  }
-  */
-
   private async extractOpportunitiesFromGraph (): Promise<OpportunityMap> {
     let opportunities: OpportunityMap = {}
 
@@ -155,4 +140,19 @@ export default class ArbitrageFinder extends EventEmmiter {
 
     return opportunities
   }
+
+  /*
+  private async updatePrices (): Promise<void> {
+    let tickers: any = []
+
+    try {
+      tickers = await this.api.fetchTickers()
+    } catch (e) {
+      log.error(`[FINDER] Could not fetch tickers. Problem: ${e.message}`)
+      return
+    }
+
+    this.graph.update(tickers)
+  }
+  */
 }
