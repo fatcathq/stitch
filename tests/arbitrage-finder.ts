@@ -18,7 +18,7 @@ describe('updateOpportunities', async () => {
   const p3 = createMockOpportunity(['G', 'H', 'I'])
 
   test('deletes non existing opportunity', async () => {
-    const arbitrageFinder = new ArbitrageFinder(null)
+    const arbitrageFinder = new ArbitrageFinder()
 
     arbitrageFinder.opportunityMap['ABC'] = p1
     arbitrageFinder.opportunityMap['DEF'] = p2
@@ -30,7 +30,7 @@ describe('updateOpportunities', async () => {
   })
 
   test('adds newly added opportunity', async () => {
-    const arbitrageFinder = new ArbitrageFinder(null)
+    const arbitrageFinder = new ArbitrageFinder()
 
     arbitrageFinder.opportunityMap['ABC'] = p1
 
@@ -42,7 +42,7 @@ describe('updateOpportunities', async () => {
   })
 
   test('emits events properly', async () => {
-    const arbitrageFinder = new ArbitrageFinder(null)
+    const arbitrageFinder = new ArbitrageFinder()
     const addedSpy = jest.fn()
     const closedSpy = jest.fn()
 
