@@ -5,7 +5,7 @@ import config from './utils/config'
 import log from './loggers/winston'
 import { OpportunityMap, OrderBookRecord } from './types'
 import EventEmmiter from 'events'
-import OBEmitter from './connectors/bittrex-ws'
+import OBEmitter from './connectors/ws-connector'
 
 export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
