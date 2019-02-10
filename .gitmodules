@@ -1,0 +1,3 @@
+[submodule "src/connectors/ws-orderbook"]
+	path = src/connectors/ws-orderbook
+	url = git+ssh://git@gitlab.com/fatcathq/ws-orderbook.git
