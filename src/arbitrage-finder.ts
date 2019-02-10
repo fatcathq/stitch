@@ -51,7 +51,6 @@ export default class ArbitrageFinder extends EventEmmiter {
         if (this.graph.updateFromOBTRecord(record)) {
           const opportunities = await this.extractOpportunitiesFromGraph()
           this.updateOpportunities(opportunities)
-          this.graph.logUpdatedEdges()
         }
       })
 
