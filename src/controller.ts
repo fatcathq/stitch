@@ -20,7 +20,7 @@ export default class StitchController extends EventEmmiter {
     this.api = new Api()
     this.opportunities = {} as OpportunityMap
 
-    this.finder = new ArbitrageFinder(this.api)
+    this.finder = new ArbitrageFinder()
     this.finder.linkOpportunities(this.opportunities)
 
     this.engine = new Engine(this.api)
