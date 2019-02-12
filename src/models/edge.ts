@@ -7,7 +7,7 @@ import assert from 'assert'
 
 const FILLED_ORDER_TRIES = 50
 const MARKET_ORDER_PRICE_CHANGE = 0.01
-const MAX_INT = Number.MIN_SAFE_INTEGER
+const MAX_INT = Number.MAX_SAFE_INTEGER
 
 type FeeApplication = 'before' | 'after'
 
