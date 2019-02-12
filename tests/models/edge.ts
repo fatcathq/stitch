@@ -85,3 +85,26 @@ describe(
     })
   }
 )
+
+describe('hasEmptyValues', async () => {
+  let edge: Edge
+  let virtualEdge: Edge
+
+  beforeEach(() => {
+    edge = new Edge('ADA', 'BTC')
+    virtualEdge = new VirtualEdge('BTC', 'ADA')
+  })
+
+  test('Returns true on default values', () => {
+    expect(edge.hasEmptyValues()).toBeTruthy()
+    expect(virtualEdge.hasEmptyValues()).toBeTruthy()
+  })
+
+  test('Returns true on default values', () => {
+    edge.setPrice(new Decimal(1))
+    virtualEdge.setPrice(new Decimal(2))
+
+    expect(edge.hasEmptyValues()).toBeFalsy()
+    expect(virtualEdge.hasEmptyValues()).toBeFalsy()
+  })
+})
