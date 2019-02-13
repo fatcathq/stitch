@@ -14,7 +14,12 @@ export default class extends Graph {
   constructor (exchange: string = '', markets: any = []) {
     super({ directed: true })
     this.exchange = exchange
+    this.initializeFromMarkets(markets)
 
+    this.triangles = this.getTriangles()
+  }
+
+  private initializeFromMarkets (markets: any): void {
     _.forEach(markets, (market: any): void => {
       if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {
         log.warn(`Invalid market: ${market.symbol}`)
@@ -23,18 +28,7 @@ export default class extends Graph {
 
       let minVolume: number
 
-      /*
-       * TODO: Fix json + typescript problems
-       *
-      if (exchange in minTradeVolumes && minTradeVolumes[exchange][market.base]) {
-        minVolume = minTradeVolumes[exchange]
-      }
-      else {
-      */
       minVolume = market.limits.amount.min
-      /*
-      }
-      */
 
       this.setEdge(market.base, market.quote,
         new EdgeDriver(market.base, market.quote, [new Decimal(market.taker), 'after'], new Decimal(minVolume), [market.precision.amount, market.precision.price])
@@ -46,7 +40,7 @@ export default class extends Graph {
       )
     })
 
-    this.triangles = this.getTriangles()
+    log.info(`Created graph with ${this.nodes().length} nodes`)
   }
 
   public update (tickers: []): void {
