@@ -9,6 +9,7 @@ import { marketIsValid, triangleExists } from '../utils/helpers'
 
 export default class extends Graph {
   public exchange: string
+  private triangles: Triangle[]
 
   constructor (exchange: string = '', markets: any = []) {
     super({ directed: true })
@@ -44,6 +45,8 @@ export default class extends Graph {
         new VirtualEdgeDriver(market.quote, market.base, [new Decimal(market.taker), 'before'], new Decimal(0), [market.precision.price, market.precision.amount])
       )
     })
+
+    this.triangles = this.getTriangles()
   }
 
   public update (tickers: []): void {
@@ -129,6 +132,10 @@ export default class extends Graph {
    *  Triangles implemented using this paper: http://theory.stanford.edu/~tim/s14/l/l1.pdf
    */
   public getTriangles (): Triangle[] {
+    if (this.triangles) {
+      return this.triangles
+    }
+
     let triangles: Triangle[] = []
 
     for (const n1 of this.nodes()) {
