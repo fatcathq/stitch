@@ -6,6 +6,7 @@ import log from './loggers/winston'
 import { OpportunityMap, OrderBookRecord } from './types'
 import EventEmmiter from 'events'
 import OBEmitter from './connectors/ws-connector'
+import { logStats } from './models/stats'
 
 export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
@@ -83,6 +84,8 @@ export default class ArbitrageFinder extends EventEmmiter {
   public run (): void {
     this.running = true
     this.loadListeners()
+
+    this.initStatsLogging()
   }
 
   public async linkOpportunities (opportunities: OpportunityMap): Promise<void> {
@@ -154,4 +157,8 @@ export default class ArbitrageFinder extends EventEmmiter {
     this.graph.update(tickers)
   }
   */
+
+  private initStatsLogging (): void {
+    setInterval(() => logStats(this.graph, this.opportunityMap), 1000)
+  }
 }
