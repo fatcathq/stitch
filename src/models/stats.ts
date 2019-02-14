@@ -1,8 +1,5 @@
 import Graph from './graph'
-// import log from '../loggers/winston'
-import { OpportunityMap } from '../types'
 import * as _ from 'lodash'
-/*
 
 type EdgeSample = {
   source: string
@@ -14,16 +11,23 @@ type EdgeSample = {
   volume: number
 }
 
-class Stats {
-  private graph: Graph
-  private opportunities:OpportunityMap
+type DescriptiveStats = {
+  max: EdgeSample | undefined
+  min: EdgeSample | undefined
+  mean: number
+  std: number
+}
 
-  constructor (graph: Graph, opportunities: OpportunityMap) {
+const LOG_INTERVAL = 1000
+
+export default class Stats {
+  private graph: Graph
+
+  constructor (graph: Graph) {
     this.graph = graph
-    this.opportunities = opportunities
   }
 
-  private generateEdgeSamples (graph: Graph): EdgeSample {
+  private getSamplesFromGraph (graph: Graph = this.graph): EdgeSample[] {
     return graph.edges().map((e: any) => {
       const edge = graph.edge(e)
 
@@ -38,46 +42,56 @@ class Stats {
       }
     })
   }
-}
-*/
 
-export function logStats (graph: Graph, opportunities: OpportunityMap): void {
-  const samples = graph.edges().map((e: any) => {
-    const edge = graph.edge(e)
-
-    return {
-      source: edge.source,
-      target: edge.target,
-      emptyValues: edge.hasEmptyValues(),
-      lastUpdated: Date.now() - edge.lastUpdatedTs,
-      price: edge.getPrice().toNumber(),
-      realPrice: edge.getRealPrice(),
-      volume: edge.volume
-    }
-  })
-  const setEdges = samples.filter((s: any) => s.emptyValues === false)
-
-  if (setEdges.length === 0) {
-    return
+  private getSettedEdgeSamples (samples: EdgeSample[]): EdgeSample[] {
+    return samples.filter((s: any) => s.emptyValues === false)
   }
 
-  const maxLastUpdated: any = _.maxBy(setEdges, 'lastUpdated')
-  const minLastUpdated: any = _.minBy(setEdges, 'lastUpdated')
-  const meanLastUpdated: any = _.meanBy(setEdges, 'lastUpdated')
-  const stdLastUpdated: any = stdBy(setEdges, 'lastUpdated')
+  private getDescriptiveStatsBy (samples: EdgeSample[], key: string): DescriptiveStats {
+    return {
+      max: _.maxBy(samples, key),
+      min: _.minBy(samples, key),
+      mean: _.meanBy(samples, key),
+      std: this.stdBy(samples, key)
+    }
+  }
 
-  console.log(`---------------------------------------------------------
-|    All edges: ${graph.edges().length}, with set values: ${setEdges.length}
-|    Open opportunities: ${Object.keys(opportunities).length}
-|    Mean lastUpdated: ${meanLastUpdated}
-|    Standard deviation lastUpdated: ${stdLastUpdated}
-|    Max lastUpdated of set edges: ${maxLastUpdated.lastUpdated} on ${maxLastUpdated.source}->${maxLastUpdated.target} with price: ${maxLastUpdated.price}, realPirce: ${maxLastUpdated.realPrice} and volume: ${maxLastUpdated.volume}
-|    Min lastUpdated of set edges: ${minLastUpdated.lastUpdated} on ${minLastUpdated.source}->${minLastUpdated.target} with price: ${minLastUpdated.price}, realPirce: ${minLastUpdated.realPrice} and volume: ${minLastUpdated.volume}
----------------------------------------------------------`)
-}
+  private stdBy (dictArr: any, key: string): number {
+    const array = dictArr.map((dict: any) => dict[key])
+    const avg = _.sum(array) / array.length
 
-function stdBy (dict: any, key: string): number {
-  const array = dict.map((dict: any) => dict[key])
-  const avg = _.sum(array) / array.length
-  return Math.sqrt(_.sum(_.map(array, (i) => Math.pow((i - avg), 2))) / array.length)
+    return Math.sqrt(_.sum(_.map(array, (i) => Math.pow((i - avg), 2))) / array.length)
+  }
+
+  private logStats (): any {
+    const edgeSamples = this.getSamplesFromGraph()
+    const settedEdgeSamples = this.getSettedEdgeSamples(edgeSamples)
+    const lastUpdatedStats = this.getDescriptiveStatsBy(settedEdgeSamples, 'lastUpdated')
+
+    return {
+      settedEdgesLength: settedEdgeSamples.length,
+      lastUpdatedStats: lastUpdatedStats
+    }
+  }
+
+  public init (): void {
+    setInterval(() => {
+      const stats = this.logStats()
+      this.logBeautified(stats)
+    }, LOG_INTERVAL)
+  }
+
+  public logBeautified (stats: any): void {
+    console.log(`---------------------------------------------------------`)
+    console.log(`| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength}`)
+    console.log(`| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength}`)
+    console.log(`| Mean lastUpdated: ${stats.lastUpdated.mean}`)
+    console.log(` Standard deviation lastUpdated: ${stats.lastUpdated.std}`)
+    console.log(`---------------------------------------------------------`)
+
+    /*
+      console.log(`Max lastUpdated of set edges: ${maxLastUpdated.lastUpdated} on ${maxLastUpdated.source}->${maxLastUpdated.target} with price: ${maxLastUpdated.price}, realPirce: ${maxLastUpdated.realPrice} and volume: ${maxLastUpdated.volume}`)
+      console.log(`| Min lastUpdated of set edges: ${minLastUpdated.lastUpdated} on ${minLastUpdated.source}->${minLastUpdated.target} with price: ${minLastUpdated.price}, realPirce: ${minLastUpdated.realPrice} and volume: ${minLastUpdated.volume}`)
+    */
+  }
 }
