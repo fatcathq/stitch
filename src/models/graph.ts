@@ -81,6 +81,8 @@ export default class extends Graph {
 
         if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
           // log.info(`[GRAPH] Edge was not updated since websocket update didn't affect the orderbook top`)
+          edge.updateLastUpdatedTs()
+
           return false
         }
 
@@ -100,6 +102,8 @@ export default class extends Graph {
 
         if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
           // log.info(`[GRAPH] VirtualEdge was not updated since websocket update didn't affect the orderbook top`)
+          edge.updateLastUpdatedTs()
+
           return false
         }
 
