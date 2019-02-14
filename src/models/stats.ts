@@ -93,16 +93,17 @@ export default class Stats {
   }
 
   public logBeautified (stats: any): void {
-    console.log(this.createBeautifiedLogsString(stats))
+    console.log(this.createBorder())
+    console.log(this.createEdgeLogsString(stats))
+    console.log(this.createBorder())
   }
 
-  public createBeautifiedLogsString (stats: any): string {
-    let str: string = this.createBorder()
+  public createEdgeLogsString (stats: any): string {
+    let str: string = ''
 
     str += `| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength} \n`
 
     if (stats.lastUpdated.max === undefined) {
-      str += this.createBorder()
       return str
     }
 
@@ -110,7 +111,6 @@ export default class Stats {
     str += `| lastUpdated mean: ${stats.lastUpdated.mean} ms, std: ${stats.lastUpdated.std} \n`
     str += `| lastUpdated min: ${stats.lastUpdated.min.lastUpdated} ms on ${stats.lastUpdated.min.source}->${stats.lastUpdated.min.target} with price: ${stats.lastUpdated.min.price}, realPirce: ${stats.lastUpdated.min.realPrice} and volume: ${stats.lastUpdated.min.volume} \n`
     str += `| lastUpdated max ${stats.lastUpdated.max.lastUpdated} ms on ${stats.lastUpdated.max.source}->${stats.lastUpdated.max.target} with price: ${stats.lastUpdated.max.price}, realPirce: ${stats.lastUpdated.max.realPrice} and volume: ${stats.lastUpdated.max.volume} \n`
-    str += this.createBorder()
 
     return str
   }
