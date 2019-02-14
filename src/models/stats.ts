@@ -70,7 +70,7 @@ export default class Stats {
 
     return {
       settedEdgesLength: settedEdgeSamples.length,
-      lastUpdatedStats: lastUpdatedStats
+      lastUpdated: lastUpdatedStats
     }
   }
 
@@ -82,16 +82,28 @@ export default class Stats {
   }
 
   public logBeautified (stats: any): void {
-    console.log(`---------------------------------------------------------`)
-    console.log(`| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength}`)
-    console.log(`| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength}`)
-    console.log(`| Mean lastUpdated: ${stats.lastUpdated.mean}`)
-    console.log(` Standard deviation lastUpdated: ${stats.lastUpdated.std}`)
-    console.log(`---------------------------------------------------------`)
+    console.log(this.createBeautifiedLogsString(stats))
+  }
 
-    /*
-      console.log(`Max lastUpdated of set edges: ${maxLastUpdated.lastUpdated} on ${maxLastUpdated.source}->${maxLastUpdated.target} with price: ${maxLastUpdated.price}, realPirce: ${maxLastUpdated.realPrice} and volume: ${maxLastUpdated.volume}`)
-      console.log(`| Min lastUpdated of set edges: ${minLastUpdated.lastUpdated} on ${minLastUpdated.source}->${minLastUpdated.target} with price: ${minLastUpdated.price}, realPirce: ${minLastUpdated.realPrice} and volume: ${minLastUpdated.volume}`)
-    */
+  public createBeautifiedLogsString (stats: any): string {
+    let str: string = this.createBorder()
+
+    str += `| All edges: ${this.graph.edges().length}. SettedEdges: ${stats.settedEdgesLength} \n`
+
+    if (stats.lastUpdated.max === undefined) {
+      str += this.createBorder()
+      return str
+    }
+
+    str += `| lastUpdated mean: ${stats.lastUpdated.mean} ms, std: ${stats.lastUpdated.std} \n`
+    str += `| lastUpdated min: ${stats.lastUpdated.min.lastUpdated} ms on ${stats.lastUpdated.min.source}->${stats.lastUpdated.min.target} with price: ${stats.lastUpdated.min.price}, realPirce: ${stats.lastUpdated.min.realPrice} and volume: ${stats.lastUpdated.min.volume} \n`
+    str += `| lastUpdated max ${stats.lastUpdated.max.lastUpdated} ms on ${stats.lastUpdated.max.source}->${stats.lastUpdated.max.target} with price: ${stats.lastUpdated.max.price}, realPirce: ${stats.lastUpdated.max.realPrice} and volume: ${stats.lastUpdated.max.volume} \n`
+    str += this.createBorder()
+
+    return str
+  }
+
+  private createBorder (): string {
+    return `--------------------------------------------------------------------- \n`
   }
 }
