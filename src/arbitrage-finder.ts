@@ -26,7 +26,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     const marketIds = Object.keys(markets).map(market => markets[market].id)
     this.obEmitter.loadMarkets(marketIds)
 
-    const stats = new StatsLogger(this.graph)
+    const stats = new StatsLogger(this.graph, this.opportunityMap)
     stats.init()
 
     this.run()

@@ -1,5 +1,6 @@
 import Graph from './graph'
 import * as _ from 'lodash'
+import { OpportunityMap } from '../types'
 
 type EdgeSample = {
   source: string
@@ -22,9 +23,11 @@ const LOG_INTERVAL = 1000
 
 export default class Stats {
   private graph: Graph
+  public opportunities: OpportunityMap
 
-  constructor (graph: Graph) {
+  constructor (graph: Graph, opportunities: OpportunityMap) {
     this.graph = graph
+    this.opportunities = opportunities
   }
 
   public init (): void {
