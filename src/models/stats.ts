@@ -27,6 +27,13 @@ export default class Stats {
     this.graph = graph
   }
 
+  public init (): void {
+    setInterval(() => {
+      const stats = this.logStats()
+      this.logBeautified(stats)
+    }, LOG_INTERVAL)
+  }
+
   private getSamplesFromGraph (graph: Graph = this.graph): EdgeSample[] {
     return graph.edges().map((e: any) => {
       const edge = graph.edge(e)
@@ -40,6 +47,12 @@ export default class Stats {
         realPrice: edge.getRealPrice(),
         volume: edge.volume
       }
+    })
+  }
+
+  private filterUpdatedOnLastInterval (stats: EdgeSample[]): EdgeSample[] {
+    return stats.filter((stat) => {
+      return stat.lastUpdated <= LOG_INTERVAL
     })
   }
 
@@ -67,18 +80,13 @@ export default class Stats {
     const edgeSamples = this.getSamplesFromGraph()
     const settedEdgeSamples = this.getSettedEdgeSamples(edgeSamples)
     const lastUpdatedStats = this.getDescriptiveStatsBy(settedEdgeSamples, 'lastUpdated')
+    const updatedOnLastInterval = this.filterUpdatedOnLastInterval(settedEdgeSamples)
 
     return {
       settedEdgesLength: settedEdgeSamples.length,
+      updatedOnLastInterval: updatedOnLastInterval.length,
       lastUpdated: lastUpdatedStats
     }
-  }
-
-  public init (): void {
-    setInterval(() => {
-      const stats = this.logStats()
-      this.logBeautified(stats)
-    }, LOG_INTERVAL)
   }
 
   public logBeautified (stats: any): void {
@@ -95,6 +103,7 @@ export default class Stats {
       return str
     }
 
+    str += `| Edges updated on last interval: ${stats.updatedOnLastInterval} \n`
     str += `| lastUpdated mean: ${stats.lastUpdated.mean} ms, std: ${stats.lastUpdated.std} \n`
     str += `| lastUpdated min: ${stats.lastUpdated.min.lastUpdated} ms on ${stats.lastUpdated.min.source}->${stats.lastUpdated.min.target} with price: ${stats.lastUpdated.min.price}, realPirce: ${stats.lastUpdated.min.realPrice} and volume: ${stats.lastUpdated.min.volume} \n`
     str += `| lastUpdated max ${stats.lastUpdated.max.lastUpdated} ms on ${stats.lastUpdated.max.source}->${stats.lastUpdated.max.target} with price: ${stats.lastUpdated.max.price}, realPirce: ${stats.lastUpdated.max.realPrice} and volume: ${stats.lastUpdated.max.volume} \n`
