@@ -47,6 +47,7 @@ export default class Engine {
       log.error(`[ENGINE] Opportunity upon exploit must be already changed in the proper exploit currency`)
     }
 
+    log.info(`[ENGINE] Locking engine to prevent parallel exploitations`)
     this.lock()
 
     const startingVolume = this.calculateStartingVolume(opportunity, currency)

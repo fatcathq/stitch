@@ -24,7 +24,6 @@ export default class StitchController extends EventEmmiter {
     this.finder.linkOpportunities(this.opportunities)
 
     this.engine = new Engine(this.api)
-
     if (!config.activeTrading) {
       this.engine.lock()
     }
@@ -54,11 +53,6 @@ export default class StitchController extends EventEmmiter {
   }
 
   private async handleOpportunityAdded (opportunity: Opportunity): Promise<void> {
-    if (this.engine.isLocked()) {
-      log.info(`[CONTROLLER] Engine is locked. Skipping opportunity ${opportunity.getNodes()}`)
-      return
-    }
-
     const currency = this.engine.hasExploitableCurrency(opportunity)
     if (currency === undefined) {
       log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is NOT exploitable`)
