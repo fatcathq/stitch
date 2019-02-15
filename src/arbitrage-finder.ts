@@ -12,14 +12,13 @@ export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
   public opportunityMap: OpportunityMap = {}
-  private running = true
   private obEmitter: any = null
 
   constructor () {
     super()
   }
 
-  async init (markets: any): Promise<void> {
+  public async init (markets: any): Promise<void> {
     this.obEmitter = new OBEmitter()
     this.graph = new Graph(this.exchange, markets)
 
@@ -28,8 +27,6 @@ export default class ArbitrageFinder extends EventEmmiter {
 
     const stats = new StatsLogger(this.graph, this.opportunityMap)
     stats.init()
-
-    this.run()
   }
 
   public loadListeners (): void {
@@ -85,16 +82,11 @@ export default class ArbitrageFinder extends EventEmmiter {
   }
 
   public run (): void {
-    this.running = true
     this.loadListeners()
   }
 
   public async linkOpportunities (opportunities: OpportunityMap): Promise<void> {
     this.opportunityMap = opportunities
-  }
-
-  public pause (): void {
-    this.running = false
   }
 
   public updateOpportunities (newOpportunities: OpportunityMap): void {
@@ -113,11 +105,6 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
 
     for (const id in newOpportunities) {
-      if (!this.running) {
-        log.info(`[FINDER] No new opportunities will be updated/emmited`)
-        continue
-      }
-
       // New opportunity found
       if (!(id in this.opportunityMap)) {
         this.opportunityMap[id] = newOpportunities[id]
