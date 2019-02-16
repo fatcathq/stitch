@@ -7,6 +7,7 @@ import assert from 'assert'
 
 const FILLED_ORDER_TRIES = 50
 const MARKET_ORDER_PRICE_CHANGE = 0.01
+const MAX_INT = Number.MAX_SAFE_INTEGER
 
 type FeeApplication = 'before' | 'after'
 
@@ -19,14 +20,15 @@ export class Edge {
   public targetPrecision: number
   public minVolume: Volume // Volume of OrderBook Top
   // Volume is source units (in both Edge and VirtualEdge)
-  public volume: Volume = new Decimal(Infinity) // Volume of OrderBook Top
+  public volume: Volume = new Decimal(0) // Volume of OrderBook Top
   public fee: Decimal = new Decimal(0)
   // Price is target unit (in both Edge and VirtualEdge).
   // It indicates how many target units one can get by giving 1 source unit.
   // In the case of an Edge, this trade is performed by selling the source unit
   // to obtain target units. In the case of a VirtualEdge, this trade is
   // performed by buying the target unit and paying in the source unit.
-  protected price: Decimal = new Decimal(0)
+  public lastUpdatedTs: number = Date.now()
+  protected price: Decimal = new Decimal(MAX_INT)
   protected feeApplication: FeeApplication = 'before'
   public side: OrderSide = 'sell'
 
@@ -48,11 +50,17 @@ export class Edge {
 
   }
 
+  public hasEmptyValues (): boolean {
+    return this.volume.equals(0) && this.price.equals(MAX_INT)
+  }
+
   public toString (): string {
     return `${this.source} -> ${this.target}`
   }
 
   public setPrice (price: Price): void {
+    this.updateLastUpdatedTs()
+
     this.price = price
     log.debug(`New price on edge ${this}. With 1 ${this.source} you buy ${this.price} ${this.target}`)
   }
@@ -67,6 +75,11 @@ export class Edge {
 
   public getRealPrice (): Price {
     return this.getPrice()
+  }
+
+  public updateLastUpdatedTs (): void {
+    log.debug(`Price of market ${this.source}/${this.target} wasn't updated for ${Date.now() - this.lastUpdatedTs} ms.`)
+    this.lastUpdatedTs = Date.now()
   }
 
   protected volumeToRealVolume (volume: Volume): Volume {
@@ -247,6 +260,7 @@ export class Edge {
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
   public side: OrderSide = 'buy'
+  protected price: Decimal = new Decimal(0)
 
   public setRealPrice (price: Price): void {
     this.setPrice(price.pow(-1))
@@ -254,6 +268,10 @@ export class VirtualEdge extends Edge {
 
   public getRealPrice (): Price {
     return this.price.pow(-1)
+  }
+
+  public hasEmptyValues (): boolean {
+    return this.volume.equals(0) && this.price.equals(0)
   }
 
   public getMarket (): string {

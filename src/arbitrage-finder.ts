@@ -3,53 +3,100 @@ import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import config from './utils/config'
 import log from './loggers/winston'
-import { OpportunityMap } from './types'
+import { OpportunityMap, OrderBookRecord } from './types'
 import EventEmmiter from 'events'
+import OBEmitter from './connectors/ws-connector'
+import StatsLogger from './models/stats'
 
 export default class ArbitrageFinder extends EventEmmiter {
   public readonly exchange = config.exchange
   private graph: Graph = new Graph()
-  private opportunityMap: OpportunityMap = {}
-  private api: any
-  private running = true
+  public opportunityMap: OpportunityMap = {}
+  private obEmitter: any = null
 
-  constructor (api: any) {
+  constructor () {
     super()
-
-    this.api = api
   }
 
-  async init (markets: any): Promise<void> {
+  public async init (markets: any): Promise<void> {
+    this.obEmitter = new OBEmitter()
     this.graph = new Graph(this.exchange, markets)
+
+    const marketIds = Object.keys(markets).map(market => markets[market].id)
+    this.obEmitter.loadMarkets(marketIds)
+
+    const stats = new StatsLogger(this.graph, this.opportunityMap)
+    stats.init()
   }
 
-  async run (): Promise<void> {
-    this.running = true
-    while (this.running) {
-      await this.updatePrices()
+  public loadListeners (): void {
+    for (const marketId in this.obEmitter.markets) {
+      this.obEmitter.markets[marketId].on('bidUpdate', async (market: any) => {
+        const ob = market.bids.top(1)[0]
+        if (ob === undefined) {
+          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
+          return
+        }
 
-      const opportunities = await this.extractOpportunitiesFromGraph()
+        const { rate, quantity } = ob
+        const [currency, asset] = marketId.split('-')
 
-      await this.updateOpportunities(opportunities)
+        const record: OrderBookRecord = {
+          asset: asset,
+          currency: currency,
+          type: 'buy',
+          price: rate,
+          volume: quantity
+        }
+
+        if (this.graph.updateFromOBTRecord(record)) {
+          const opportunities = await this.extractOpportunitiesFromGraph()
+          this.updateOpportunities(opportunities)
+        }
+      })
+
+      this.obEmitter.markets[marketId].on('askUpdate', async (market: any) => {
+        const ob = market.asks.top(1)[0]
+        if (ob === undefined) {
+          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
+          return
+        }
+
+        const { rate, quantity } = ob
+        const [currency, asset] = marketId.split('-')
+
+        const record: OrderBookRecord = {
+          asset: asset,
+          currency: currency,
+          type: 'sell',
+          price: rate,
+          volume: quantity
+        }
+
+        if (this.graph.updateFromOBTRecord(record)) {
+          const opportunities = await this.extractOpportunitiesFromGraph()
+          this.updateOpportunities(opportunities)
+        }
+      })
     }
+  }
+
+  public run (): void {
+    this.loadListeners()
   }
 
   public async linkOpportunities (opportunities: OpportunityMap): Promise<void> {
     this.opportunityMap = opportunities
   }
 
-  public pause (): void {
-    this.running = false
-  }
-
-  async updateOpportunities (newOpportunities: OpportunityMap): Promise<void> {
+  public updateOpportunities (newOpportunities: OpportunityMap): void {
     // TODO: Fix sorting
     // sortByProfitability(newOpportunities)
 
     // Delete non existing opportunities
     for (const id in this.opportunityMap) {
       if (id in newOpportunities) {
-        return
+        continue
       }
 
       this.emit('OpportunityClosed', this.opportunityMap[id], this.opportunityMap[id].getDuration())
@@ -58,40 +105,19 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
 
     for (const id in newOpportunities) {
-      if (!this.running) {
-        log.info(`[FINDER] No new opportunities will be updated/emmited`)
-        return
-      }
       // New opportunity found
-      if (!(id in this.opportunityMap[id])) {
+      if (!(id in this.opportunityMap)) {
         this.opportunityMap[id] = newOpportunities[id]
-
-        if (config.fetchVolumes) {
-          await this.opportunityMap[id].updateFromAPI(this.api)
-        }
 
         this.emit('OpportunityAdded', id)
       }
     }
   }
 
-  private async updatePrices (): Promise<void> {
-    let tickers: any = []
-
-    try {
-      tickers = await this.api.fetchTickers()
-    } catch (e) {
-      log.error(`[FINDER] Could not fetch tickers. Problem: ${e.message}`)
-      return
-    }
-
-    this.graph.update(tickers)
-  }
-
   private async extractOpportunitiesFromGraph (): Promise<OpportunityMap> {
     let opportunities: OpportunityMap = {}
 
-    const triangles = this.graph.getTriangles()
+    const triangles = this.graph.getNonEmptyTriangles()
 
     for (const triangle of triangles) {
       const opportunity = new Opportunity(this.exchange, triangle)
@@ -104,4 +130,19 @@ export default class ArbitrageFinder extends EventEmmiter {
 
     return opportunities
   }
+
+  /*
+  private async updatePrices (): Promise<void> {
+    let tickers: any = []
+
+    try {
+      tickers = await this.api.fetchTickers()
+    } catch (e) {
+      log.error(`[FINDER] Could not fetch tickers. Problem: ${e.message}`)
+      return
+    }
+
+    this.graph.update(tickers)
+  }
+  */
 }

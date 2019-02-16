@@ -20,11 +20,10 @@ export default class StitchController extends EventEmmiter {
     this.api = new Api()
     this.opportunities = {} as OpportunityMap
 
-    this.finder = new ArbitrageFinder(this.api)
+    this.finder = new ArbitrageFinder()
     this.finder.linkOpportunities(this.opportunities)
 
     this.engine = new Engine(this.api)
-
     if (!config.activeTrading) {
       this.engine.lock()
     }
@@ -44,7 +43,7 @@ export default class StitchController extends EventEmmiter {
 
   registerListeners (): void {
     this.finder.on('OpportunityAdded', async (id: number) => {
-      if (!(id in this.opportunities[id])) {
+      if (!(id in this.opportunities)) {
         log.error(`[CONTROLLER] Opportunity with id: ${id} should exist on opportunity Map`)
         return
       }
@@ -54,18 +53,11 @@ export default class StitchController extends EventEmmiter {
   }
 
   private async handleOpportunityAdded (opportunity: Opportunity): Promise<void> {
-    if (this.engine.isLocked()) {
-      log.info(`[CONTROLLER] Engine is locked. Skipping opportunity ${opportunity.getNodes()}`)
-      return
-    }
-
     const currency = this.engine.hasExploitableCurrency(opportunity)
     if (currency === undefined) {
       log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is NOT exploitable`)
       return
     }
-
-    this.finder.pause()
 
     log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is exploitable`)
     await this.engine.exploit(opportunity, currency)

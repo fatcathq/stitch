@@ -12,11 +12,11 @@ async function testEdge (
   isVirtual: boolean = false,
   fee = new Decimal(0.0025),
   minVolume = new Decimal(0)
-): void {
+): Promise<void> {
   const api = new Api()
   const balance = new Balance(api)
   const precisions = Engine.marketsToPrecisions(await api.loadMarkets())
-  await balance.init(precisions)
+  await balance.setPrecisions(precisions)
 
   let preTradeBalanceAsset = balance.get(asset)
   let forTradeVolume = preTradeBalanceAsset

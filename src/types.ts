@@ -2,6 +2,14 @@ import { Edge } from './models/edge'
 import Opportunity from './models/opportunity'
 import Decimal from 'decimal.js'
 
+export type OrderBookRecord = {
+  asset: Currency,
+  currency: Currency
+  type: string
+  volume: number,
+  price: number
+}
+
 export type Market = {
   [key: string]: any
 }

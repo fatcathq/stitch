@@ -12,5 +12,5 @@ async function main (): Promise<void> {
 }
 
 main().catch(
-  (e) => log.error(`[TOP_LEVEL_ERROR]: ${e.message}`)
+  (e) => log.error(`[TOP_LEVEL_ERROR]`, e)
 )
