@@ -131,7 +131,6 @@ export default class extends Graph {
    */
   public getTriangles (forceUpdate = false): Triangle[] {
     if (this.triangles && !forceUpdate) {
-      console.log('Triangles already exist')
       return this.triangles
     }
 
