@@ -63,6 +63,7 @@ export default class Engine {
 
     await this.logExploitResults(opportunity, startingVolume)
 
+    process.exit()
     this.unlock()
   }
 
