@@ -9,7 +9,7 @@ import { marketIsValid, triangleExists } from '../utils/helpers'
 
 export default class extends Graph {
   public exchange: string
-  private triangles: Triangle[]
+  public triangles: Triangle[]
 
   constructor (exchange: string = '', markets: any = []) {
     super({ directed: true })
@@ -116,8 +116,8 @@ export default class extends Graph {
     return false
   }
 
-  public getNonEmptyTriangles (): Triangle[] {
-    const triangles = this.getTriangles()
+  public getNonEmptyTriangles (forceUpdate = false): Triangle[] {
+    const triangles = this.getTriangles(forceUpdate)
 
     return triangles.filter((triangle: Triangle) => {
       return triangle.every(edge => {
@@ -129,8 +129,9 @@ export default class extends Graph {
   /*
    *  Triangles implemented using this paper: http://theory.stanford.edu/~tim/s14/l/l1.pdf
    */
-  public getTriangles (): Triangle[] {
-    if (this.triangles) {
+  public getTriangles (forceUpdate = false): Triangle[] {
+    if (this.triangles && !forceUpdate) {
+      console.log('Triangles already exist')
       return this.triangles
     }
 

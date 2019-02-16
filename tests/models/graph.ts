@@ -135,7 +135,7 @@ describe('getTriangles', () => {
     addEdgeToGraph('ZEC', 'ETH')
     graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
 
-    expect(graph.getTriangles()).toHaveLength(0)
+    expect(graph.getTriangles(true)).toHaveLength(0)
   })
 
   test('Should return triangles if triangles exist', () => {
@@ -148,7 +148,7 @@ describe('getTriangles', () => {
     addEdgeToGraph('ZEC', 'ETH')
     graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
 
-    const triangles = graph.getTriangles()
+    const triangles = graph.getTriangles(true)
     expect(triangles).toHaveLength(1)
     expect(triangles[0]).toHaveLength(3)
   })
@@ -169,7 +169,7 @@ describe('getNonEmptyTriangles', () => {
     addEdgeToGraph('BTC', 'ZEC')
     addEdgeToGraph('ZEC', 'ETH')
 
-    expect(graph.getNonEmptyTriangles()).toEqual([])
+    expect(graph.getNonEmptyTriangles(true)).toEqual([])
   })
 
   test('Should not return triangles if at least one edge is empty', () => {
@@ -181,7 +181,7 @@ describe('getNonEmptyTriangles', () => {
     addEdgeToGraph('ZEC', 'ETH')
     graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
 
-    expect(graph.getNonEmptyTriangles()).toEqual([])
+    expect(graph.getNonEmptyTriangles(true)).toEqual([])
   })
 
   test('Should return triangles if all edges are non empty', () => {
@@ -194,6 +194,6 @@ describe('getNonEmptyTriangles', () => {
     addEdgeToGraph('ZEC', 'ETH')
     graph.edge('ZEC', 'ETH').setRealPrice(new Decimal(0.3))
 
-    expect(graph.getNonEmptyTriangles()).toHaveLength(1)
+    expect(graph.getNonEmptyTriangles(true)).toHaveLength(1)
   })
 })
