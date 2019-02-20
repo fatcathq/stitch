@@ -15,7 +15,7 @@ export default class {
   public minVolume: Volume
   public exchange: string
   public created: Date = new Date()
-  private triangle: Triangle
+  public triangle: Triangle
   private refUnit: string
 
   constructor (exchange: string, triangle: Edge[]) {
