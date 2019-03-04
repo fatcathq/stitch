@@ -19,8 +19,13 @@ export class SlackLogger implements LoggerInterface {
 
   public closeOpportunity (opportunity: OpportunitySet, duration: number): void {
     const [n1, n2, n3] = opportunity.getNodes()
-
     // tslint:disable-next-line
-    client(`Opportunity closed on *${opportunity.exchange}*: Triangle *${n1}, ${n2}, ${n3}*. Duration of existence: ${duration} ms. Profit: ${(opportunity.arbitrage.minus(1)).toNumber() * 100} %`)
+    let str = `Opportunity closed on *${opportunity.exchange}*: Triangle *${n1}, ${n2}, ${n3}*. Duration of existence: ${duration} ms. Profit: ${(opportunity.arbitrage.minus(1)).toNumber() * 100} %`
+
+    for (const edge of opportunity.triangle) {
+      str += `\n${edge.toString()} last updated before ${Date.now() - edge.lastUpdatedTs} ms.`
+    }
+
+    client(str)
   }
 }
