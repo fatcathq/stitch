@@ -162,7 +162,7 @@ export default class {
       closed_at: new Date(),
       min_trade_volume: this.getMinVolume().toNumber(),
       max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume.toNumber(),
-      cycle: this.getNodes(),
+      cycle: JSON.stringify(this.getNodes()),
       arbitrage: this.arbitrage.toNumber()
     }).returning('id').then((res) => {
       this.triangle.forEach((edge: Edge) => edge.save(res[0]))

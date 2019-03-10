@@ -1,10 +1,10 @@
 //TODO: Change that to typescript
 
 module.exports = {
-  client: 'postgresql',
+  client: 'mysql2',
   connection: {
     database: 'stitch',
-    user:     'postgres',
-    password: 123
+    user:     'root',
+    password: 'root'
   },
 };
