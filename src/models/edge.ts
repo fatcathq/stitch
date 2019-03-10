@@ -243,9 +243,9 @@ export class Edge {
     return calculation
   }
 
-  public async save (cycleId: number): Promise<void> {
+  public async save (opportunityId: number): Promise<void> {
     db('edges').insert({
-      cycle_id: cycleId,
+      opportunity_id: opportunityId,
       virtual: this instanceof VirtualEdge,
       source: this.source,
       target: this.target,

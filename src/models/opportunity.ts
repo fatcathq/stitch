@@ -164,8 +164,10 @@ export default class {
       max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume.toNumber(),
       cycle: JSON.stringify(this.getNodes()),
       arbitrage: this.arbitrage.toNumber()
-    }).returning('id').then((res) => {
-      this.triangle.forEach((edge: Edge) => edge.save(res[0]))
+    }).returning('id').then(async (res) => {
+      for (const edge of this.triangle) {
+        await edge.save(res[0])
+      }
     })
   }
 
