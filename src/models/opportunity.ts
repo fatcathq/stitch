@@ -161,7 +161,7 @@ export default class {
       created_at: this.created,
       closed_at: new Date(),
       min_trade_volume: this.getMinVolume().toNumber(),
-      max_trade_volume: this.maxVolume.eq(Infinity) ? null : this.maxVolume.toNumber(),
+      max_trade_volume: this.getMaxVolume().toNumber(),
       cycle: JSON.stringify(this.getNodes()),
       arbitrage: this.arbitrage.toNumber()
     }).returning('id').then(async (res) => {

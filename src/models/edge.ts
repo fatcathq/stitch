@@ -244,12 +244,13 @@ export class Edge {
   }
 
   public async save (opportunityId: number): Promise<void> {
-    db('edges').insert({
+    return db('edges').insert({
       opportunity_id: opportunityId,
       virtual: this instanceof VirtualEdge,
       source: this.source,
       target: this.target,
       price: this.price.toNumber(),
+      last_updated: Date.now() - this.lastUpdatedTs,
       taker_fee: this.fee.toNumber(),
       volume: !this.getVolume().equals(Infinity) ? this.volume.toNumber() : null
     })

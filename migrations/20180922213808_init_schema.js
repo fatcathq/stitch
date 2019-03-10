@@ -15,6 +15,7 @@ exports.up = async function(knex) {
     table.integer('opportunity_id').unsigned().notNull()
     table.boolean('virtual').notNull()
     table.text('source', 8).notNull()
+    table.integer('last_updated').notNull()
     table.text('target', 8).notNull()
     table.double('price').notNull()
     table.double('taker_fee').notNull()
