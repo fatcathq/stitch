@@ -13,17 +13,25 @@ export default class ArbitrageFinder extends EventEmmiter {
   private graph: Graph = new Graph()
   public opportunityMap: OpportunityMap = {}
   private obEmitter: any = null
+  private marketIds: string[] = []
 
   constructor () {
     super()
   }
 
   public async init (markets: any): Promise<void> {
-    this.obEmitter = new OBEmitter()
-    this.graph = new Graph(this.exchange, markets)
+    this.obEmitter = OBEmitter
 
-    const marketIds = Object.keys(markets).map(market => markets[market].id)
-    this.obEmitter.loadMarkets(marketIds)
+    this.graph = new Graph(this.exchange, markets)
+    this.marketIds = Object.keys(markets).map(market => markets[market].symbol)
+
+    for (const market of this.marketIds) {
+      try {
+        this.obEmitter.market(market)
+      } catch (e) {
+        console.log(e)
+      }
+    }
 
     const stats = new StatsLogger(this.graph, this.opportunityMap)
     stats.init()
@@ -31,7 +39,7 @@ export default class ArbitrageFinder extends EventEmmiter {
 
   public loadListeners (): void {
     for (const marketId in this.obEmitter.markets) {
-      this.obEmitter.markets[marketId].on('bidUpdate', async (market: any) => {
+      this.obEmitter.market(marketId).on('bidUpdate', async (market: any) => {
         const ob = market.bids.top(1)[0]
         if (ob === undefined) {
           log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
@@ -39,7 +47,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         }
 
         const { rate, quantity } = ob
-        const [currency, asset] = marketId.split('-')
+        const [asset, currency] = marketId.split('/')
 
         const record: OrderBookRecord = {
           asset: asset,
@@ -55,7 +63,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         }
       })
 
-      this.obEmitter.markets[marketId].on('askUpdate', async (market: any) => {
+      this.obEmitter.market(marketId).on('askUpdate', async (market: any) => {
         const ob = market.asks.top(1)[0]
         if (ob === undefined) {
           log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
@@ -63,7 +71,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         }
 
         const { rate, quantity } = ob
-        const [currency, asset] = marketId.split('-')
+        const [asset, currency] = marketId.split('/')
 
         const record: OrderBookRecord = {
           asset: asset,
