@@ -158,8 +158,8 @@ export default class {
   public async save (): Promise<void> {
     db('opportunities').insert({
       exchange: this.exchange,
-      created_at: this.created,
-      closed_at: new Date(),
+      created_at: this.created.toISOString(),
+      closed_at: (new Date()).toISOString(),
       min_trade_volume: this.getMinVolume().toNumber(),
       max_trade_volume: this.getMaxVolume().toNumber(),
       cycle: JSON.stringify(this.getNodes()),
