@@ -7,8 +7,8 @@ exports.up = async function(knex) {
     table.text('cycle').notNull()
     table.double('min_trade_volume')
     table.double('max_trade_volume')
-    table.timestamp('closed_at').defaultTo(knex.fn.now())
-    table.timestamp('created_at').defaultTo(knex.fn.now())
+    table.datetime('closed_at', 3)
+    table.datetime('created_at', 3)
   })
 
   await knex.schema.createTable('edges', (table) => {
