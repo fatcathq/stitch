@@ -155,18 +155,19 @@ export default class {
     log.info(`[OPPORTUNITY_FALLBACK] Opportunity fallback finished`)
   }
 
-  public async save (): Promise<void> {
+  public async save (duration: number): Promise<void> {
     db('opportunities').insert({
       exchange: this.exchange,
-      created_at: this.created.toISOString(),
-      closed_at: (new Date()).toISOString(),
+      duration: duration,
       min_trade_volume: this.getMinVolume().toNumber(),
       max_trade_volume: this.getMaxVolume().toNumber(),
       cycle: JSON.stringify(this.getNodes()),
       arbitrage: this.arbitrage.toNumber()
     }).returning('id').then(async (res) => {
+      let order = 1
       for (const edge of this.triangle) {
-        await edge.save(res[0])
+        await edge.save(res[0], order)
+        ++order
       }
     })
   }

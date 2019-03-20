@@ -2,10 +2,9 @@ import Opportunity from '../models/opportunity'
 import { LoggerInterface } from './'
 
 export class DatabaseLogger implements LoggerInterface {
-  public createOpportunity (opportunity: Opportunity): void {
+  public closeOpportunity (opportunity: Opportunity, duration: number): void {
     try {
-      // tslint:disable-next-line
-      opportunity.save()
+      opportunity.save(duration)
     } catch (e) {
       console.log(`Error: ${e.message}`)
     }
