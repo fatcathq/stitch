@@ -19,8 +19,9 @@ export default class ArbitrageFinder extends EventEmmiter {
     super()
   }
 
-  public async init (markets: any): Promise<void> {
+  public async init (allMarkets: any): Promise<void> {
     this.obEmitter = OBEmitter
+    const markets = Graph.getMarketsParticipatingInTriangle(allMarkets)
 
     this.graph = new Graph(this.exchange, markets)
     this.marketIds = Object.keys(markets).map(market => markets[market].symbol)
