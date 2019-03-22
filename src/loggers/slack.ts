@@ -23,7 +23,7 @@ export class SlackLogger implements LoggerInterface {
     let str = `Opportunity closed on *${opportunity.exchange}*: Triangle *${n1}, ${n2}, ${n3}*. Duration of existence: ${duration} ms. Profit: ${(opportunity.arbitrage.minus(1)).toNumber() * 100} %`
 
     for (const edge of opportunity.triangle) {
-      str += `\n${edge.toString()} last updated before ${Date.now() - edge.lastUpdatedTs} ms.`
+      str += `\n${edge.toString()} last updated before *${Date.now() - edge.lastUpdatedTs} ms*. Volume: *${edge.volume} ${edge.source}*`
     }
 
     client(str)
