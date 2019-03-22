@@ -174,7 +174,6 @@ export default class extends Graph {
     const participatingNodes = g.nodes().filter((n: any) => {
       return g.outEdges(n).length > 1
     })
-    console.log(participatingNodes)
 
     const pairInParticipatingNodes = (v: any) => {
       return participatingNodes.includes(v.base) && participatingNodes.includes(v.quote)
