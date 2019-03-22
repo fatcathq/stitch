@@ -197,3 +197,28 @@ describe('getNonEmptyTriangles', () => {
     expect(graph.getNonEmptyTriangles(true)).toHaveLength(1)
   })
 })
+
+describe('getMarketsPotentiallyParticipatingInTriangle', () => {
+  test('Should find proper markets', () => {
+    const markets = {
+      'ETH/BTC': { base: 'ETH', quote: 'BTC' },
+      'COB/BTC': { base: 'COB', quote: 'BTC' },
+      'COB/ETH': { base: 'COB', quote: 'ETH' },
+      'TZA/ETH': { base: 'TZA', quote: 'ETH' },
+      'MAL/ETH': { base: 'MAL', quote: 'ETH' },
+      'LEX/BTC': { base: 'LEX', quote: 'BTC' }
+    }
+
+    expect(Object.keys(Graph.getMarketsPotentiallyParticipatingInTriangle(markets))).toHaveLength(3)
+  })
+
+  test('Should return as proper markets', () => {
+    const markets = {
+      'ETH/BTC': { base: 'ETH', quote: 'BTC' },
+      'COB/BTC': { base: 'BTC', quote: 'COB' },
+      'TSIFSA/COB': { base: 'TSIFSA', quote: 'COB' }
+    }
+
+    expect(Graph.getMarketsPotentiallyParticipatingInTriangle(markets)).toEqual({ 'COB/BTC': { 'base': 'BTC', 'quote': 'COB' } })
+  })
+})
