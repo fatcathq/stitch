@@ -26,6 +26,6 @@ export class SlackLogger implements LoggerInterface {
       str += `\n${edge.toString()} last updated before *${Date.now() - edge.lastUpdatedTs} ms*. Volume: *${edge.volume} ${edge.source}*`
     }
 
-    client(str)
+    void client(str)
   }
 }
