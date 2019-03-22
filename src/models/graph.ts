@@ -164,14 +164,15 @@ export default class extends Graph {
     return triangles
   }
 
-  public static getMarketsParticipatingInTriangle (markets: any): any {
+  public static getMarketsPotentiallyParticipatingInTriangle (markets: any): any {
     const g = new Graph()
     _.forEach(markets, (market: any): void => {
       g.setEdge(market.base, market.quote)
+      g.setEdge(market.quote, market.base)
     })
 
     const participatingNodes = g.nodes().filter((n: any) => {
-      return g.outEdges(n).length !== 1
+      return g.outEdges(n).length > 1
     })
     console.log(participatingNodes)
 
