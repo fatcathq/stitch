@@ -1,10 +1,11 @@
-//TODO: Change that to typescript
+const config = require('./config/config.json')
+const db = config.log.db
 
 module.exports = {
   client: 'mysql2',
   connection: {
-    database: 'stitch',
-    user:     'root',
-    password: 'root'
-  },
-};
+    database: db.database,
+    user:     db.user,
+    password: db.password
+  }
+}
