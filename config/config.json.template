@@ -20,5 +20,8 @@
     }
   },
   "fetchVolumes": true,
-  "cacheTime": 1000
+  "plotly": {
+    "username": "username",
+    "password": "password"
+  }
 }
