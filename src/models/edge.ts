@@ -5,7 +5,7 @@ import db from '../connectors/db'
 import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
 import assert from 'assert'
 
-const FILLED_ORDER_TRIES = 50
+const FILLED_ORDER_TRIES = 500
 const MARKET_ORDER_PRICE_CHANGE = 0.01
 const MAX_INT = Number.MAX_SAFE_INTEGER
 
