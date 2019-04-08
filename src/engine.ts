@@ -15,7 +15,7 @@ export default class Engine {
   constructor (api: any) {
     this.api = api
     this.balance = new Balance(this.api)
-    this.locked = false
+    this.locked = true
   }
 
   public async init (markets: any): Promise<void> {
@@ -103,7 +103,7 @@ export default class Engine {
     this.locked = true
   }
 
-  private unlock (): void {
+  public unlock (): void {
     this.locked = false
   }
 

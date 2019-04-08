@@ -8,6 +8,8 @@ import log from './loggers/winston'
 import Logger from './loggers/index'
 import config from './utils/config'
 
+const UNLOCK_ENGINE_INTERVAL = 3000
+
 export default class StitchController extends EventEmmiter {
   private api: any
   private opportunities: OpportunityMap
@@ -24,8 +26,11 @@ export default class StitchController extends EventEmmiter {
     this.finder.linkOpportunities(this.opportunities)
 
     this.engine = new Engine(this.api)
-    if (!config.activeTrading) {
-      this.engine.lock()
+    if (config.activeTrading) {
+      setTimeout(() => {
+        log.info(`[UNLOCKING_ENGINE] Unlocking engine after ${UNLOCK_ENGINE_INTERVAL} ms`)
+        this.engine.unlock()
+      } , UNLOCK_ENGINE_INTERVAL)
     }
 
     const logger = new Logger(this.finder)
