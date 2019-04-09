@@ -6,7 +6,7 @@ import config from '../utils/config'
 
 export default class extends ccxt[config.exchange] {
   constructor () {
-    super({ apiKey: config.api.key, secret: config.api.secret })
+    super({ apiKey: config.api.key })
 
     this.fetchImplementation = this.fetchWithLog
 
