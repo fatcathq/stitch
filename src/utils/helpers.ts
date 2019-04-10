@@ -2,6 +2,7 @@ import { Triangle } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
 import Decimal from 'decimal.js'
+import axios from 'axios'
 
 export function triangleEquals (triangleA: Triangle, triangleB: Triangle): boolean {
   const nodesA = triangleA.map(a => a.source)
@@ -63,4 +64,11 @@ export function financial (num: number | string | Decimal, precision: number): D
   const n = new Decimal(num)
 
   return new Decimal(n.toFixed(precision))
+}
+
+export async function changeUnit (valueUnits: Array<{value: number, unit: string}>, target: string): Promise<void> {
+  const BASE_URL = 'https://min-api.cryptocompare.com/data/price'
+  const url = `${BASE_URL}?fsym=${target}&tsyms=${valueUnits.map(l => l.unit).join(',')}`
+
+  return axios.get(url).then(r => r.data)
 }
