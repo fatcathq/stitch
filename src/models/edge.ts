@@ -102,6 +102,10 @@ export class Edge {
     return `${this.source}/${this.target}`
   }
 
+  public isVirtual (): Boolean {
+    return this instanceof VirtualEdge
+  }
+
   protected extractTopOfTheOrderBook (ob: any): [Price, Volume] {
     return ob.bids[0]
   }
