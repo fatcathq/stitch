@@ -43,30 +43,6 @@ export default class extends Graph {
     log.info(`Created graph with ${this.nodes().length} nodes`)
   }
 
-  public update (tickers: []): void {
-    _.mapValues(tickers, (market: Market): void => {
-      if (!marketIsValid(market.symbol) || market.bid === 0 || market.ask === 0) {
-        // log.warn(`Invalid market: ${market.symbol}`)
-        return
-      }
-
-      let asset: string
-      let currency: string
-      [asset, currency] = market.symbol.split('/')
-
-      try {
-        this.edge(asset, currency).setRealPrice(new Decimal(market.bid))
-        this.edge(currency, asset).setRealPrice(new Decimal(market.ask))
-
-        if ((this.edge(currency, asset)).minVolume.equals(0)) {
-          this.edge(currency, asset).minVolume = this.edge(asset, currency).minVolume.mul(market.ask)
-        }
-      } catch (e) {
-        log.warn(`Market is not initialized, so cannot update price from tickers`, market.symbol, e.message)
-      }
-    })
-  }
-
   public updateFromOBTRecord (record: OrderBookRecord): boolean {
     let edge
 
