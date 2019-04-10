@@ -11,7 +11,7 @@ export default class extends Graph {
   public exchange: string
   public triangles: Triangle[]
 
-  constructor (exchange: string = '', markets: any = []) {
+  constructor (exchange: string = '', markets: Market[] = []) {
     super({ directed: true })
     this.exchange = exchange
     this.initializeFromMarkets(markets)
@@ -19,7 +19,9 @@ export default class extends Graph {
     this.triangles = this.getTriangles()
   }
 
-  private initializeFromMarkets (markets: any): void {
+  private initializeFromMarkets (markets: Market[], minVolumes: Array<{unit: string, value: Decimal}> = []): void {
+    console.log(minVolumes)
+
     _.forEach(markets, (market: any): void => {
       if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {
         log.warn(`Invalid market: ${market.symbol}`)
@@ -140,9 +142,9 @@ export default class extends Graph {
     return triangles
   }
 
-  public static getMarketsPotentiallyParticipatingInTriangle (markets: any): any {
+  public static getMarketsPotentiallyParticipatingInTriangle (markets: Market[]): any {
     const g = new Graph()
-    _.forEach(markets, (market: any): void => {
+    _.forEach(markets, (market: Market): void => {
       g.setEdge(market.base, market.quote)
       g.setEdge(market.quote, market.base)
     })

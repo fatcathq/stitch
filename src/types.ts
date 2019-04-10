@@ -11,7 +11,14 @@ export type OrderBookRecord = {
 }
 
 export type Market = {
-  [key: string]: any
+  symbol: string,
+  base: string,
+  quote: string
+  minVolume: Decimal
+  precision: {
+    amount: Decimal,
+    price: Decimal
+  }
 }
 
 type Api = any
