@@ -112,8 +112,8 @@ export default class Engine {
 
     for (const id of Object.keys(markets)) {
       const market = markets[id]
-      precisions[market.base] = market.precision.amount
-      precisions[market.quote] = market.precision.price
+      precisions[market.base] = market.precisions.base
+      precisions[market.quote] = market.precisions.quote
     }
 
     // --- SPAM ---
