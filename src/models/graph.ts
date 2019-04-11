@@ -49,7 +49,6 @@ export default class extends Graph {
           return false
         }
 
-        const sellEdge = this.edge(record.asset, record.currency)
         edge = this.edge(record.asset, record.currency)
 
         if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
@@ -61,7 +60,6 @@ export default class extends Graph {
 
         edge.setRealPrice(new Decimal(record.price))
         edge.setRealVolume(new Decimal(record.volume))
-        edge.minVolume = sellEdge.minVolume.mul(record.price)
 
         return true
 
@@ -71,6 +69,7 @@ export default class extends Graph {
           return false
         }
 
+        const nonVirtualEdge = this.edge(record.asset, record.currency)
         edge = this.edge(record.currency, record.asset)
 
         if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
@@ -82,6 +81,7 @@ export default class extends Graph {
 
         edge.setRealPrice(new Decimal(record.price))
         edge.setRealVolume(new Decimal(record.volume))
+        edge.setMinVolume(nonVirtualEdge.minVolume.mul(record.price))
 
         return true
     }

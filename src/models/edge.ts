@@ -77,6 +77,10 @@ export class Edge {
     return this.getPrice()
   }
 
+  public setMinVolume (volume: Volume): void {
+    this.minVolume = volume
+  }
+
   public updateLastUpdatedTs (): void {
     log.debug(`Price of market ${this.source}/${this.target} wasn't updated for ${Date.now() - this.lastUpdatedTs} ms.`)
     this.lastUpdatedTs = Date.now()
