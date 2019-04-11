@@ -14,10 +14,11 @@ export type Market = {
   symbol: string,
   base: string,
   quote: string
-  minVolume: Decimal
-  precision: {
-    amount: Decimal,
-    price: Decimal
+  fee: Decimal,
+  minBaseVolume: Decimal,
+  precisions: {
+    base: Decimal,
+    quote: Decimal
   }
 }
 
