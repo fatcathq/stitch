@@ -1,4 +1,4 @@
-import { Triangle } from '../types'
+import { Triangle, Currency } from '../types'
 import * as _ from 'lodash'
 import Opportunity from '../models/opportunity'
 import Decimal from 'decimal.js'
@@ -66,9 +66,9 @@ export function financial (num: number | string | Decimal, precision: number): D
   return new Decimal(n.toFixed(precision))
 }
 
-export async function changeUnit (valueUnits: Array<{value: number, unit: string}>, target: string): Promise<void> {
+export async function getRates (units: Currency[], target: string): Promise<{[key: string]: Number}> {
   const BASE_URL = 'https://min-api.cryptocompare.com/data/price'
-  const url = `${BASE_URL}?fsym=${target}&tsyms=${valueUnits.map(l => l.unit).join(',')}`
+  const url = `${BASE_URL}?fsym=${target}&tsyms=${units.join(',')}`
 
   return axios.get(url).then(r => r.data)
 }
