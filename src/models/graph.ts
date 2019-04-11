@@ -55,6 +55,7 @@ export default class extends Graph {
           return false
         }
 
+        const sellEdge = this.edge(record.asset, record.currency)
         edge = this.edge(record.asset, record.currency)
 
         if (edge.getRealPrice().equals(record.price) && edge.getRealVolume().equals(record.volume)) {
@@ -66,7 +67,7 @@ export default class extends Graph {
 
         edge.setRealPrice(new Decimal(record.price))
         edge.setRealVolume(new Decimal(record.volume))
-        edge.minVolume = edge.minVolume.mul(record.price)
+        edge.minVolume = sellEdge.minVolume.mul(record.price)
 
         return true
 
