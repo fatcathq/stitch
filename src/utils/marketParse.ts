@@ -4,7 +4,6 @@ import { getRates } from './helpers'
 import Decimal from 'decimal.js'
 
 export default async (markets: any): Promise<Market[]> => {
-  console.log('here')
   const parsedMarkets: Market[] = []
 
   _.forEach(markets, (market: any) => {
