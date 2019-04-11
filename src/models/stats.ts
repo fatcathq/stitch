@@ -83,8 +83,8 @@ export default class Stats {
 
     str += `| Edges updated on last interval: ${stats.updatedOnLastInterval} \n`
     str += `| lastUpdated mean: ${stats.lastUpdated.mean} ms, std: ${stats.lastUpdated.std} \n`
-    str += `| lastUpdated min: ${stats.lastUpdated.min.lastUpdated} ms on ${stats.lastUpdated.min.source}->${stats.lastUpdated.min.target} with price: ${stats.lastUpdated.min.price}, realPrice: ${stats.lastUpdated.min.realPrice} and volume: ${stats.lastUpdated.min.volume} \n`
-    str += `| lastUpdated max: ${stats.lastUpdated.max.lastUpdated} ms on ${stats.lastUpdated.max.source}->${stats.lastUpdated.max.target} with price: ${stats.lastUpdated.max.price}, realPrice: ${stats.lastUpdated.max.realPrice} and volume: ${stats.lastUpdated.max.volume} \n`
+    str += `| lastUpdated min: ${stats.lastUpdated.min.lastUpdated} ms on ${stats.lastUpdated.min.source}->${stats.lastUpdated.min.target} with price: ${stats.lastUpdated.min.price}, realPrice: ${stats.lastUpdated.min.realPrice} and volume: [${stats.lastUpdated.min.minVolume}, ${stats.lastUpdated.min.maxVolume}] \n`
+    str += `| lastUpdated max: ${stats.lastUpdated.max.lastUpdated} ms on ${stats.lastUpdated.max.source}->${stats.lastUpdated.max.target} with price: ${stats.lastUpdated.max.price}, realPrice: ${stats.lastUpdated.max.realPrice} and volume: [${stats.lastUpdated.max.minVolume}, ${stats.lastUpdated.max.maxVolume}] \n`
 
     return str
   }
@@ -98,9 +98,10 @@ export default class Stats {
         target: edge.target,
         emptyValues: edge.hasEmptyValues(),
         lastUpdated: Date.now() - edge.lastUpdatedTs,
-        price: edge.getPrice().toNumber(),
+        price: edge.getPrice(),
         realPrice: edge.getRealPrice(),
-        volume: edge.volume
+        minVolume: edge.minVolume,
+        maxVolume: edge.volume
       }
     })
   }
