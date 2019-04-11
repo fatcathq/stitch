@@ -7,6 +7,7 @@ import Api from './connectors/api'
 import log from './loggers/winston'
 import Logger from './loggers/index'
 import config from './utils/config'
+import parseMarkets from './utils/marketParse'
 
 const UNLOCK_ENGINE_INTERVAL = 3000
 
@@ -38,7 +39,8 @@ export default class StitchController extends EventEmmiter {
   }
 
   async init (): Promise<void> {
-    const markets = await this.api.loadMarkets()
+    const markets = await parseMarkets(await this.api.loadMarkets())
+    console.log(markets)
 
     await this.engine.init(markets)
     await this.finder.init(markets)

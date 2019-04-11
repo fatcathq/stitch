@@ -19,26 +19,20 @@ export default class extends Graph {
     this.triangles = this.getTriangles()
   }
 
-  private initializeFromMarkets (markets: Market[], minVolumes: Array<{unit: string, value: Decimal}> = []): void {
-    console.log(minVolumes)
-
+  private initializeFromMarkets (markets: Market[]): void {
     _.forEach(markets, (market: any): void => {
       if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {
         log.warn(`Invalid market: ${market.symbol}`)
         return
       }
 
-      let minVolume: number
-
-      minVolume = market.limits.amount.min
-
       this.setEdge(market.base, market.quote,
-        new EdgeDriver(market.base, market.quote, [new Decimal(market.taker), 'after'], new Decimal(minVolume), [market.precision.amount, market.precision.price])
+        new EdgeDriver(market.base, market.quote, [market.fee, 'after'], market.minBaseVolume, [market.precision.base, market.precision.quote])
       )
 
       // TODO: Fix min volume
       this.setEdge(market.quote, market.base,
-        new VirtualEdgeDriver(market.quote, market.base, [new Decimal(market.taker), 'before'], new Decimal(0), [market.precision.price, market.precision.amount])
+        new VirtualEdgeDriver(market.quote, market.base, [market.fee, 'before'], new Decimal(0), [market.precision.quote, market.precision.base])
       )
     })
 
