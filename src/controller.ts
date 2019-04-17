@@ -9,7 +9,7 @@ import Logger from './loggers/index'
 import config from './utils/config'
 import parseMarkets from './utils/marketParse'
 
-const UNLOCK_ENGINE_INTERVAL = 3000
+const UNLOCK_ENGINE_INTERVAL = 10000
 
 export default class StitchController extends EventEmmiter {
   private api: any
