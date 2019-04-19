@@ -4,7 +4,7 @@ import { Currency, Precisions } from './types'
 import log from './loggers/winston'
 import Decimal from 'decimal.js'
 
-const MAX_VOLUME_SAFETY_THRESHOLD = 0.8
+const MAX_VOLUME_SAFETY_THRESHOLD = 1
 
 export default class Engine {
   public balance: Balance
