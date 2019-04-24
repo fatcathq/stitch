@@ -1,25 +1,14 @@
 import benchmark from './base'
-import * as dotenv from 'dotenv'
+import getEnvOpts from './config'
 
 (async () => {
-  const ENV_CONFIG = './.env'
-  dotenv.config({ path: ENV_CONFIG })
-
-  const { EXCHANGE, SAMPLES, API_KEY, API_SECRET } = process.env
-
-  if (!EXCHANGE || !SAMPLES || !API_KEY || !API_SECRET) {
-    console.log('Env vars are missing from .env')
-    return
-  }
+  const opts = getEnvOpts()
 
   await benchmark({
-    exchange: EXCHANGE,
+    exchange: opts.exchange,
     method: 'fetchOrderBook',
     args: ['ETH/BTC'],
-    samples: Number(SAMPLES),
-    api: {
-      key: API_KEY,
-      secret: API_SECRET
-    }
+    samples: opts.samples,
+    api: opts.creds
   })
 })()
