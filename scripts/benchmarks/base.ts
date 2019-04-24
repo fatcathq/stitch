@@ -71,7 +71,7 @@ export default async (config: BenchmarkConfig) => {
     }
   ]
 
-  let graphOptions = {filename: 'response-times-' + Date.now(), fileopt: 'overwrite'}
+  let graphOptions = { filename: 'response-times-' + Date.now(), fileopt: 'overwrite' }
   plotly.plot(data, graphOptions, (_: any, msg: any) => {
     console.log(msg)
   })

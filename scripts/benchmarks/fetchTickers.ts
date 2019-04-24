@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv'
 
 (async () => {
   const ENV_CONFIG = './.env'
-  dotenv.config({path: ENV_CONFIG})
+  dotenv.config({ path: ENV_CONFIG })
 
-  const {EXCHANGE, SAMPLES, API_KEY, API_SECRET} = process.env
+  const { EXCHANGE, SAMPLES, API_KEY, API_SECRET } = process.env
 
   if (!EXCHANGE || !SAMPLES || !API_KEY || !API_SECRET) {
     console.log('Env vars are missing from .env')
