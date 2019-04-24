@@ -4,22 +4,27 @@ const ss = require('simple-statistics')
 const pb = require('progress')
 const ccxt = require('ccxt')
 
+export type CCXTCreds = {
+  key: string,
+  secret?: string
+}
+
 type BenchmarkConfig = {
   exchange: string,
   method: string,
   args?: any[]
   samples: number,
-  api: {
-    key: string,
-    secret: string
-  }
+  api: CCXTCreds
 }
 
-const initCCXT = (exchange: string, creds: {key: string, secret: string}) => {
-  return new ccxt[exchange]({
-    apiKey: creds.key,
-    secret: creds.secret
-  })
+const initCCXT = (exchange: string, creds: CCXTCreds) => {
+  let opts: { apiKey: string, secret?: string } = { apiKey: creds.key }
+
+  if (creds.secret) {
+    opts.secret = creds.secret
+  }
+
+  return new ccxt[exchange](opts)
 }
 
 const benchmarkCCXTRequest = async (ccxtInstance: any, method: string, args: any[]) => {
