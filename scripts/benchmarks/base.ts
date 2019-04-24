@@ -5,7 +5,7 @@ const pb = require('progress')
 const ccxt = require('ccxt')
 
 export type CCXTCreds = {
-  key: string,
+  apiKey: string,
   secret?: string
 }
 
@@ -18,13 +18,7 @@ type BenchmarkConfig = {
 }
 
 const initCCXT = (exchange: string, creds: CCXTCreds) => {
-  let opts: { apiKey: string, secret?: string } = { apiKey: creds.key }
-
-  if (creds.secret) {
-    opts.secret = creds.secret
-  }
-
-  return new ccxt[exchange](opts)
+  return new ccxt[exchange](creds)
 }
 
 const benchmarkCCXTRequest = async (ccxtInstance: any, method: string, args: any[]) => {
