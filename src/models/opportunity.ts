@@ -105,6 +105,7 @@ export default class {
 
     for (const edge of this.triangle) {
       log.info(`[EXPLOIT] Proceeding to edge traversal of: ${edge.source} -> ${edge.target}`)
+      edge.fullPrintEdge()
 
       try {
         volumeIt = await edge.traverse({

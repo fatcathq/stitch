@@ -50,6 +50,10 @@ export class Edge {
 
   }
 
+  public fullPrintEdge (): void {
+    log.info(`${this.source} -> ${this.target}, price: ${this.price}, volume: ${this.volume}`)
+  }
+
   public hasEmptyValues (): boolean {
     return this.volume.equals(0) && this.price.equals(MAX_INT)
   }
