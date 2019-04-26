@@ -225,6 +225,10 @@ export class Edge {
   }
 
   protected calculateCostAfterFees (apiResult: any): Volume {
+    if (!apiResult.fee) {
+      return new Decimal(apiResult.cost)
+    }
+
     return new Decimal(apiResult.cost).minus(apiResult.fee.cost)
   }
 
@@ -235,7 +239,6 @@ export class Edge {
     estimation = this.calculateOutputVolume(realVolume)
 
     if (apiResult.cost === undefined
-     || apiResult.fee === undefined
      || apiResult.amount === undefined) {
       return estimation
     }
