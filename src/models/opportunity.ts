@@ -206,7 +206,7 @@ export default class {
 
   private logOpportunityExploitInfo (startingBalance: Decimal): void {
     log.info(`[EXPLOIT] Starting Volume ${startingBalance} ${this.getReferenceUnit()}`)
-    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${this.arbitrage.minus(1).toNumber()} ${this.getReferenceUnit()}`)
+    log.info(`[EXPLOIT] ${this.getNodes()}. Expecting to gain ${startingBalance.mul(this.arbitrage.minus(1))} ${this.getReferenceUnit()}`)
   }
 
   private generateIndex (triangle: Triangle): string {
