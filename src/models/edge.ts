@@ -164,13 +164,11 @@ export class Edge {
 
     let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
 
-    if (!args.muteLogs) {
-      log.info(
-       `[EDGE] Placing order ${this.source} -> ${this.target}
-        [EDGE] Fees will be applied ${this.feeApplication} the trade.
-        [EDGE] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}.
-        [EDGE] Calling api.${method}(${this.getMarket()}, ${tradeVolume.toNumber()}, ${args.price!.toNumber()})`)
-    }
+    log.info(
+     `[EDGE] Placing order ${this.source} -> ${this.target}
+      [EDGE] Fees will be applied ${this.feeApplication} the trade.
+      [EDGE] Placing an ${args.side} ${args.type} order on market ${this.getMarket()} with volume: ${args.volume} and  price ${args.price}.
+      [EDGE] Calling api.${method}(${this.getMarket()}, ${tradeVolume.toNumber()}, ${args.price!.toNumber()})`)
 
     if (args.mock) {
       return this.calculateReturnedFunds({}, tradeVolume)

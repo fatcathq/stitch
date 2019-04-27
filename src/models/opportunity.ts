@@ -74,22 +74,15 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public async calculateArbitrage (): Promise<Volume> {
-    let volume = new Decimal(1)
+  public calculateArbitrage (): Volume {
+    const arbitrage = this.triangle.reduce((acc, edge) => {
+      const afterFeeWeight = new Decimal(1).minus(edge.fee)
+      return new Decimal(acc).mul(afterFeeWeight).mul(edge.getPrice()).toNumber()
+    }, 1)
 
-    for (const edge of this.triangle) {
-      volume = await edge.traverse({
-        type: 'limit',
-        volume: volume,
-        api: {},
-        mock: true,
-        muteLogs: true
-      })
-    }
+    this.arbitrage = new Decimal(arbitrage)
 
-    this.arbitrage = volume
-
-    return volume
+    return this.arbitrage
   }
 
   public async exploit (api: any, currency: Currency, startingBalance: Decimal, mock = true): Promise<boolean> {

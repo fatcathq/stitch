@@ -40,7 +40,7 @@ export default class ArbitrageFinder extends EventEmmiter {
 
   public loadListeners (): void {
     for (const marketId in this.obEmitter.markets) {
-      this.obEmitter.market(marketId).on('bidUpdate', async (market: any) => {
+      this.obEmitter.market(marketId).on('bidUpdate', (market: any) => {
         const ob = market.bids.top(1)[0]
         if (ob === undefined) {
           log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
@@ -59,12 +59,12 @@ export default class ArbitrageFinder extends EventEmmiter {
         }
 
         if (this.graph.updateFromOBTRecord(record)) {
-          const opportunities = await this.extractOpportunitiesFromGraph()
+          const opportunities = this.extractOpportunitiesFromGraph()
           this.updateOpportunities(opportunities)
         }
       })
 
-      this.obEmitter.market(marketId).on('askUpdate', async (market: any) => {
+      this.obEmitter.market(marketId).on('askUpdate', (market: any) => {
         const ob = market.asks.top(1)[0]
         if (ob === undefined) {
           log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
@@ -83,7 +83,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         }
 
         if (this.graph.updateFromOBTRecord(record)) {
-          const opportunities = await this.extractOpportunitiesFromGraph()
+          const opportunities = this.extractOpportunitiesFromGraph()
           this.updateOpportunities(opportunities)
         }
       })
@@ -123,14 +123,14 @@ export default class ArbitrageFinder extends EventEmmiter {
     }
   }
 
-  private async extractOpportunitiesFromGraph (): Promise<OpportunityMap> {
+  private extractOpportunitiesFromGraph (): OpportunityMap {
     let opportunities: OpportunityMap = {}
 
     const triangles = this.graph.getNonEmptyTriangles()
 
     for (const triangle of triangles) {
       const opportunity = new Opportunity(this.exchange, triangle)
-      await opportunity.calculateArbitrage()
+      opportunity.calculateArbitrage()
 
       if (opportunity.arbitrage.greaterThan(config.threshold)) {
         opportunities[opportunity.id] = opportunity
