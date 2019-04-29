@@ -1,9 +1,7 @@
 const Graph = require('graphlib').Graph
-// import * as minTradeVolumes from '../../data/min_volumes.json'
 import Decimal from 'decimal.js'
 import { Market, Triangle, Edge, OrderBookRecord } from '../types'
 import log from '../loggers/winston'
-import * as _ from 'lodash'
 import { Edge as EdgeDriver, VirtualEdge as VirtualEdgeDriver } from './edge'
 import { marketIsValid, triangleExists } from '../utils/helpers'
 
@@ -20,7 +18,7 @@ export default class extends Graph {
   }
 
   private initializeFromMarkets (markets: Market[]): void {
-    _.forEach(markets, (market: any): void => {
+    markets.forEach((market: any): void => {
       if (!marketIsValid(market.symbol) || `${market.base}/${market.quote}` !== market.symbol) {
         log.warn(`Invalid market: ${market.symbol}`)
         return
@@ -148,9 +146,9 @@ export default class extends Graph {
     return triangles
   }
 
-  public static getMarketsPotentiallyParticipatingInTriangle (markets: Market[]): any {
+  public static getMarketsPotentiallyParticipatingInTriangle (markets: Market[]): Market[] {
     const g = new Graph()
-    _.forEach(markets, (market: Market): void => {
+    markets.forEach((market: Market) => {
       g.setEdge(market.base, market.quote)
       g.setEdge(market.quote, market.base)
     })
@@ -159,10 +157,8 @@ export default class extends Graph {
       return g.outEdges(n).length > 1
     })
 
-    const pairInParticipatingNodes = (v: any) => {
-      return participatingNodes.includes(v.base) && participatingNodes.includes(v.quote)
-    }
-
-    return _.pickBy(markets, pairInParticipatingNodes)
+    return markets.filter((market: Market) => {
+      return participatingNodes.includes(market.base) && participatingNodes.includes(market.quote)
+    })
   }
 }
