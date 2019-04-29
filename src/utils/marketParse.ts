@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 import { getRates } from './helpers'
 import Decimal from 'decimal.js'
 
-export default async (markets: any): Promise<Market[]> => {
+export default (markets: any): Market[] => {
   const parsedMarkets: Market[] = []
 
   _.forEach(markets, (market: any) => {

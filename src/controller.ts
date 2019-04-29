@@ -39,7 +39,7 @@ export default class StitchController extends EventEmmiter {
   }
 
   async init (): Promise<void> {
-    const markets = await parseMarkets(await this.api.loadMarkets())
+    const markets = parseMarkets(await this.api.loadMarkets())
 
     await this.engine.init(markets)
     await this.finder.init(markets)
