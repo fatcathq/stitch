@@ -24,7 +24,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     const markets = Graph.getMarketsPotentiallyParticipatingInTriangle(allMarkets)
 
     this.graph = new Graph(this.exchange, markets)
-    this.marketIds = Object.keys(markets).map(market => markets[market].symbol)
+    this.marketIds = markets.map(market => market.symbol)
 
     for (const market of this.marketIds) {
       try {
