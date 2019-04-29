@@ -6,7 +6,6 @@ type Config = {
     secret: string
   },
   threshold: number,
-  // TODO: Get fee from API
   activeTrading: boolean,
   log: {
     slack: {
@@ -21,9 +20,7 @@ type Config = {
       database: string,
       enabled: boolean
     }
-  },
-  fetchVolumes: boolean,
-  cacheTime: number
+  }
 }
 */
 

@@ -18,10 +18,5 @@
       "database": "stitch",
       "enabled": false
     }
-  },
-  "fetchVolumes": true,
-  "plotly": {
-    "username": "username",
-    "password": "password"
   }
 }

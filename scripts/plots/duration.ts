@@ -1,6 +1,7 @@
-import config from '../../config/config.json'
 import db from '../../src/connectors/db'
-const plotly = require('plotly')(config.plotly.username, config.plotly.key)
+const KEY = ''
+const PASSWORD = ''
+const plotly = require('plotly')(KEY, PASSWORD)
 
 type Point = {
   rounded_duration: number,
