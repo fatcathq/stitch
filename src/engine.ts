@@ -1,6 +1,6 @@
 import Balance from './models/balance'
 import Opportunity from './models/opportunity'
-import { Currency, Precisions } from './types'
+import { Currency, Precisions, Market } from './types'
 import log from './loggers/winston'
 import Decimal from 'decimal.js'
 
@@ -18,7 +18,7 @@ export default class Engine {
     this.locked = true
   }
 
-  public async init (markets: any): Promise<void> {
+  public async init (markets: Market[]): Promise<void> {
     this.precisions = Engine.marketsToPrecisions(markets)
 
     this.balance.setPrecisions(this.precisions)

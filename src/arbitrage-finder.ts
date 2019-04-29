@@ -3,7 +3,7 @@ import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import config from './utils/config'
 import log from './loggers/winston'
-import { OpportunityMap, OrderBookRecord } from './types'
+import { OpportunityMap, OrderBookRecord, Market } from './types'
 import EventEmmiter from 'events'
 import OBEmitter from './connectors/ws-connector'
 import StatsLogger from './models/stats'
@@ -19,7 +19,7 @@ export default class ArbitrageFinder extends EventEmmiter {
     super()
   }
 
-  public async init (allMarkets: any): Promise<void> {
+  public async init (allMarkets: Market[]): Promise<void> {
     this.obEmitter = OBEmitter
     const markets = Graph.getMarketsPotentiallyParticipatingInTriangle(allMarkets)
 
