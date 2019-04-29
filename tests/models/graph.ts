@@ -1,4 +1,5 @@
 import Graph from '../../src/models/graph'
+import { Market } from '../../src/types'
 import { Edge, VirtualEdge } from '../../src/models/edge'
 import Decimal from 'decimal.js'
 
@@ -7,16 +8,12 @@ const markets = [
     symbol: 'ETH/BTC',
     base: 'ETH',
     quote: 'BTC',
-    taker: 0.0025,
-    precision: {
-      price: 8,
-      amount: 8
+    fee: new Decimal(0.0025),
+    precisions: {
+      base: new Decimal(8),
+      quote: new Decimal(8)
     },
-    limits: {
-      amount: {
-        min: 0.001
-      }
-    }
+    minBaseVolume: new Decimal(0.001)
   }
 ]
 
@@ -199,26 +196,40 @@ describe('getNonEmptyTriangles', () => {
 })
 
 describe('getMarketsPotentiallyParticipatingInTriangle', () => {
-  test('Should find proper markets', () => {
-    const markets = {
-      'ETH/BTC': { base: 'ETH', quote: 'BTC' },
-      'COB/BTC': { base: 'COB', quote: 'BTC' },
-      'COB/ETH': { base: 'COB', quote: 'ETH' },
-      'TZA/ETH': { base: 'TZA', quote: 'ETH' },
-      'MAL/ETH': { base: 'MAL', quote: 'ETH' },
-      'LEX/BTC': { base: 'LEX', quote: 'BTC' }
+  const generateMarketFromBaseQuote = (base: string, quote: string): Market => {
+    return {
+      symbol: `${base}/${quote}`,
+      base: base,
+      quote: quote,
+      fee: new Decimal(0.0025),
+      precisions: {
+        base: new Decimal(8),
+        quote: new Decimal(8)
+      },
+      minBaseVolume: new Decimal(0.001)
     }
+  }
+
+  test('Should find proper markets', () => {
+    const markets = [
+      generateMarketFromBaseQuote('ETH', 'BTC'),
+      generateMarketFromBaseQuote('COB', 'BTC'),
+      generateMarketFromBaseQuote('COB', 'ETH'),
+      generateMarketFromBaseQuote('TZA', 'ETH'),
+      generateMarketFromBaseQuote('MAL', 'ETH'),
+      generateMarketFromBaseQuote('LEX', 'BTC')
+    ]
 
     expect(Object.keys(Graph.getMarketsPotentiallyParticipatingInTriangle(markets))).toHaveLength(3)
   })
 
   test('Should return as proper markets', () => {
-    const markets = {
-      'ETH/BTC': { base: 'ETH', quote: 'BTC' },
-      'COB/BTC': { base: 'BTC', quote: 'COB' },
-      'TSIFSA/COB': { base: 'TSIFSA', quote: 'COB' }
-    }
+    const markets = [
+      generateMarketFromBaseQuote('ETH', 'BTC'),
+      generateMarketFromBaseQuote('COB', 'BTC'),
+      generateMarketFromBaseQuote('TSIFSA', 'COB')
+    ]
 
-    expect(Graph.getMarketsPotentiallyParticipatingInTriangle(markets)).toEqual({ 'COB/BTC': { 'base': 'BTC', 'quote': 'COB' } })
+    expect(Graph.getMarketsPotentiallyParticipatingInTriangle(markets)).toEqual([generateMarketFromBaseQuote('COB','BTC')])
   })
 })
