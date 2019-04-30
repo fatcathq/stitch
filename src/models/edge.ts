@@ -186,6 +186,7 @@ export class Edge {
     let status: string
     const now = Date.now()
     let tries = 0
+    let failedFetchOrder = 0
 
     do {
       ++tries
@@ -193,7 +194,11 @@ export class Edge {
       try {
         apiRes = await args.api.fetchOrder(id)
       } catch (e) {
-        throw new TraversalAPIError(this, `FetchOrder failed`, e.message)
+        log.error('Failed fetch order', e)
+        failedFetchOrder++
+        if (failedFetchOrder > 2) {
+          throw new TraversalAPIError(this, `FetchOrder failed`, e.message)
+        }
       }
 
       status = apiRes.status
