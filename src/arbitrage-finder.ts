@@ -91,7 +91,8 @@ export default class ArbitrageFinder extends EventEmmiter {
 
   public updateOpportunities (newOpportunities: OpportunityMap): void {
     // TODO: Fix sorting
-    // sortByProfitability(newOpportunities)
+    // TODO: sortByProfitability(newOpportunities)
+    // TODO: Handle arbitrage change
 
     // Delete non existing opportunities
     for (const id in this.opportunityMap) {
