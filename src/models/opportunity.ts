@@ -3,10 +3,7 @@ import { Edge } from './edge'
 import db from '../connectors/db'
 import log from '../loggers/winston'
 import { getRotated } from '../utils/helpers'
-import { Currency, Triangle, OrderDetails, Volume } from '../types'
-// import { OrderFillTimeoutError, TraversalAPIError } from '../errors/edgeErrors'
-
-const NEUTRAL_COINS = ['ETH', 'BTC', 'EUR', 'USD', 'CAD']
+import { Currency, Triangle, Volume } from '../types'
 
 export default class {
   public id: string
@@ -115,38 +112,6 @@ export default class {
     }
 
     return true
-  }
-
-  /**
-   * BackToSafety function returns all volume that was traded to a neutral coin, by making market orders
-   */
-  public async backToSafety (api: any, currency: Currency, volume: Decimal): Promise<void> {
-    log.info(`[OPPORTUNITY_FALLBACK] Starting back to safety fallback`)
-
-    this.changeStartingPoint(currency)
-
-    let volumeIt = new Decimal(volume)
-
-    for (const edge of this.triangle) {
-      log.info(`[OPPORTUNITY_FALLBACK], Testing edge ${edge}`)
-
-      if (edge.source in NEUTRAL_COINS) {
-        log.info(`[OPPORTUNITY_FALLBACK] Back to neutral currency: ${edge.source}`)
-        return
-      }
-
-      log.info(`[OPPORTUNITY_FALLBACK] Creating market order to leave from non neutral currency: ${edge.source}`)
-
-      const details = {
-        type: 'market',
-        volume: volumeIt,
-        api: api
-      } as OrderDetails
-
-      volumeIt = await edge.traverse(details)
-    }
-
-    log.info(`[OPPORTUNITY_FALLBACK] Opportunity fallback finished`)
   }
 
   public async save (duration: number): Promise<void> {
