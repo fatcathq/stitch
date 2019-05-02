@@ -71,13 +71,13 @@ export default class {
     this.maxVolume = this.getMaxVolume()
   }
 
-  public calculateArbitrage (): Volume {
+  public calculateArbitrage (store = true): Volume {
     const arbitrage = this.triangle.reduce((acc, edge) => {
       const afterFeeWeight = new Decimal(1).minus(edge.fee)
       return new Decimal(acc).mul(afterFeeWeight).mul(edge.getPrice()).toNumber()
     }, 1)
 
-    this.arbitrage = new Decimal(arbitrage)
+    this.arbitrage = store ? new Decimal(arbitrage) : this.arbitrage
 
     return this.arbitrage
   }
