@@ -48,6 +48,13 @@ export default class ArbitrageFinder extends EventEmmiter {
     })
   }
 
+  public removeListeners (): void {
+    const marketIds = Object.keys(this.obEmitter.markets)
+    log.info('Removing all orderBookEmitter listeners')
+
+    marketIds.forEach((marketId: string) => this.obEmitter.market(marketId).removeAllListeners())
+  }
+
   public handleOrderBookUpdate (marketId: string, side: OrderSide, market: any): void {
     const plurarize = (str: string) => str + 's'
     const ob = market[plurarize(side)].top(1)[0]
