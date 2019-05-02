@@ -60,12 +60,20 @@ export default class StitchController extends EventEmmiter {
 
   private async handleOpportunityAdded (opportunity: Opportunity): Promise<void> {
     const currency = this.engine.hasExploitableCurrency(opportunity)
+
     if (currency === undefined) {
       log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is NOT exploitable`)
       return
     }
 
     log.info(`[CONTROLLER] Opportunity ${opportunity.getNodes()} is exploitable`)
+
+    if (this.engine.isLocked()) {
+      log.warn(`[ENGINE] Cannot exploit opportunity ${opportunity.getNodes()}. Engine is locked`)
+      return
+    }
+
+    this.finder.removeListeners()
     await this.engine.exploit(opportunity, currency)
   }
 

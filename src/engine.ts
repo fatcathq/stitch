@@ -38,11 +38,6 @@ export default class Engine {
   public async exploit (opportunity: Opportunity, currency: Currency): Promise<void> {
     log.info(`[ENGINE] Will exploit opportunity ${opportunity.getNodes()}.`)
 
-    if (this.isLocked()) {
-      log.warn(`[ENGINE] Cannot exploit opportunity ${opportunity.getNodes()}. Engine is locked`)
-      return
-    }
-
     if (opportunity.getReferenceUnit() !== currency) {
       log.error(`[ENGINE] Opportunity upon exploit must be already changed in the proper exploit currency`)
     }
