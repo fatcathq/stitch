@@ -3,7 +3,7 @@ import Graph from './models/graph'
 import Opportunity from './models/opportunity'
 import config from './utils/config'
 import log from './loggers/winston'
-import { OpportunityMap, OrderBookRecord, Market } from './types'
+import { OpportunityMap, OrderBookRecord, Market, OrderSide } from './types'
 import EventEmmiter from 'events'
 import OBEmitter from './connectors/ws-connector'
 import StatsLogger from './models/stats'
@@ -39,54 +39,38 @@ export default class ArbitrageFinder extends EventEmmiter {
   }
 
   public loadListeners (): void {
-    for (const marketId in this.obEmitter.markets) {
-      this.obEmitter.market(marketId).on('bidUpdate', (market: any) => {
-        const ob = market.bids.top(1)[0]
-        if (ob === undefined) {
-          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
-          return
-        }
+    const marketIds = Object.keys(this.obEmitter.markets)
+    log.info('Adding orderbook emitter listeners')
 
-        const { rate, quantity } = ob
-        const [asset, currency] = marketId.split('/')
+    marketIds.forEach((marketId: string) => {
+      this.obEmitter.market(marketId).on('bidUpdate', (market: any) => this.handleOrderBookUpdate(marketId, 'bid', market))
+      this.obEmitter.market(marketId).on('askUpdate', (market: any) => this.handleOrderBookUpdate(marketId, 'ask', market))
+    })
+  }
 
-        const record: OrderBookRecord = {
-          asset: asset,
-          currency: currency,
-          side: 'bid',
-          price: rate,
-          volume: quantity
-        }
+  public handleOrderBookUpdate (marketId: string, side: OrderSide, market: any): void {
+    const plurarize = (str: string) => str + 's'
+    const ob = market[plurarize(side)].top(1)[0]
 
-        if (this.graph.updateFromOBTRecord(record)) {
-          const opportunities = this.extractOpportunitiesFromGraph()
-          this.updateOpportunities(opportunities)
-        }
-      })
+    if (ob === undefined) {
+      log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
+      return
+    }
 
-      this.obEmitter.market(marketId).on('askUpdate', (market: any) => {
-        const ob = market.asks.top(1)[0]
-        if (ob === undefined) {
-          log.warn(`Orderbook of market ${marketId} is still undefined. Listener called without reason.`)
-          return
-        }
+    const { rate, quantity } = ob
+    const [asset, currency] = marketId.split('/')
 
-        const { rate, quantity } = ob
-        const [asset, currency] = marketId.split('/')
+    const record: OrderBookRecord = {
+      asset: asset,
+      currency: currency,
+      side: side,
+      price: rate,
+      volume: quantity
+    }
 
-        const record: OrderBookRecord = {
-          asset: asset,
-          currency: currency,
-          side: 'ask',
-          price: rate,
-          volume: quantity
-        }
-
-        if (this.graph.updateFromOBTRecord(record)) {
-          const opportunities = this.extractOpportunitiesFromGraph()
-          this.updateOpportunities(opportunities)
-        }
-      })
+    if (this.graph.updateFromOBTRecord(record)) {
+      const opportunities = this.extractOpportunitiesFromGraph()
+      this.updateOpportunities(opportunities)
     }
   }
 
