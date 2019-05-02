@@ -30,7 +30,7 @@ export class Edge {
   public lastUpdatedTs: number = Date.now()
   protected price: Decimal = new Decimal(MAX_INT)
   protected feeApplication: FeeApplication = 'before'
-  public side: OrderSide = 'sell'
+  public side: OrderSide = 'ask'
 
   constructor
     (source: string,
@@ -162,7 +162,7 @@ export class Edge {
     }
     let apiRes
 
-    let method = args.side === 'sell' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
+    let method = args.side === 'ask' ? 'createLimitSellOrder' : 'createLimitBuyOrder'
 
     log.info(
      `[EDGE] Placing order ${this.source} -> ${this.target}
@@ -279,7 +279,7 @@ export class Edge {
 // A VirtualEdge allowing us to go from 'source' to 'target' by buying the
 // 'target' and paying in 'source' units in the underlying market.
 export class VirtualEdge extends Edge {
-  public side: OrderSide = 'buy'
+  public side: OrderSide = 'bid'
   protected price: Decimal = new Decimal(0)
 
   public setRealPrice (price: Price): void {

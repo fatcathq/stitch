@@ -53,7 +53,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         const record: OrderBookRecord = {
           asset: asset,
           currency: currency,
-          type: 'buy',
+          side: 'bid',
           price: rate,
           volume: quantity
         }
@@ -77,7 +77,7 @@ export default class ArbitrageFinder extends EventEmmiter {
         const record: OrderBookRecord = {
           asset: asset,
           currency: currency,
-          type: 'sell',
+          side: 'ask',
           price: rate,
           volume: quantity
         }

@@ -51,8 +51,8 @@ export default class extends Graph {
   public updateFromOBTRecord (record: OrderBookRecord): boolean {
     let edge
 
-    switch (record.type) {
-      case 'buy':
+    switch (record.side) {
+      case 'bid':
         if (!this.hasEdge(record.asset, record.currency)) {
           log.error(`[GRAPH] Edge ${record.asset}->${record.currency} does not exist on graph`)
           return false
@@ -72,7 +72,7 @@ export default class extends Graph {
 
         return true
 
-      case 'sell':
+      case 'ask':
         if (!this.hasEdge(record.currency, record.asset)) {
           log.error(`[GRAPH] VirtualEdge ${record.currency}->${record.asset} does not exist on graph`)
           return false

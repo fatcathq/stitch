@@ -5,7 +5,7 @@ import Decimal from 'decimal.js'
 export type OrderBookRecord = {
   asset: Currency,
   currency: Currency
-  type: string
+  side: OrderSide
   volume: number,
   price: number
 }
@@ -30,7 +30,7 @@ export type Triangle = Edge[]
 export type Balance = {
   [key: string]: Volume
 }
-export type OrderSide = 'buy' | 'sell'
+export type OrderSide = 'bid' | 'ask'
 export type OrderType = 'market' | 'limit'
 
 export type Volume = Decimal

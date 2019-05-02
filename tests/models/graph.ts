@@ -1,5 +1,5 @@
 import Graph from '../../src/models/graph'
-import { Market } from '../../src/types'
+import { Market, OrderBookRecord } from '../../src/types'
 import { Edge, VirtualEdge } from '../../src/models/edge'
 import Decimal from 'decimal.js'
 
@@ -49,10 +49,10 @@ describe('updateFromOBT', () => {
     const record = {
       asset: 'ZEC',
       currency: 'LALA',
-      type: 'sell',
+      side: 'ask',
       volume: 1.2,
       price: 3.12
-    }
+    } as OrderBookRecord
 
     expect(graph.updateFromOBTRecord(record)).toBeFalsy()
   })
@@ -61,10 +61,10 @@ describe('updateFromOBT', () => {
     const record = {
       asset: 'ETH',
       currency: 'BTC',
-      type: 'buy',
+      side: 'bid',
       volume: 14.332,
       price: 0.03796237
-    }
+    } as OrderBookRecord
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
     expect(graph.edge('ETH', 'BTC').getRealVolume().toNumber()).toBeCloseTo(14.332)
@@ -75,10 +75,10 @@ describe('updateFromOBT', () => {
     const record = {
       asset: 'ETH',
       currency: 'BTC',
-      type: 'sell',
+      side: 'ask',
       volume: 14.332,
       price: 0.03796237
-    }
+    } as OrderBookRecord
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
     expect(graph.edge('BTC', 'ETH').getRealVolume().toNumber()).toBeCloseTo(14.332)
@@ -89,10 +89,10 @@ describe('updateFromOBT', () => {
     const record = {
       asset: 'ETH',
       currency: 'BTC',
-      type: 'sell',
+      side: 'ask',
       volume: 14.332,
       price: 0.03796237
-    }
+    } as OrderBookRecord
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
     expect(graph.updateFromOBTRecord(record)).toBeFalsy()
@@ -102,10 +102,10 @@ describe('updateFromOBT', () => {
     const record = {
       asset: 'ETH',
       currency: 'BTC',
-      type: 'sell',
+      side: 'ask',
       volume: 14.332,
       price: 0.03796237
-    }
+    } as OrderBookRecord
 
     expect(graph.updateFromOBTRecord(record)).toBeTruthy()
     expect(graph.updateFromOBTRecord(record)).toBeFalsy()
