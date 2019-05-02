@@ -3,6 +3,7 @@ import Opportunity from './models/opportunity'
 import { Currency, Precisions, Market } from './types'
 import log from './loggers/winston'
 import Decimal from 'decimal.js'
+import config from './utils/config'
 
 const MAX_VOLUME_SAFETY_THRESHOLD = 1
 
@@ -35,11 +36,33 @@ export default class Engine {
     }
   }
 
+  public guardArbitrageBeforeExploit (opportunity: Opportunity): boolean {
+    const arbitrage = opportunity.calculateArbitrage(false)
+
+    if (arbitrage !== opportunity.arbitrage) {
+      log.error(`[ENGINE_GUARD] Last minute arbitrage calculation: ${arbitrage} is not the same as opportunity arbitrage: ${opportunity.arbitrage}`)
+      return false
+    }
+
+    if (arbitrage.lessThan(config.threshold)) {
+      log.error(`[ENGINE_GUARD] Last minute arbitrage calculation: ${arbitrage} is less than config threshold: ${config.threshold}`)
+      return false
+    }
+
+    return true
+  }
+
   public async exploit (opportunity: Opportunity, currency: Currency): Promise<void> {
     log.info(`[ENGINE] Will exploit opportunity ${opportunity.getNodes()}.`)
 
     if (opportunity.getReferenceUnit() !== currency) {
       log.error(`[ENGINE] Opportunity upon exploit must be already changed in the proper exploit currency`)
+    }
+
+    if (!this.guardArbitrageBeforeExploit(opportunity)) {
+      log.error(`[ENGINE] Aborting exploitation`)
+      process.exit()
+      return
     }
 
     log.info(`[ENGINE] Locking engine to prevent parallel exploitations`)
