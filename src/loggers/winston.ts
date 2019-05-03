@@ -8,7 +8,7 @@ export class WinstonLogger implements LoggerInterface {
 
     client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}]: *${n1}, ${n2}, ${n3}*. Profit: *${(opportunity.arbitrage.minus(1).toNumber()) * 100} %*`)
     for (const edge of opportunity.triangle) {
-      client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}] ${edge.toString()} last updated before ${Date.now() - edge.lastUpdatedTs} ms.`)
+      client.info(`[OPPORTUNITY_OPEN ${opportunity.exchange}] ${edge.toString()} price: ${edge.getPrice()} volume: ${edge.getVolume()} last updated before ${Date.now() - edge.lastUpdatedTs} ms.`)
     }
   }
 
