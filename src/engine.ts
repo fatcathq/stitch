@@ -3,7 +3,6 @@ import Opportunity from './models/opportunity'
 import { Currency, Precisions, Market } from './types'
 import log from './loggers/winston'
 import Decimal from 'decimal.js'
-import config from './utils/config'
 
 const MAX_VOLUME_SAFETY_THRESHOLD = 1
 
@@ -41,11 +40,6 @@ export default class Engine {
 
     if (arbitrage !== opportunity.arbitrage) {
       log.error(`[ENGINE_GUARD] Last minute arbitrage calculation: ${arbitrage} is not the same as opportunity arbitrage: ${opportunity.arbitrage}`)
-      return false
-    }
-
-    if (arbitrage.lessThan(config.threshold)) {
-      log.error(`[ENGINE_GUARD] Last minute arbitrage calculation: ${arbitrage} is less than config threshold: ${config.threshold}`)
       return false
     }
 
