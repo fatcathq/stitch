@@ -11,7 +11,7 @@ export default class {
   public maxVolume: Volume = new Decimal(Infinity)
   public minVolume: Volume
   public exchange: string
-  public created: Date = new Date()
+  public created: number = Date.now()
   public triangle: Triangle
   private refUnit: string
 
@@ -34,7 +34,7 @@ export default class {
   }
 
   public getDuration (): number {
-    return (new Date()).getTime() - this.created.getTime()
+    return Date.now() - this.created
   }
 
   public getNodes (): string[] {
