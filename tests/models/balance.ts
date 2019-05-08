@@ -18,7 +18,7 @@ const balanceToDecimalValues = (balance: any): Balance => {
   return balance
 }
 
-describe('update', async () => {
+describe('update', () => {
   test('Balance handler should update balance obj properly', async () => {
     let balanceHandler: BalanceHandler
 
@@ -70,7 +70,7 @@ describe('update', async () => {
   })
 })
 
-describe('precisions', async () => {
+describe('precisions', () => {
   let balanceHandler: BalanceHandler
   let mockAPI: any
   const testBalance = {

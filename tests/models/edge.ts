@@ -17,7 +17,7 @@ const createOrderBookAPIMock = (): any => {
 }
 
 describe(
-  'edges', async () => {
+  'edges', () => {
     let edge: Edge
     let virtualEdge: VirtualEdge
 
@@ -26,20 +26,20 @@ describe(
       virtualEdge = new VirtualEdge('BTC', 'ADA')
     })
 
-    test('Edges have markets and sides', async () => {
+    test('Edges have markets and sides', () => {
       expect(edge.getMarket()).toBe('ADA/BTC')
-      expect(edge.side).toBe('sell')
+      expect(edge.side).toBe('ask')
 
       expect(virtualEdge.getMarket()).toBe('ADA/BTC')
-      expect(virtualEdge.side).toBe('buy')
+      expect(virtualEdge.side).toBe('bid')
     })
 
-    test('Edges can be stringified', async () => {
+    test('Edges can be stringified', () => {
       expect(`${edge}`).toBe('ADA -> BTC')
       expect(`${virtualEdge}`).toBe('BTC -> ADA')
     })
 
-    test('Edges have prices', async () => {
+    test('Edges have prices', () => {
       edge.setPrice(new Decimal(3.14159265))
       expect(edge.getPrice().toNumber()).toBeCloseTo(3.14159265)
       expect(edge.getRealPrice().toNumber()).toBeCloseTo(3.14159265)
@@ -75,7 +75,7 @@ describe(
       expect(virtualEdge.getPrice().toNumber()).toBeCloseTo(1 / 5.2)
     })
 
-    test('Edges can be traversed', async () => {
+    test('Edges can be traversed', () => {
       // let api = createOrderBookAPIMock()
 
       edge.traverse({
@@ -86,7 +86,7 @@ describe(
   }
 )
 
-describe('hasEmptyValues', async () => {
+describe('hasEmptyValues', () => {
   let edge: Edge
   let virtualEdge: Edge
 
