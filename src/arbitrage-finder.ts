@@ -89,6 +89,16 @@ export default class ArbitrageFinder extends EventEmmiter {
     this.opportunityMap = opportunities
   }
 
+  public static opportunityDiff (A: OpportunityMap, B: OpportunityMap): OpportunityMap {
+    return _.pick(A, _.difference(_.keys(A), _.keys(B)))
+  }
+
+  public emitMulti (eventName: string, params: Array<any>): void {
+    for (let param of params) {
+      this.emit(eventName, param)
+    }
+  }
+
   public updateOpportunities (newOpportunities: OpportunityMap): void {
     // TODO: Fix sorting
     // TODO: sortByProfitability(newOpportunities)
