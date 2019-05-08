@@ -65,8 +65,8 @@ export default class {
       this.updateOpportunity(this.opportunities[id], prevArb)
     })
 
-    notifier.on('OpportunityClosed', (opportunity: Opportunity, duration: number) => {
-      this.closeOpportunity(opportunity, duration)
+    notifier.on('OpportunityClosed', (opportunity: Opportunity) => {
+      this.closeOpportunity(opportunity, opportunity.getDuration())
     })
   }
 
