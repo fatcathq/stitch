@@ -12,10 +12,16 @@ const createMockOpportunity = (triangle: [string, string, string]): Opportunity 
   return new Opportunity('testExchange', edges)
 }
 
-describe('updateOpportunities', async () => {
-  const p1 = createMockOpportunity(['A', 'B', 'C'])
-  const p2 = createMockOpportunity(['D', 'E', 'F'])
-  const p3 = createMockOpportunity(['G', 'H', 'I'])
+describe('updateOpportunities', () => {
+  let p1: Opportunity
+  let p2: Opportunity
+  let p3: Opportunity
+
+  beforeEach(() => {
+    p1 = createMockOpportunity(['A', 'B', 'C'])
+    p2 = createMockOpportunity(['D', 'E', 'F'])
+    p3 = createMockOpportunity(['G', 'H', 'I'])
+  })
 
   test('deletes non existing opportunity', async () => {
     const arbitrageFinder = new ArbitrageFinder()
