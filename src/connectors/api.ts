@@ -1,6 +1,7 @@
 const ccxt = require('ccxt')
 const fetch = require('fetch-ponyfill')().fetch
 import log from '../loggers/winston'
+import { APIError } from '../errors/api'
 
 import config from '../utils/config'
 
