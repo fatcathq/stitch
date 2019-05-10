@@ -57,7 +57,6 @@ describe('updateOpportunities', () => {
 
     Date.now = mockTime
 
-    console.log('counting')
     arbitrageFinder.on('OpportunityAdded', addedSpy)
     arbitrageFinder.on('OpportunityClosed', closedSpy)
 
