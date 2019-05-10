@@ -100,20 +100,17 @@ export default class ArbitrageFinder extends EventEmmiter {
   }
 
   public updateOpportunities (newOpportunities: OpportunityMap): void {
-    // TODO: sortByProfitability(newOpportunities)
-    // TODO: Handle arbitrage change
-
+    // Delete non existing opportunities
     const deletedOpportunities = ArbitrageFinder.opportunityDiff(this.opportunityMap, newOpportunities)
+    Object.keys(deletedOpportunities).forEach(id => delete this.opportunityMap[id])
 
-    // Delete old opportunities
-    this.opportunityMap = _.pick(this.opportunityMap, Object.keys(newOpportunities))
-
-    const freshOpportunities = ArbitrageFinder.opportunityDiff(newOpportunities, this.opportunityMap)
     // Create new opportunities
+    const freshOpportunities = ArbitrageFinder.opportunityDiff(newOpportunities, this.opportunityMap)
     Object.assign(this.opportunityMap, freshOpportunities)
 
-    this.emitMulti('OpportunityClosed', Object.values(deletedOpportunities))
+    // Emit events
     this.emitMulti('OpportunityAdded', Object.keys(freshOpportunities))
+    this.emitMulti('OpportunityClosed', Object.values(deletedOpportunities))
   }
 
   private extractOpportunitiesFromGraph (): OpportunityMap {
