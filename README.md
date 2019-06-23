@@ -32,12 +32,3 @@ With these exchange rates there is an arbitrage opportunity:
 - Bid on `ETH/USDT`. Get 210.3735 / 207.705411 = 1.01284 ETH 
 ```
 We observe that with trading on this triangle, we receive an arbitrage profit of 0.01284 ETH.
-
-## Logger
-Logger is the module of Stitch which is responsible for detecting every opportunity between 3 currencies, in a given exchange. The end goals of the logger are:
-   
-- Logging the opportunities for post statistical analysis.
-- Trigger the *Stitch* engine to start trading on every profitable triangle. 
-
-### Implementation
-As explained in the theoritical paper, we represent an exchange as a Graph with all exchange currencies as Nodes, and all markets A/B as Edges. For example, an exchange X, having a market A/B with last price: P_a/b = 210.21  is represented as a graph having 2 nodes A and B, and edges (A,B) with W_(a,b) = 210.21 (ask) and (B,A) with W_(b,a) = 1 / 210.21.
