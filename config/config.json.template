@@ -8,7 +8,7 @@
   "activeTrading": true,
   "log": {
     "slack": {
-      "webhook": "https://hooks.slack.com/services/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",
+      "webhook": "https://hooks.slack.com/services/slack_hook_id",
       "enabled": false
     },
     "db": {
